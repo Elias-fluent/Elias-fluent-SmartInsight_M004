@@ -1,21 +1,40 @@
 import React from 'react';
+import { Button } from '../components/shadcn/Button';
 
 const Dashboard: React.FC = () => {
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6">SmartInsight Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Quick Stats</h2>
-          <p className="text-gray-600">Placeholder for stats dashboard</p>
+    <div className="space-y-6">
+      <div className="border rounded-lg p-4 shadow-sm bg-card">
+        <h2 className="text-xl font-semibold mb-4 text-card-foreground">Dashboard</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="border rounded-md p-4 bg-background">
+            <h3 className="font-medium mb-2">Data Sources</h3>
+            <p className="text-sm text-muted-foreground">8 active connections</p>
+          </div>
+          
+          <div className="border rounded-md p-4 bg-background">
+            <h3 className="font-medium mb-2">Users</h3>
+            <p className="text-sm text-muted-foreground">24 active users</p>
+          </div>
+          
+          <div className="border rounded-md p-4 bg-background">
+            <h3 className="font-medium mb-2">Knowledge Base</h3>
+            <p className="text-sm text-muted-foreground">1,245 entities indexed</p>
+          </div>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-          <p className="text-gray-600">Placeholder for recent activity</p>
+        
+        <div className="flex justify-end space-x-2">
+          <Button variant="outline" size="sm">Refresh</Button>
+          <Button size="sm">View Details</Button>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Knowledge Graph</h2>
-          <p className="text-gray-600">Placeholder for knowledge graph visualization</p>
+      </div>
+      
+      <div className="border rounded-lg p-4 shadow-sm bg-card">
+        <h2 className="text-xl font-semibold mb-4 text-card-foreground">Recent Activity</h2>
+        <p className="text-center text-muted-foreground py-6">No recent activity to display</p>
+        <div className="flex justify-center">
+          <Button variant="secondary">Create New Query</Button>
         </div>
       </div>
     </div>
