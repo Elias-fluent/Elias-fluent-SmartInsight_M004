@@ -1,64 +1,54 @@
-# SmartInsight UI
+# React + TypeScript + Vite
 
-This is the front-end application for the SmartInsight platform, built with React, TypeScript, and Tailwind CSS.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Features
+Currently, two official plugins are available:
 
-- React 18 with TypeScript
-- Tailwind CSS for styling
-- shadcn/ui component library integration
-- ESLint and Prettier for code quality
-- Responsive design
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Prerequisites
+## Expanding the ESLint configuration
 
-- Node.js (v14.0.0 or later)
-- npm (v6.0.0 or later)
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-## Getting Started
+```js
+export default tseslint.config({
+  extends: [
+    // Remove ...tseslint.configs.recommended and replace with this
+    ...tseslint.configs.recommendedTypeChecked,
+    // Alternatively, use this for stricter rules
+    ...tseslint.configs.strictTypeChecked,
+    // Optionally, add this for stylistic rules
+    ...tseslint.configs.stylisticTypeChecked,
+  ],
+  languageOptions: {
+    // other options...
+    parserOptions: {
+      project: ['./tsconfig.node.json', './tsconfig.app.json'],
+      tsconfigRootDir: import.meta.dirname,
+    },
+  },
+})
+```
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-2. Start the development server:
-   ```bash
-   npm start
-   ```
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
 
-3. Build for production:
-   ```bash
-   npm run build
-   ```
-
-## Project Structure
-
-- `/src/components` - Reusable UI components
-  - `/src/components/ui` - shadcn/ui components
-- `/src/pages` - Application pages
-- `/src/hooks` - Custom React hooks
-- `/src/utils` - Utility functions
-- `/src/context` - React context providers
-- `/src/services` - API services
-- `/src/assets` - Static assets
-
-## Styling
-
-This project uses Tailwind CSS for styling. The main configuration is in `tailwind.config.js`.
-
-## Accessibility
-
-The UI components are designed to be WCAG 2.1 AA compliant. All components should:
-
-- Have appropriate ARIA attributes
-- Support keyboard navigation
-- Have sufficient color contrast
-- Include proper focus states
-
-## Browser Support
-
-- Chrome (latest)
-- Firefox (latest)
-- Edge (latest)
-- Safari (latest) 
+export default tseslint.config({
+  plugins: {
+    // Add the react-x and react-dom plugins
+    'react-x': reactX,
+    'react-dom': reactDom,
+  },
+  rules: {
+    // other rules...
+    // Enable its recommended typescript rules
+    ...reactX.configs['recommended-typescript'].rules,
+    ...reactDom.configs.recommended.rules,
+  },
+})
+```
