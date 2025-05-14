@@ -1,0 +1,60 @@
+# Git
+.git
+.gitignore
+.github
+
+# Docker
+.docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Editor and IDE files
+.vscode
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln.iml
+
+# Build output
+**/bin
+**/obj
+**/out
+**/node_modules
+**/npm-debug.log
+
+# User-specific files
+**/*.user
+**/*.userosscache
+**/*.sln.docstates
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Taskmaster files
+tasks/
+.taskmasterconfig
+.roo/
+
+# Logs
+**/logs
+**/*.log
+
+# Test results
+**/TestResults
+**/coveragereport
+**/coverage
+
+# Docker optimization
+**/Dockerfile*
+**/.dockerignore
+
+# Others
+LICENSE
+README.md
+**/.DS_Store 

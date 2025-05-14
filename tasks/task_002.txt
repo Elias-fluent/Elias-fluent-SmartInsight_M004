@@ -1,6 +1,6 @@
 # Task ID: 2
 # Title: Set Up CI/CD Pipeline
-# Status: pending
+# Status: in-progress
 # Dependencies: 1
 # Priority: high
 # Description: Configure CI/CD pipeline for automated building, testing, and deployment.

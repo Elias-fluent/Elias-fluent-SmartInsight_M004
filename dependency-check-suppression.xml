@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <!-- Example suppression
+    <suppress>
+        <notes>Some note about why this vulnerability is suppressed</notes>
+        <filePath regex="true">.*\bsome-library-1.0.0.jar</filePath>
+        <cve>CVE-2022-12345</cve>
+    </suppress>
+    -->
+</suppressions> 
