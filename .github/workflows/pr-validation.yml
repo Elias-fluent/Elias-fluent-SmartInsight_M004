@@ -38,10 +38,7 @@ jobs:
             - revert
           requireScope: false
           subjectPattern: ^(?![A-Z]).+$
-          subjectPatternError: |
-            The subject "{subject}" found in the pull request title "{title}"
-            didn't match the configured pattern. Please ensure that the subject
-            starts with a lowercase character.
+          subjectPatternError: 'The subject "{subject}" found in the pull request title "{title}" did not match the configured pattern. Please ensure that the subject starts with a lowercase character.'
       
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
@@ -49,13 +46,13 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
       
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore SmartInsight.sln
       
       - name: Build
-        run: dotnet build --no-restore
+        run: dotnet build SmartInsight.sln --no-restore
       
       - name: Test
-        run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+        run: dotnet test SmartInsight.sln --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
       
       - name: Check test coverage
         uses: danielpalme/ReportGenerator-GitHub-Action@5.1.12
