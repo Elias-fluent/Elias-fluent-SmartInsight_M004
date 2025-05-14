@@ -73,7 +73,8 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           directory: ./coverage
-          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
           verbose: true
 
   code-analysis:
