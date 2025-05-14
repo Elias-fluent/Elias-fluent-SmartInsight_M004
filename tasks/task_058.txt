@@ -1,0 +1,20 @@
+# Task ID: 58
+# Title: Implement Trace Correlation Across Services
+# Status: pending
+# Dependencies: 54
+# Priority: medium
+# Description: Create system for correlating traces across different services.
+# Details:
+In SmartInsight.Telemetry project:
+1. Implement correlation ID generation
+2. Create correlation context propagation
+3. Implement trace collection
+4. Add trace visualization
+5. Create trace search
+6. Implement performance analysis
+7. Add anomaly detection
+
+Ensure comprehensive request tracing.
+
+# Test Strategy:
+Verify correlation ID propagation. Test trace collection. Validate visualization. Test search functionality with sample traces.

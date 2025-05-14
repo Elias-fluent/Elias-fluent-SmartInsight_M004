@@ -1,0 +1,20 @@
+# Task ID: 85
+# Title: Implement WebSocket Endpoints for Real-Time Updates
+# Status: pending
+# Dependencies: 34
+# Priority: medium
+# Description: Create WebSocket endpoints for real-time updates to clients.
+# Details:
+In SmartInsight.API project:
+1. Implement WebSocket server
+2. Create connection management
+3. Implement authentication and authorization
+4. Add tenant isolation
+5. Create message routing
+6. Implement reconnection handling
+7. Add performance monitoring
+
+Ensure reliable real-time communication.
+
+# Test Strategy:
+Test WebSocket connections. Verify authentication and authorization. Test tenant isolation. Validate reconnection handling.

@@ -1,0 +1,20 @@
+# Task ID: 97
+# Title: Create Video Walkthroughs
+# Status: pending
+# Dependencies: 41, 42, 45, 48, 49, 50, 51, 52
+# Priority: low
+# Description: Create video walkthroughs for common tasks.
+# Details:
+In documentation directory:
+1. Create getting started video
+2. Implement querying walkthrough
+3. Create visualization walkthrough
+4. Add data source configuration walkthrough
+5. Create user management walkthrough
+6. Implement troubleshooting walkthrough
+7. Add advanced features walkthrough
+
+Ensure comprehensive and effective video walkthroughs.
+
+# Test Strategy:
+Review videos for accuracy. Test procedures shown in videos. Validate completeness of coverage.

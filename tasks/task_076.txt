@@ -1,0 +1,20 @@
+# Task ID: 76
+# Title: Implement Tenant-Specific LLM Prompt Templates
+# Status: pending
+# Dependencies: 28
+# Priority: medium
+# Description: Create system for tenant-specific LLM prompt template overrides.
+# Details:
+In SmartInsight.AI project:
+1. Extend PromptTemplateManager for tenant-specific templates
+2. Create template inheritance hierarchy
+3. Implement template override resolution
+4. Add template validation
+5. Create template management UI
+6. Implement template versioning
+7. Add template testing
+
+Ensure flexible and tenant-specific prompt customization.
+
+# Test Strategy:
+Create unit tests for template overrides. Verify inheritance resolution. Test validation. Validate template management UI.

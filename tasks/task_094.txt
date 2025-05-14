@@ -1,0 +1,20 @@
+# Task ID: 94
+# Title: Implement Query Formulation Guidelines
+# Status: pending
+# Dependencies: 25, 26, 27
+# Priority: medium
+# Description: Create guidelines for formulating effective queries.
+# Details:
+In documentation directory:
+1. Create query basics guide
+2. Implement advanced query techniques
+3. Create domain-specific query examples
+4. Add troubleshooting common query issues
+5. Create query optimization guide
+6. Implement best practices
+7. Add example queries for different roles
+
+Ensure comprehensive and effective query guidelines.
+
+# Test Strategy:
+Test query examples with the system. Verify effectiveness of optimization techniques. Validate role-specific examples.

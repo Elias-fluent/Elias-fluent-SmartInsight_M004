@@ -1,0 +1,20 @@
+# Task ID: 35
+# Title: Implement CQRS Pattern with MediatR
+# Status: pending
+# Dependencies: 12, 34
+# Priority: medium
+# Description: Create CQRS implementation using MediatR for command and query separation.
+# Details:
+In SmartInsight.API project:
+1. Implement MediatR setup
+2. Create command and query models
+3. Implement command and query handlers
+4. Add validation pipeline behavior
+5. Create logging pipeline behavior
+6. Implement transaction pipeline behavior
+7. Add tenant scoping pipeline behavior
+
+Ensure clean separation of commands and queries.
+
+# Test Strategy:
+Create unit tests for command and query handlers. Verify pipeline behaviors. Test tenant scoping enforcement. Measure handler performance.

@@ -1,0 +1,20 @@
+# Task ID: 96
+# Title: Implement Admin Portal Operation Guide
+# Status: pending
+# Dependencies: 48, 49, 50, 51, 52, 53
+# Priority: high
+# Description: Create guide for operating the admin portal.
+# Details:
+In documentation directory:
+1. Create admin portal overview
+2. Implement data source configuration guide
+3. Create user and tenant management guide
+4. Add monitoring and alerting guide
+5. Create backup and recovery guide
+6. Implement security management guide
+7. Add troubleshooting guide
+
+Ensure comprehensive and effective admin portal guide.
+
+# Test Strategy:
+Test guide steps with the admin portal. Verify effectiveness of procedures. Validate completeness of coverage.

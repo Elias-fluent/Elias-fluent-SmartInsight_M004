@@ -1,0 +1,20 @@
+# Task ID: 17
+# Title: Implement MySQL Connector
+# Status: pending
+# Dependencies: 14
+# Priority: medium
+# Description: Create connector implementation for MySQL data sources.
+# Details:
+In SmartInsight.Knowledge project:
+1. Implement MySQLConnector class
+2. Create connection string builder and validator
+3. Implement schema discovery
+4. Add query execution logic
+5. Create data transformation pipeline
+6. Implement incremental update detection
+7. Add error handling and logging
+
+Ensure secure handling of connection credentials.
+
+# Test Strategy:
+Create integration tests with test MySQL instance. Verify connection, extraction, and transformation. Test incremental updates with changed data.

@@ -1,0 +1,20 @@
+# Task ID: 34
+# Title: Implement REST API Layer with OAuth2 and JWT
+# Status: pending
+# Dependencies: 11, 12
+# Priority: high
+# Description: Create REST API layer with authentication and authorization.
+# Details:
+In SmartInsight.API project:
+1. Implement API controllers for all resources
+2. Create OAuth2 authentication with JWT
+3. Implement authorization with role-based access control
+4. Add tenant scoping enforcement
+5. Create API versioning
+6. Implement rate limiting and throttling
+7. Add logging for API requests
+
+Ensure API follows RESTful principles.
+
+# Test Strategy:
+Create integration tests for API endpoints. Verify authentication and authorization. Test tenant scoping enforcement. Measure API performance under load.

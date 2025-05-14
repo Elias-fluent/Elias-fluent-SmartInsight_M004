@@ -1,0 +1,20 @@
+# Task ID: 30
+# Title: Implement Output Verification Against Safety Rules
+# Status: pending
+# Dependencies: 25, 27
+# Priority: high
+# Description: Create system for verifying AI outputs against safety rules.
+# Details:
+In SmartInsight.AI project:
+1. Implement OutputVerifier class
+2. Create safety rule definition model
+3. Implement rule checking logic
+4. Add content filtering
+5. Create violation handling strategies
+6. Implement tenant-specific safety rules
+7. Add logging for verification results
+
+Ensure all AI outputs are safe and appropriate.
+
+# Test Strategy:
+Create unit tests with sample outputs including intentionally unsafe content. Verify safety rule enforcement. Test tenant-specific rules. Measure verification performance.

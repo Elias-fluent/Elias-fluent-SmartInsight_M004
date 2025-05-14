@@ -1,0 +1,20 @@
+# Task ID: 69
+# Title: Implement JIRA Connector
+# Status: pending
+# Dependencies: 14, 19
+# Priority: medium
+# Description: Create connector implementation for JIRA data sources.
+# Details:
+In SmartInsight.Knowledge project:
+1. Implement JIRAConnector class
+2. Create API client for JIRA
+3. Implement authentication with API tokens
+4. Add project and issue discovery
+5. Create content extraction
+6. Implement incremental update detection
+7. Add error handling and logging
+
+Ensure secure handling of API credentials.
+
+# Test Strategy:
+Create integration tests with test JIRA instance. Verify authentication, discovery, and extraction. Test incremental updates with changed issues.

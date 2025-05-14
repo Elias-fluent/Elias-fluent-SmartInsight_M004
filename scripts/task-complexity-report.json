@@ -1,0 +1,811 @@
+{
+  "meta": {
+    "generatedAt": "2025-05-14T22:02:49.579Z",
+    "tasksAnalyzed": 100,
+    "thresholdScore": 4,
+    "projectName": "Taskmaster",
+    "usedResearch": false
+  },
+  "complexityAnalysis": [
+    {
+      "taskId": 1,
+      "taskTitle": "Create Solution Structure",
+      "complexityScore": 3,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Create Solution Structure' task into subtasks covering: 1) Initial solution creation with proper naming and structure, 2) Project creation with appropriate frameworks and references, 3) Configuration of project dependencies and build settings.",
+      "reasoning": "This is a relatively straightforward task involving creating a standard solution structure with predefined projects. The complexity is low as it follows a clear specification without complex logic, but requires attention to detail for proper project references."
+    },
+    {
+      "taskId": 2,
+      "taskTitle": "Set Up CI/CD Pipeline",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the 'Set Up CI/CD Pipeline' task into subtasks covering: 1) Pipeline platform selection and initial setup, 2) Build and test workflow configuration, 3) Security scanning integration, 4) Docker image building and registry configuration, 5) Deployment workflow setup for development environment.",
+      "reasoning": "Setting up a CI/CD pipeline involves multiple technologies and integration points. The complexity is high due to the need to configure various stages (build, test, security scanning, Docker image building, deployment) and ensure they work together seamlessly."
+    },
+    {
+      "taskId": 3,
+      "taskTitle": "Implement Core Project Base Types",
+      "complexityScore": 6,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Core Project Base Types' task into subtasks covering: 1) Base interfaces and abstract classes, 2) Shared enums, constants and DTOs, 3) Validation utilities and business rule enforcement, 4) Security utilities and exception handling patterns.",
+      "reasoning": "This task requires designing foundational types that will be used throughout the application. The complexity comes from ensuring these types are properly designed for extensibility, maintainability, and performance while meeting the needs of all modules."
+    },
+    {
+      "taskId": 4,
+      "taskTitle": "Set Up PostgreSQL Docker Container",
+      "complexityScore": 5,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Set Up PostgreSQL Docker Container' task into subtasks covering: 1) Docker Compose configuration for PostgreSQL with proper environment variables and volume mapping, 2) Row-Level Security setup and configuration, 3) Database initialization scripts and health check implementation.",
+      "reasoning": "Setting up a PostgreSQL container involves Docker configuration and database-specific settings. The complexity is moderate due to the need to configure Row-Level Security, which requires specific PostgreSQL knowledge, and ensure proper initialization and health checks."
+    },
+    {
+      "taskId": 5,
+      "taskTitle": "Set Up Qdrant Vector Database Container",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Set Up Qdrant Vector Database Container' task into subtasks covering: 1) Docker Compose configuration for Qdrant with proper environment variables and volume mapping, 2) Tenant namespace sharding strategy implementation, 3) Vector collection configuration and health check implementation.",
+      "reasoning": "Setting up Qdrant involves working with a specialized vector database and implementing tenant sharding. The complexity is moderate to high because vector databases are less common, and the tenant sharding strategy requires careful design to ensure proper isolation."
+    },
+    {
+      "taskId": 6,
+      "taskTitle": "Set Up Ollama Container",
+      "complexityScore": 5,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Set Up Ollama Container' task into subtasks covering: 1) Docker Compose configuration for Ollama with proper resource limits, 2) Model pre-downloading and configuration for LLaMA 3 and Phi3, 3) Health check implementation and inference testing.",
+      "reasoning": "Setting up Ollama involves configuring an AI inference container with specific models. The complexity is moderate due to the need to manage resource limits appropriately for AI inference and ensure models are properly pre-downloaded and configured."
+    },
+    {
+      "taskId": 7,
+      "taskTitle": "Set Up Redis Container",
+      "complexityScore": 4,
+      "recommendedSubtasks": 2,
+      "expansionPrompt": "Break down the 'Set Up Redis Container' task into subtasks covering: 1) Docker Compose configuration for Redis with proper security settings and persistence, 2) Redis optimization for caching and distributed locking scenarios with appropriate configuration parameters.",
+      "reasoning": "Setting up Redis is relatively straightforward but requires specific configuration for caching and distributed locking. The complexity is moderate as it involves security configuration and performance optimization for specific use cases."
+    },
+    {
+      "taskId": 8,
+      "taskTitle": "Set Up Seq Container",
+      "complexityScore": 3,
+      "recommendedSubtasks": 2,
+      "expansionPrompt": "Break down the 'Set Up Seq Container' task into subtasks covering: 1) Docker Compose configuration for Seq with proper retention policies and volume mapping, 2) Initial dashboard setup for system monitoring and log ingestion verification.",
+      "reasoning": "Setting up Seq is relatively simple as it's a specialized logging container. The complexity is low to moderate as it mainly involves Docker configuration and basic dashboard setup without complex integration points."
+    },
+    {
+      "taskId": 9,
+      "taskTitle": "Implement Entity Framework Core DbContext",
+      "complexityScore": 8,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the 'Implement Entity Framework Core DbContext' task into subtasks covering: 1) DbContext class implementation with entity sets, 2) Entity configurations using Fluent API, 3) PostgreSQL-specific features configuration, 4) Row-Level Security and tenant filtering implementation, 5) Connection string handling and context factory setup.",
+      "reasoning": "Implementing the DbContext is complex due to the need to configure multiple entities, relationships, PostgreSQL-specific features, and multi-tenancy with Row-Level Security. This requires deep knowledge of Entity Framework Core and database design patterns."
+    },
+    {
+      "taskId": 10,
+      "taskTitle": "Implement Core Entity Models",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Core Entity Models' task into subtasks covering: 1) Base entity classes and common properties, 2) Domain-specific entity models (DataSource, Document, Entity, etc.), 3) Relationship configuration between entities, 4) Validation attributes and business rules implementation.",
+      "reasoning": "Creating entity models requires careful design of the domain model with proper relationships and validation rules. The complexity is high due to the number of entities (11) and the need to ensure they correctly represent the business domain with appropriate relationships."
+    },
+    {
+      "taskId": 11,
+      "taskTitle": "Implement ASP.NET Identity with TenantId Extensions",
+      "complexityScore": 8,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement ASP.NET Identity with TenantId Extensions' task into subtasks covering: 1) Custom IdentityUser with TenantId property, 2) Extended UserManager and SignInManager for tenant operations, 3) Custom UserStore with tenant filtering, 4) Role and claim types for RBAC with tenant awareness.",
+      "reasoning": "Extending ASP.NET Identity for multi-tenancy is complex as it requires modifying the core identity system. The complexity is high due to the need to ensure tenant boundaries are respected throughout all identity operations while maintaining security and performance."
+    },
+    {
+      "taskId": 12,
+      "taskTitle": "Implement Repository Pattern",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Repository Pattern' task into subtasks covering: 1) Generic repository interface and implementation, 2) Entity-specific repository interfaces and implementations, 3) Tenant filtering and transaction support, 4) Bulk operation methods for ingestion pipelines.",
+      "reasoning": "Implementing the repository pattern requires designing a flexible abstraction over data access. The complexity is high due to the need to support multiple entity types, ensure tenant filtering, implement transaction support, and optimize for bulk operations."
+    },
+    {
+      "taskId": 13,
+      "taskTitle": "Implement Database Migration System",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Database Migration System' task into subtasks covering: 1) EF Core migrations configuration and initial migration, 2) Migration runner for application startup and seed data, 3) Migration verification tests and documentation.",
+      "reasoning": "Setting up database migrations involves configuring EF Core migrations and ensuring they can be applied reliably. The complexity is moderate due to the need to handle initial schema creation, seed data, and ensure migrations can be applied automatically during deployment."
+    },
+    {
+      "taskId": 14,
+      "taskTitle": "Implement Data Source Connector Interface",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Data Source Connector Interface' task into subtasks covering: 1) IDataSourceConnector interface definition with core methods, 2) Connector lifecycle events and registration system, 3) Connector factory implementation, 4) Connector metadata attributes and documentation.",
+      "reasoning": "Designing a flexible connector interface requires careful consideration of various data source types. The complexity is high due to the need to create an abstraction that can support diverse connectors while maintaining a consistent interface for configuration, validation, extraction, and transformation."
+    },
+    {
+      "taskId": 15,
+      "taskTitle": "Implement PostgreSQL Connector",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement PostgreSQL Connector' task into subtasks covering: 1) Connection handling and validation, 2) Schema discovery and query execution, 3) Data transformation pipeline, 4) Incremental update detection and error handling.",
+      "reasoning": "Implementing a PostgreSQL connector involves database-specific knowledge and complex data handling. The complexity is high due to the need to handle connection management, schema discovery, query execution, data transformation, and incremental updates while ensuring security and error handling."
+    },
+    {
+      "taskId": 16,
+      "taskTitle": "Implement MSSQL Connector",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement MSSQL Connector' task into subtasks covering: 1) Connection handling and validation, 2) Schema discovery and query execution, 3) Data transformation pipeline, 4) Incremental update detection and error handling.",
+      "reasoning": "Implementing an MSSQL connector involves database-specific knowledge and complex data handling. The complexity is high due to the need to handle connection management, schema discovery, query execution, data transformation, and incremental updates while ensuring security and error handling."
+    },
+    {
+      "taskId": 17,
+      "taskTitle": "Implement MySQL Connector",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement MySQL Connector' task into subtasks covering: 1) Connection handling and validation, 2) Schema discovery and query execution, 3) Data transformation pipeline, 4) Incremental update detection and error handling.",
+      "reasoning": "Implementing a MySQL connector involves database-specific knowledge and complex data handling. The complexity is high due to the need to handle connection management, schema discovery, query execution, data transformation, and incremental updates while ensuring security and error handling."
+    },
+    {
+      "taskId": 18,
+      "taskTitle": "Implement File Repository Connector",
+      "complexityScore": 8,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the 'Implement File Repository Connector' task into subtasks covering: 1) File system access and validation, 2) File discovery and filtering, 3) Content extraction for different file types (TXT, Markdown), 4) Content extraction for complex file types (PDF, DOCX), 5) Metadata extraction and incremental update detection.",
+      "reasoning": "Implementing a file repository connector is complex due to the need to support multiple file formats with different extraction methods. The complexity is high as it requires handling various file types (TXT, Markdown, PDF, DOCX), extracting content and metadata, and detecting incremental updates based on file modifications."
+    },
+    {
+      "taskId": 19,
+      "taskTitle": "Implement Credential Management System",
+      "complexityScore": 8,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Credential Management System' task into subtasks covering: 1) Encryption/decryption utilities using AES-256, 2) Secure storage in database and access control, 3) Credential validation and rotation system, 4) Audit logging for credential operations.",
+      "reasoning": "Implementing a credential management system is security-critical and complex. The complexity is high due to the need to implement secure encryption, storage, access control, rotation, and audit logging while ensuring credentials are never exposed in plain text."
+    },
+    {
+      "taskId": 20,
+      "taskTitle": "Implement Ingestion Job Scheduler",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Ingestion Job Scheduler' task into subtasks covering: 1) Hangfire integration and job definition model, 2) Schedule configuration and execution tracking, 3) Retry logic and notification system, 4) Tenant boundary enforcement and manual trigger capability.",
+      "reasoning": "Implementing a job scheduler involves background processing and complex state management. The complexity is high due to the need to handle scheduling, execution tracking, retries, notifications, and tenant isolation while ensuring reliability and performance."
+    },
+    {
+      "taskId": 21,
+      "taskTitle": "Implement Knowledge Graph Creation Pipeline",
+      "complexityScore": 9,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the 'Implement Knowledge Graph Creation Pipeline' task into subtasks covering: 1) Entity extraction pipeline, 2) Relation mapping and triple-store implementation, 3) Hierarchical taxonomy with inheritance, 4) Versioning for temporal knowledge evolution, 5) Provenance tracking to source documents.",
+      "reasoning": "Building a knowledge graph pipeline is highly complex as it involves advanced NLP and graph theory. The complexity is very high due to the need to extract entities, map relations, build a hierarchical taxonomy, implement versioning, and track provenance while ensuring tenant isolation and performance."
+    },
+    {
+      "taskId": 22,
+      "taskTitle": "Implement Vector Embedding Generation",
+      "complexityScore": 8,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Vector Embedding Generation' task into subtasks covering: 1) Text chunking logic and optimization, 2) Embedding generation using Ollama, 3) Batch processing and performance optimization, 4) Embedding storage in Qdrant with tenant isolation.",
+      "reasoning": "Implementing vector embedding generation involves machine learning and optimization. The complexity is high due to the need to chunk text appropriately, generate embeddings efficiently, process in batches, and store in a vector database while ensuring tenant isolation and performance with large datasets."
+    },
+    {
+      "taskId": 23,
+      "taskTitle": "Implement Qdrant Client for Vector Similarity Searches",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Qdrant Client for Vector Similarity Searches' task into subtasks covering: 1) Collection management and connection pooling, 2) Vector search operations with filtering, 3) Tenant namespace sharding implementation, 4) Error handling and retry logic.",
+      "reasoning": "Implementing a vector database client requires specialized knowledge. The complexity is high due to the need to manage collections, implement efficient vector searches with filtering, ensure tenant isolation through namespace sharding, and handle errors and retries while optimizing for performance."
+    },
+    {
+      "taskId": 24,
+      "taskTitle": "Implement Incremental Knowledge Graph Updates",
+      "complexityScore": 9,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the 'Implement Incremental Knowledge Graph Updates' task into subtasks covering: 1) Change detection for different data sources, 2) Differential update pipeline, 3) Entity merging and conflict resolution, 4) Relation updating logic, 5) Vector embedding updates with transaction support.",
+      "reasoning": "Implementing incremental updates to a knowledge graph is extremely complex. The complexity is very high due to the need to detect changes, update only affected parts of the graph, merge entities, resolve conflicts, update relations and embeddings, all while maintaining consistency and performance."
+    },
+    {
+      "taskId": 25,
+      "taskTitle": "Implement Ollama Client for LLM Integration",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Ollama Client for LLM Integration' task into subtasks covering: 1) Model management and inference operations, 2) Streaming response and parameter validation, 3) Model fallback logic and error handling.",
+      "reasoning": "Implementing an LLM client involves working with AI inference APIs. The complexity is moderate to high due to the need to manage models, handle streaming responses, implement fallback logic, and ensure reliable performance while optimizing for different models."
+    },
+    {
+      "taskId": 26,
+      "taskTitle": "Implement AI Reasoning and Intent Detection",
+      "complexityScore": 8,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement AI Reasoning and Intent Detection' task into subtasks covering: 1) Intent classification model and detection, 2) Reasoning pipeline and context management, 3) Confidence scoring and fallback strategies, 4) Logging and performance optimization.",
+      "reasoning": "Implementing AI reasoning and intent detection involves complex NLP techniques. The complexity is high due to the need to classify intents accurately, implement reasoning logic, manage context, score confidence, and handle fallbacks while ensuring performance and accuracy."
+    },
+    {
+      "taskId": 27,
+      "taskTitle": "Implement Safe SQL Generator",
+      "complexityScore": 9,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the 'Implement Safe SQL Generator' task into subtasks covering: 1) SQL template system design, 2) Parameter extraction and validation, 3) Tenant scoping enforcement, 4) SQL validation rules and security checks, 5) Query optimization and logging.",
+      "reasoning": "Implementing a safe SQL generator from natural language is extremely complex and security-critical. The complexity is very high due to the need to generate correct SQL, validate parameters, enforce tenant scoping, prevent SQL injection, and optimize queries while ensuring security and performance."
+    },
+    {
+      "taskId": 28,
+      "taskTitle": "Implement Prompt Template System",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Prompt Template System' task into subtasks covering: 1) Template definition model and rendering, 2) Template versioning and validation, 3) Tenant-specific template overrides and logging.",
+      "reasoning": "Implementing a prompt template system involves template management and rendering. The complexity is moderate due to the need to define templates, handle variable substitution, manage versions, validate templates, and support tenant-specific overrides while ensuring performance."
+    },
+    {
+      "taskId": 29,
+      "taskTitle": "Implement Semantic Routing for Specialized Queries",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Semantic Routing for Specialized Queries' task into subtasks covering: 1) Domain handler registration system, 2) Routing decision logic and confidence scoring, 3) Fallback strategies and context-aware routing, 4) Logging and performance optimization.",
+      "reasoning": "Implementing semantic routing involves complex decision-making logic. The complexity is high due to the need to register domain handlers, make accurate routing decisions, score confidence, implement fallbacks, and consider context while ensuring performance and accuracy."
+    },
+    {
+      "taskId": 30,
+      "taskTitle": "Implement Output Verification Against Safety Rules",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Output Verification Against Safety Rules' task into subtasks covering: 1) Safety rule definition model, 2) Rule checking logic and content filtering, 3) Violation handling strategies, 4) Tenant-specific safety rules and logging.",
+      "reasoning": "Implementing output verification is complex and safety-critical. The complexity is high due to the need to define safety rules, check outputs against these rules, filter content, handle violations, and support tenant-specific rules while ensuring all AI outputs are safe and appropriate."
+    },
+    {
+      "taskId": 31,
+      "taskTitle": "Implement Persistent Conversation Memory",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Persistent Conversation Memory' task into subtasks covering: 1) Conversation storage using EF Core with JSON columns, 2) Session management and user context tracking, 3) Conversation retrieval methods, 4) Memory pruning, summarization, and tenant isolation.",
+      "reasoning": "Implementing conversation memory involves complex state management. The complexity is high due to the need to store conversations efficiently, manage sessions, track context, retrieve conversations, prune and summarize memory, and ensure tenant isolation while optimizing for performance with long conversations."
+    },
+    {
+      "taskId": 32,
+      "taskTitle": "Implement Vector-Based Semantic Search for Conversation History",
+      "complexityScore": 8,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Vector-Based Semantic Search for Conversation History' task into subtasks covering: 1) Embedding generation for conversation turns, 2) Vector storage in Qdrant, 3) Semantic search operations and relevance scoring, 4) Filtering by metadata and tenant isolation.",
+      "reasoning": "Implementing semantic search for conversations involves vector embeddings and search algorithms. The complexity is high due to the need to generate embeddings for conversations, store them efficiently, perform semantic searches, score relevance, and ensure tenant isolation while optimizing for search accuracy and performance."
+    },
+    {
+      "taskId": 33,
+      "taskTitle": "Implement Conversation Branching and Thread Management",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Conversation Branching and Thread Management' task into subtasks covering: 1) Thread model with branching support, 2) Thread creation and switching operations, 3) Branch merging and visualization, 4) Thread archiving and tenant isolation.",
+      "reasoning": "Implementing conversation branching involves complex data structures. The complexity is high due to the need to model threads with branches, handle creation and switching, merge branches, visualize threads, archive old threads, and ensure tenant isolation while providing an intuitive user experience."
+    },
+    {
+      "taskId": 34,
+      "taskTitle": "Implement REST API Layer with OAuth2 and JWT",
+      "complexityScore": 8,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the 'Implement REST API Layer with OAuth2 and JWT' task into subtasks covering: 1) API controllers for all resources, 2) OAuth2 authentication with JWT, 3) Authorization with role-based access control, 4) Tenant scoping enforcement, 5) API versioning, rate limiting, and logging.",
+      "reasoning": "Implementing a REST API with authentication and authorization is complex and security-critical. The complexity is high due to the need to create controllers for all resources, implement OAuth2 and JWT, set up RBAC, enforce tenant scoping, and handle versioning, rate limiting, and logging while ensuring security and performance."
+    },
+    {
+      "taskId": 35,
+      "taskTitle": "Implement CQRS Pattern with MediatR",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement CQRS Pattern with MediatR' task into subtasks covering: 1) MediatR setup and command/query models, 2) Command and query handlers, 3) Pipeline behaviors for validation and logging, 4) Transaction and tenant scoping pipeline behaviors.",
+      "reasoning": "Implementing CQRS with MediatR involves architectural patterns and middleware. The complexity is high due to the need to separate commands and queries, implement handlers, set up pipeline behaviors for validation, logging, transactions, and tenant scoping while ensuring clean separation and maintainability."
+    },
+    {
+      "taskId": 36,
+      "taskTitle": "Implement Swagger and OpenAPI Documentation",
+      "complexityScore": 5,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Swagger and OpenAPI Documentation' task into subtasks covering: 1) Swagger setup and XML comments, 2) Example requests and responses, 3) Authentication documentation and API versioning documentation.",
+      "reasoning": "Implementing API documentation is moderately complex. The complexity is medium due to the need to set up Swagger, document endpoints with XML comments, provide examples, and document authentication and versioning while ensuring comprehensive and accurate documentation."
+    },
+    {
+      "taskId": 37,
+      "taskTitle": "Implement Health Check Endpoints",
+      "complexityScore": 5,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Health Check Endpoints' task into subtasks covering: 1) Health check setup for database and Qdrant, 2) Health checks for Ollama and Redis, 3) Custom health check UI and logging.",
+      "reasoning": "Implementing health checks is moderately complex. The complexity is medium due to the need to create checks for multiple components (database, Qdrant, Ollama, Redis), set up a custom UI, and add logging while ensuring comprehensive system health monitoring."
+    },
+    {
+      "taskId": 38,
+      "taskTitle": "Implement Background Task Queue",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Background Task Queue' task into subtasks covering: 1) Task queue and processing service, 2) Task scheduling, status tracking, and cancellation, 3) Task prioritization and logging.",
+      "reasoning": "Implementing a background task queue involves concurrency and state management. The complexity is moderate to high due to the need to queue tasks, process them asynchronously, track status, support cancellation, prioritize tasks, and log execution while ensuring reliable processing."
+    },
+    {
+      "taskId": 39,
+      "taskTitle": "Set Up React and TypeScript SPA Project",
+      "complexityScore": 5,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Set Up React and TypeScript SPA Project' task into subtasks covering: 1) React project setup with TypeScript and Tailwind CSS, 2) shadcn/ui components and project structure, 3) Build system, linting, formatting, and testing framework.",
+      "reasoning": "Setting up a React SPA project is moderately complex. The complexity is medium due to the need to configure React with TypeScript, set up Tailwind CSS and shadcn/ui, structure the project, and configure the build system, linting, formatting, and testing while ensuring a clean and maintainable structure."
+    },
+    {
+      "taskId": 40,
+      "taskTitle": "Implement Authentication and Authorization in UI",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Authentication and Authorization in UI' task into subtasks covering: 1) Authentication service and login/logout components, 2) JWT storage and refresh, 3) Protected route components and RBAC, 4) Tenant selection and authentication state management.",
+      "reasoning": "Implementing authentication in the UI is complex and security-critical. The complexity is high due to the need to create authentication services, handle JWT tokens and refresh, implement protected routes, set up RBAC, support tenant selection, and manage authentication state while ensuring security and user-friendliness."
+    },
+    {
+      "taskId": 41,
+      "taskTitle": "Implement Chat Interface",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Chat Interface' task into subtasks covering: 1) Chat container and message list components, 2) Message input and rendering with markdown support, 3) Typing indicator and message actions, 4) Accessibility features and responsive design.",
+      "reasoning": "Implementing a chat interface involves complex UI components and real-time interactions. The complexity is high due to the need to create message components, handle markdown rendering, implement typing indicators and message actions, and ensure accessibility and responsiveness while providing an intuitive user experience."
+    },
+    {
+      "taskId": 42,
+      "taskTitle": "Implement Recharts Visualization Components",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Recharts Visualization Components' task into subtasks covering: 1) Chart container and bar/line chart components, 2) Pie chart and scatter plot components, 3) Data table and chart customization options.",
+      "reasoning": "Implementing data visualization components is moderately complex. The complexity is medium to high due to the need to create various chart types (bar, line, pie, scatter), implement a data table, and add customization options while ensuring responsive and accessible visualizations."
+    },
+    {
+      "taskId": 43,
+      "taskTitle": "Implement State Management",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement State Management' task into subtasks covering: 1) State management setup with React Context or Redux, 2) State slices and action creators, 3) Selectors and middleware for side effects, 4) State persistence and server synchronization.",
+      "reasoning": "Implementing state management is complex and architectural. The complexity is high due to the need to set up a state management system, create state slices and actions, implement selectors and middleware, and handle persistence and synchronization while ensuring clean and maintainable state management."
+    },
+    {
+      "taskId": 44,
+      "taskTitle": "Implement API Client",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement API Client' task into subtasks covering: 1) API client setup with request/response interceptors, 2) Request cancellation and retry logic, 3) Request queuing and logging.",
+      "reasoning": "Implementing an API client involves networking and error handling. The complexity is moderate to high due to the need to set up interceptors for authentication and error handling, implement cancellation and retry logic, and handle request queuing and logging while ensuring reliable and efficient API communication."
+    },
+    {
+      "taskId": 45,
+      "taskTitle": "Implement Conversation History UI",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Conversation History UI' task into subtasks covering: 1) Conversation list and detail components, 2) Conversation search and filtering, 3) Conversation export, deletion, and sharing.",
+      "reasoning": "Implementing a conversation history UI involves complex UI components and data management. The complexity is moderate to high due to the need to create list and detail views, implement search and filtering, and handle export, deletion, and sharing while ensuring an intuitive and efficient history management experience."
+    },
+    {
+      "taskId": 46,
+      "taskTitle": "Implement Accessibility Features",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Accessibility Features' task into subtasks covering: 1) Keyboard navigation and screen reader support, 2) Focus management and ARIA attributes, 3) High contrast mode and text scaling, 4) Color blind friendly palettes and testing.",
+      "reasoning": "Implementing accessibility features is complex and requires specialized knowledge. The complexity is high due to the need to support keyboard navigation, screen readers, focus management, ARIA attributes, high contrast mode, text scaling, and color blind friendly palettes while ensuring comprehensive WCAG 2.1 AA compliance."
+    },
+    {
+      "taskId": 47,
+      "taskTitle": "Implement Progressive Loading and Lazy Component Rendering",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Progressive Loading and Lazy Component Rendering' task into subtasks covering: 1) Code splitting and lazy loading for routes, 2) Virtualized lists and skeleton loaders, 3) Progressive image loading and prefetching, 4) Performance monitoring and optimization.",
+      "reasoning": "Implementing progressive loading involves advanced frontend optimization techniques. The complexity is high due to the need to implement code splitting, lazy loading, virtualized lists, skeleton loaders, progressive image loading, prefetching, and performance monitoring while ensuring optimal user experience with large datasets."
+    },
+    {
+      "taskId": 48,
+      "taskTitle": "Implement Data Source Configuration UI",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Data Source Configuration UI' task into subtasks covering: 1) Data source list and form components, 2) Connection string builder and testing, 3) Schedule configuration and validation rules, 4) Credential management UI and security.",
+      "reasoning": "Implementing a data source configuration UI involves complex forms and validation. The complexity is high due to the need to create list and form components, build connection strings, test connections, configure schedules, implement validation, and manage credentials securely while ensuring an intuitive and secure configuration experience."
+    },
+    {
+      "taskId": 49,
+      "taskTitle": "Implement Ingestion Monitoring Dashboard",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Ingestion Monitoring Dashboard' task into subtasks covering: 1) Ingestion status list and detail view, 2) Status indicators and progress tracking, 3) Error reporting and manual trigger controls, 4) Historical ingestion logs and visualization.",
+      "reasoning": "Implementing an ingestion monitoring dashboard involves complex UI components and data visualization. The complexity is high due to the need to display ingestion status, track progress, report errors, provide manual controls, and show historical logs while ensuring comprehensive ingestion monitoring."
+    },
+    {
+      "taskId": 50,
+      "taskTitle": "Implement User and Tenant Management UI",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement User and Tenant Management UI' task into subtasks covering: 1) User list and form components, 2) Tenant list and form components, 3) Role assignment UI and user activation/deactivation, 4) Tenant configuration and security.",
+      "reasoning": "Implementing user and tenant management UI involves complex forms and security considerations. The complexity is high due to the need to create user and tenant management interfaces, handle role assignments, manage activation states, and configure tenants while ensuring intuitive and secure management."
+    },
+    {
+      "taskId": 51,
+      "taskTitle": "Implement System Performance Monitoring Dashboard",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement System Performance Monitoring Dashboard' task into subtasks covering: 1) Performance metrics component and resource usage charts, 2) Alert indicators and historical performance data, 3) Component health status and threshold configuration, 4) Export functionality and visualization.",
+      "reasoning": "Implementing a performance monitoring dashboard involves complex data visualization and analysis. The complexity is high due to the need to display performance metrics, show resource usage, indicate alerts, present historical data, monitor component health, configure thresholds, and support export while ensuring comprehensive performance monitoring."
+    },
+    {
+      "taskId": 52,
+      "taskTitle": "Implement User Activity and Security Audit Trails",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement User Activity and Security Audit Trails' task into subtasks covering: 1) Audit log list and detail components, 2) Filtering, search, and export functionality, 3) Visualization of activity patterns, 4) Anomaly highlighting and user activity summary.",
+      "reasoning": "Implementing audit trails involves complex data visualization and security analysis. The complexity is high due to the need to display audit logs, provide filtering and search, visualize activity patterns, highlight anomalies, and summarize user activity while ensuring comprehensive audit trail visualization."
+    },
+    {
+      "taskId": 53,
+      "taskTitle": "Implement Configuration Version Control and Rollback",
+      "complexityScore": 8,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Configuration Version Control and Rollback' task into subtasks covering: 1) Version history component and comparison view, 2) Rollback functionality and version tagging, 3) Change summary and approval workflow, 4) Notification system and security.",
+      "reasoning": "Implementing configuration version control is complex and involves state management. The complexity is high due to the need to track version history, compare versions, support rollbacks, tag versions, summarize changes, implement approval workflows, and send notifications while ensuring safe and controlled configuration management."
+    },
+    {
+      "taskId": 54,
+      "taskTitle": "Implement Serilog Logging Configuration",
+      "complexityScore": 5,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Serilog Logging Configuration' task into subtasks covering: 1) Serilog configuration and log enrichers, 2) Sink configuration for Seq and log level configuration, 3) Structured logging templates and correlation ID tracking.",
+      "reasoning": "Implementing logging configuration is moderately complex. The complexity is medium due to the need to configure Serilog, set up enrichers, configure sinks and log levels, define structured templates, and implement correlation tracking while ensuring comprehensive and structured logging."
+    },
+    {
+      "taskId": 55,
+      "taskTitle": "Implement Metrics Collection Pipeline",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Metrics Collection Pipeline' task into subtasks covering: 1) Metrics collector and performance counter integration, 2) Custom metrics and aggregation, 3) Metrics storage and querying for visualization.",
+      "reasoning": "Implementing a metrics collection pipeline involves performance monitoring and data analysis. The complexity is moderate to high due to the need to collect metrics, integrate with performance counters, define custom metrics, aggregate data, store metrics, and prepare for visualization while ensuring comprehensive performance monitoring."
+    },
+    {
+      "taskId": 56,
+      "taskTitle": "Implement Health Check Dashboard",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Health Check Dashboard' task into subtasks covering: 1) Health check UI and component status indicators, 2) Historical health data and dependency visualization, 3) Alert indicators, threshold configuration, and notification system.",
+      "reasoning": "Implementing a health check dashboard involves UI components and data visualization. The complexity is moderate to high due to the need to create a health check UI, display component status, show historical data, visualize dependencies, indicate alerts, configure thresholds, and send notifications while ensuring comprehensive health monitoring."
+    },
+    {
+      "taskId": 57,
+      "taskTitle": "Implement Alert Rules and Notification System",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Alert Rules and Notification System' task into subtasks covering: 1) Alert rule engine and definition, 2) Notification sender for email and webhooks, 3) In-app notifications and alert acknowledgment, 4) Escalation rules and management.",
+      "reasoning": "Implementing an alert system involves complex rule processing and notification delivery. The complexity is high due to the need to define and evaluate alert rules, send notifications through multiple channels, manage in-app alerts, handle acknowledgments, and implement escalation while ensuring timely and appropriate alerting."
+    },
+    {
+      "taskId": 58,
+      "taskTitle": "Implement Trace Correlation Across Services",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Trace Correlation Across Services' task into subtasks covering: 1) Correlation ID generation and context propagation, 2) Trace collection and visualization, 3) Trace search and filtering, 4) Performance analysis and anomaly detection.",
+      "reasoning": "Implementing trace correlation involves distributed systems monitoring. The complexity is high due to the need to generate and propagate correlation IDs, collect and visualize traces, search and filter traces, and analyze performance and anomalies while ensuring comprehensive request tracing across services."
+    },
+    {
+      "taskId": 59,
+      "taskTitle": "Implement Log Export and Retention Policy",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Log Export and Retention Policy' task into subtasks covering: 1) Log export functionality and formats, 2) Retention policy engine with archiving and purging, 3) Compliance reporting and audit trail with scheduling.",
+      "reasoning": "Implementing log management involves data lifecycle management. The complexity is moderate to high due to the need to export logs, define and enforce retention policies, archive and purge logs, generate compliance reports, maintain audit trails, and schedule maintenance tasks while ensuring compliant log management."
+    },
+    {
+      "taskId": 60,
+      "taskTitle": "Set Up Unit Test Framework",
+      "complexityScore": 5,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Set Up Unit Test Framework' task into subtasks covering: 1) xUnit test framework setup and project structure, 2) Test utilities and mock framework integration, 3) Test data generators and code coverage reporting.",
+      "reasoning": "Setting up a unit test framework is moderately complex. The complexity is medium due to the need to configure xUnit, structure the test project, create utilities, integrate a mock framework, generate test data, and set up code coverage reporting while ensuring comprehensive test coverage."
+    },
+    {
+      "taskId": 61,
+      "taskTitle": "Implement Integration Test Framework",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Integration Test Framework' task into subtasks covering: 1) Integration test framework and container setup, 2) Database initialization and test data seeding, 3) API client for testing and test cleanup.",
+      "reasoning": "Implementing an integration test framework is moderately complex. The complexity is medium to high due to the need to set up integration tests, configure test containers, initialize databases, seed test data, create API clients for testing, and handle cleanup while ensuring comprehensive integration testing."
+    },
+    {
+      "taskId": 62,
+      "taskTitle": "Set Up Playwright End-to-End Test Suite",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Set Up Playwright End-to-End Test Suite' task into subtasks covering: 1) Playwright test framework setup and project structure, 2) Page object models and test utilities, 3) Visual regression testing and reporting.",
+      "reasoning": "Setting up end-to-end testing involves browser automation. The complexity is moderate to high due to the need to configure Playwright, structure the test project, create page object models, implement utilities, set up visual regression testing, and configure reporting while ensuring comprehensive end-to-end testing."
+    },
+    {
+      "taskId": 63,
+      "taskTitle": "Implement Mock Data Generators",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Mock Data Generators' task into subtasks covering: 1) Entity factory pattern and realistic data generators, 2) Relationship building and customization options, 3) Bulk generation utilities and persistence helpers.",
+      "reasoning": "Implementing mock data generators involves data modeling and generation. The complexity is moderate to high due to the need to create entity factories, generate realistic data, build relationships, support customization, generate data in bulk, and handle persistence and cleanup while ensuring realistic and comprehensive test data."
+    },
+    {
+      "taskId": 64,
+      "taskTitle": "Implement Test Fixtures for Common Scenarios",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Test Fixtures for Common Scenarios' task into subtasks covering: 1) Base test fixture and authenticated user fixture, 2) Database fixture and API fixture, 3) UI fixture and multi-tenant fixture.",
+      "reasoning": "Implementing test fixtures involves test infrastructure design. The complexity is moderate to high due to the need to create base fixtures, authenticated user fixtures, database fixtures, API fixtures, UI fixtures, and multi-tenant fixtures while ensuring consistent and reusable test setup."
+    },
+    {
+      "taskId": 65,
+      "taskTitle": "Implement Performance Benchmark Tests",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Performance Benchmark Tests' task into subtasks covering: 1) Benchmark framework and database operation benchmarks, 2) API request and UI rendering benchmarks, 3) Ingestion pipeline and search benchmarks, 4) Reporting and visualization.",
+      "reasoning": "Implementing performance benchmarks involves measurement and analysis. The complexity is high due to the need to set up a benchmark framework, test database operations, API requests, UI rendering, ingestion pipelines, and search operations, and report and visualize results while ensuring comprehensive performance testing."
+    },
+    {
+      "taskId": 66,
+      "taskTitle": "Implement Security Vulnerability Testing",
+      "complexityScore": 8,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Security Vulnerability Testing' task into subtasks covering: 1) Security test framework and authentication bypass tests, 2) Authorization and SQL injection tests, 3) XSS vulnerability and CSRF tests, 4) Sensitive data exposure tests and reporting.",
+      "reasoning": "Implementing security testing is complex and critical. The complexity is high due to the need to set up a security test framework, test for authentication bypasses, authorization issues, SQL injection, XSS vulnerabilities, CSRF, and sensitive data exposure while ensuring comprehensive security testing and compliance."
+    },
+    {
+      "taskId": 67,
+      "taskTitle": "Implement Database Migration Testing",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Database Migration Testing' task into subtasks covering: 1) Migration test framework and up/down migration tests, 2) Data preservation and performance impact tests, 3) Idempotency and version skipping tests, 4) Data validation tests and reporting.",
+      "reasoning": "Implementing migration testing involves database schema management. The complexity is high due to the need to test migrations in both directions, verify data preservation, measure performance impact, test idempotency and version skipping, and validate data while ensuring reliable database migrations."
+    },
+    {
+      "taskId": 68,
+      "taskTitle": "Implement Confluence Connector",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Confluence Connector' task into subtasks covering: 1) API client and authentication, 2) Page and space discovery, 3) Content extraction and transformation, 4) Incremental update detection and error handling.",
+      "reasoning": "Implementing a Confluence connector involves API integration and content processing. The complexity is high due to the need to create an API client, handle authentication, discover pages and spaces, extract and transform content, detect incremental updates, and handle errors while ensuring secure credential management."
+    },
+    {
+      "taskId": 69,
+      "taskTitle": "Implement JIRA Connector",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement JIRA Connector' task into subtasks covering: 1) API client and authentication, 2) Project and issue discovery, 3) Content extraction and transformation, 4) Incremental update detection and error handling.",
+      "reasoning": "Implementing a JIRA connector involves API integration and content processing. The complexity is high due to the need to create an API client, handle authentication, discover projects and issues, extract and transform content, detect incremental updates, and handle errors while ensuring secure credential management."
+    },
+    {
+      "taskId": 70,
+      "taskTitle": "Implement Git Repository Connector",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Git Repository Connector' task into subtasks covering: 1) Git client and authentication, 2) Repository and branch discovery, 3) Content extraction and transformation, 4) Incremental update detection and error handling.",
+      "reasoning": "Implementing a Git connector involves version control system integration. The complexity is high due to the need to create a Git client, handle authentication with SSH keys and tokens, discover repositories and branches, extract and transform content, detect incremental updates, and handle errors while ensuring secure credential management."
+    },
+    {
+      "taskId": 71,
+      "taskTitle": "Implement SharePoint Connector",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement SharePoint Connector' task into subtasks covering: 1) API client and OAuth authentication, 2) Site and document discovery, 3) Content extraction and transformation, 4) Incremental update detection and error handling.",
+      "reasoning": "Implementing a SharePoint connector involves Microsoft API integration. The complexity is high due to the need to create an API client, handle OAuth authentication, discover sites and documents, extract and transform content, detect incremental updates, and handle errors while ensuring secure credential management."
+    },
+    {
+      "taskId": 72,
+      "taskTitle": "Implement Google Drive Connector",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Google Drive Connector' task into subtasks covering: 1) API client and OAuth authentication, 2) Folder and file discovery, 3) Content extraction and transformation, 4) Incremental update detection and error handling.",
+      "reasoning": "Implementing a Google Drive connector involves Google API integration. The complexity is high due to the need to create an API client, handle OAuth authentication, discover folders and files, extract and transform content, detect incremental updates, and handle errors while ensuring secure credential management."
+    },
+    {
+      "taskId": 73,
+      "taskTitle": "Implement Dropbox Connector",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Dropbox Connector' task into subtasks covering: 1) API client and OAuth authentication, 2) Folder and file discovery, 3) Content extraction and transformation, 4) Incremental update detection and error handling.",
+      "reasoning": "Implementing a Dropbox connector involves cloud storage API integration. The complexity is high due to the need to create an API client, handle OAuth authentication, discover folders and files, extract and transform content, detect incremental updates, and handle errors while ensuring secure credential management."
+    },
+    {
+      "taskId": 74,
+      "taskTitle": "Implement Data Lineage Graph",
+      "complexityScore": 8,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Data Lineage Graph' task into subtasks covering: 1) Lineage graph model and tracker, 2) Lineage capture during ingestion, 3) Lineage visualization and query API, 4) Lineage export and analysis.",
+      "reasoning": "Implementing data lineage involves graph modeling and visualization. The complexity is high due to the need to model lineage graphs, track data provenance during ingestion, visualize lineage, query lineage data, export lineage information, and analyze lineage while ensuring comprehensive data provenance tracking."
+    },
+    {
+      "taskId": 75,
+      "taskTitle": "Implement Explainable AI Query Tracing",
+      "complexityScore": 8,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Explainable AI Query Tracing' task into subtasks covering: 1) Query tracer and explanation generation, 2) Step-by-step reasoning capture, 3) Confidence scoring and visualization, 4) Alternative answer generation and user feedback collection.",
+      "reasoning": "Implementing explainable AI involves complex tracing and explanation. The complexity is high due to the need to trace queries, generate explanations, capture reasoning steps, score confidence, visualize the reasoning process, generate alternative answers, and collect user feedback while ensuring transparent and explainable AI processing."
+    },
+    {
+      "taskId": 76,
+      "taskTitle": "Implement Tenant-Specific LLM Prompt Templates",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Tenant-Specific LLM Prompt Templates' task into subtasks covering: 1) Template manager extension for tenant-specific templates, 2) Template inheritance hierarchy and override resolution, 3) Template validation and versioning, 4) Template management UI and testing.",
+      "reasoning": "Implementing tenant-specific templates involves template management and inheritance. The complexity is high due to the need to extend the template manager, create an inheritance hierarchy, resolve overrides, validate templates, manage versions, create a management UI, and test templates while ensuring flexible and tenant-specific prompt customization."
+    },
+    {
+      "taskId": 77,
+      "taskTitle": "Implement Enhanced System Metrics Dashboard",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Enhanced System Metrics Dashboard' task into subtasks covering: 1) Enhanced metrics visualization and historical trend analysis, 2) Anomaly detection and predictive resource usage, 3) Component correlation analysis, 4) Custom dashboard creation and metrics export.",
+      "reasoning": "Implementing an enhanced metrics dashboard involves advanced visualization and analysis. The complexity is high due to the need to visualize metrics, analyze trends, detect anomalies, predict resource usage, analyze component correlations, create custom dashboards, and export metrics while ensuring comprehensive system monitoring."
+    },
+    {
+      "taskId": 78,
+      "taskTitle": "Implement Workflow Automation Engine",
+      "complexityScore": 8,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Workflow Automation Engine' task into subtasks covering: 1) Workflow engine and definition model, 2) Trigger system and action execution, 3) Condition evaluation and error handling, 4) Workflow monitoring and management.",
+      "reasoning": "Implementing a workflow engine involves complex state machines and event processing. The complexity is high due to the need to define workflows, implement triggers, execute actions, evaluate conditions, handle errors and recovery, and monitor workflows while ensuring flexible and reliable workflow automation."
+    },
+    {
+      "taskId": 79,
+      "taskTitle": "Create Helm Charts for Kubernetes Deployment",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Create Helm Charts for Kubernetes Deployment' task into subtasks covering: 1) Helm chart structure and templates for components, 2) Values files for different environments, 3) Deployment and service configuration, 4) Ingress and volume configuration.",
+      "reasoning": "Creating Helm charts involves Kubernetes deployment configuration. The complexity is high due to the need to structure charts, create templates for all components, define values for different environments, and configure deployments, services, ingress, and volumes while ensuring flexible and reliable Kubernetes deployment."
+    },
+    {
+      "taskId": 80,
+      "taskTitle": "Implement Mobile-Optimized Responsive Design",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Mobile-Optimized Responsive Design' task into subtasks covering: 1) Mobile-first responsive design and touch-friendly components, 2) Mobile navigation and offline support, 3) Mobile-optimized chat interface and visualizations, 4) Progressive web app features and testing.",
+      "reasoning": "Implementing mobile optimization involves responsive design and touch interactions. The complexity is high due to the need to create mobile-first designs, implement touch-friendly components, optimize navigation, add offline support, adapt the chat interface and visualizations for mobile, and add PWA features while ensuring excellent mobile user experience."
+    },
+    {
+      "taskId": 81,
+      "taskTitle": "Implement A/B Testing for Prompt Engineering",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement A/B Testing for Prompt Engineering' task into subtasks covering: 1) A/B test manager and test definition model, 2) Variant assignment and result collection, 3) Statistical analysis and automatic optimization, 4) Test reporting and management.",
+      "reasoning": "Implementing A/B testing involves statistical analysis and variant management. The complexity is high due to the need to define tests, assign variants, collect results, perform statistical analysis, automatically optimize prompts, and report on tests while ensuring data-driven prompt optimization."
+    },
+    {
+      "taskId": 82,
+      "taskTitle": "Implement Advanced Charting and Drilldowns",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Advanced Charting and Drilldowns' task into subtasks covering: 1) Advanced chart types and interactive drilldown, 2) Cross-filtering and custom visualization components, 3) Dashboard layout system, 4) Chart export options and theming.",
+      "reasoning": "Implementing advanced charting involves complex visualization and interaction. The complexity is high due to the need to create advanced chart types, implement drilldowns, support cross-filtering, create custom visualizations, design dashboard layouts, add export options, and implement theming while ensuring powerful and flexible data visualization."
+    },
+    {
+      "taskId": 83,
+      "taskTitle": "Implement Domain-Specific Fine-Tuning",
+      "complexityScore": 9,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the 'Implement Domain-Specific Fine-Tuning' task into subtasks covering: 1) Fine-tuning manager and training data preparation, 2) Fine-tuning process implementation, 3) Model evaluation and deployment, 4) A/B testing integration, 5) Performance monitoring and optimization.",
+      "reasoning": "Implementing domain-specific fine-tuning involves advanced machine learning. The complexity is very high due to the need to prepare training data, implement fine-tuning processes, evaluate models, deploy models, test performance with A/B testing, and monitor performance while ensuring improved model performance on domain-specific tasks."
+    },
+    {
+      "taskId": 84,
+      "taskTitle": "Implement Data Export Options",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Data Export Options' task into subtasks covering: 1) Export manager and image export (PNG/JPG), 2) Data export (CSV) and document export (PDF), 3) Batch export and customization options.",
+      "reasoning": "Implementing data export involves multiple file formats and rendering. The complexity is moderate to high due to the need to export to various formats (PNG, JPG, CSV, PDF), support batch export, and provide customization options while ensuring flexible and reliable data export."
+    },
+    {
+      "taskId": 85,
+      "taskTitle": "Implement WebSocket Endpoints for Real-Time Updates",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement WebSocket Endpoints for Real-Time Updates' task into subtasks covering: 1) WebSocket server and connection management, 2) Authentication, authorization, and tenant isolation, 3) Message routing and reconnection handling, 4) Performance monitoring and optimization.",
+      "reasoning": "Implementing WebSockets involves real-time communication and state management. The complexity is high due to the need to set up a WebSocket server, manage connections, implement authentication and authorization, ensure tenant isolation, route messages, handle reconnections, and monitor performance while ensuring reliable real-time communication."
+    },
+    {
+      "taskId": 86,
+      "taskTitle": "Implement Batch Import/Export Endpoints",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Batch Import/Export Endpoints' task into subtasks covering: 1) Batch import controller and validation pipeline, 2) Batch export controller and formats, 3) Progress tracking and error handling, 4) Rate limiting and telemetry.",
+      "reasoning": "Implementing batch operations involves large data processing and state tracking. The complexity is high due to the need to handle bulk imports and exports, validate data, track progress, handle errors, implement rate limiting, and add logging and telemetry while ensuring reliable bulk operations."
+    },
+    {
+      "taskId": 87,
+      "taskTitle": "Implement Plugin Connector Framework",
+      "complexityScore": 8,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Plugin Connector Framework' task into subtasks covering: 1) Plugin manager and loading system, 2) Plugin registration and validation, 3) Plugin configuration UI, 4) Plugin isolation and monitoring.",
+      "reasoning": "Implementing a plugin framework involves dynamic loading and isolation. The complexity is high due to the need to load plugins dynamically, register them, validate them, provide configuration UI, ensure isolation for security, and monitor plugin performance while ensuring a secure and reliable plugin system."
+    },
+    {
+      "taskId": 88,
+      "taskTitle": "Implement Architecture Documentation",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Architecture Documentation' task into subtasks covering: 1) Architecture overview and component diagrams, 2) Sequence diagrams and deployment diagrams, 3) Data flow diagrams and security architecture documentation.",
+      "reasoning": "Creating architecture documentation involves technical writing and diagramming. The complexity is moderate to high due to the need to document the overall architecture, create various diagrams (component, sequence, deployment, data flow), and document security architecture while ensuring comprehensive and accurate documentation."
+    },
+    {
+      "taskId": 89,
+      "taskTitle": "Implement API Reference Documentation",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement API Reference Documentation' task into subtasks covering: 1) API overview and endpoint documentation, 2) Request/response examples and authentication documentation, 3) Error handling, rate limiting, and versioning documentation.",
+      "reasoning": "Creating API documentation involves technical writing and example creation. The complexity is moderate to high due to the need to document the API overview, endpoints, provide examples, document authentication, error handling, rate limiting, and versioning while ensuring comprehensive and accurate API documentation."
+    },
+    {
+      "taskId": 90,
+      "taskTitle": "Implement Deployment Guides",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Deployment Guides' task into subtasks covering: 1) Docker Compose and Kubernetes deployment guides, 2) On-premises deployment and scaling considerations, 3) Backup, recovery, security hardening, and troubleshooting guides.",
+      "reasoning": "Creating deployment guides involves technical writing and deployment knowledge. The complexity is moderate to high due to the need to document various deployment options (Docker Compose, Kubernetes, on-premises), scaling considerations, backup and recovery procedures, security hardening, and troubleshooting while ensuring comprehensive and accurate deployment documentation."
+    },
+    {
+      "taskId": 91,
+      "taskTitle": "Implement Data Source Connector Configuration Guides",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Data Source Connector Configuration Guides' task into subtasks covering: 1) Connector overview and database connector guides (PostgreSQL, MSSQL, MySQL), 2) File repository and Confluence/JIRA connector guides, 3) Git repository connector guide and troubleshooting.",
+      "reasoning": "Creating connector guides involves technical writing and connector knowledge. The complexity is moderate to high due to the need to document various connectors (databases, file repositories, Confluence, JIRA, Git), their configuration, and troubleshooting while ensuring comprehensive and accurate connector documentation."
+    },
+    {
+      "taskId": 92,
+      "taskTitle": "Implement Troubleshooting Guides",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Troubleshooting Guides' task into subtasks covering: 1) General and connector troubleshooting, 2) Authentication and performance troubleshooting, 3) Data quality, security, and deployment troubleshooting.",
+      "reasoning": "Creating troubleshooting guides involves technical writing and problem-solving knowledge. The complexity is moderate to high due to the need to document troubleshooting procedures for various aspects (general, connectors, authentication, performance, data quality, security, deployment) while ensuring comprehensive and accurate troubleshooting documentation."
+    },
+    {
+      "taskId": 93,
+      "taskTitle": "Implement User Manuals",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement User Manuals' task into subtasks covering: 1) General user manual and technical role manuals (developer, administrator), 2) Business role manuals (analyst, department manager, project manager), 3) Support role manuals (customer success, executive).",
+      "reasoning": "Creating user manuals involves technical writing and role-specific knowledge. The complexity is moderate to high due to the need to create manuals for various roles (general users, developers, analysts, managers, executives, administrators) with role-specific information while ensuring comprehensive and role-specific user documentation."
+    },
+    {
+      "taskId": 94,
+      "taskTitle": "Implement Query Formulation Guidelines",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Query Formulation Guidelines' task into subtasks covering: 1) Query basics and advanced techniques, 2) Domain-specific examples and troubleshooting, 3) Query optimization and best practices for different roles.",
+      "reasoning": "Creating query guidelines involves technical writing and query expertise. The complexity is moderate to high due to the need to document query basics, advanced techniques, domain-specific examples, troubleshooting, optimization, and best practices for different roles while ensuring comprehensive and effective query guidelines."
+    },
+    {
+      "taskId": 95,
+      "taskTitle": "Implement Data Visualization Tutorials",
+      "complexityScore": 5,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Data Visualization Tutorials' task into subtasks covering: 1) Visualization basics and chart type selection, 2) Customization, drilldown, and filtering tutorials, 3) Dashboard creation, export, and best practices.",
+      "reasoning": "Creating visualization tutorials involves technical writing and visualization knowledge. The complexity is moderate due to the need to document visualization basics, chart selection, customization, drilldown, filtering, dashboard creation, export, and best practices while ensuring comprehensive and effective visualization tutorials."
+    },
+    {
+      "taskId": 96,
+      "taskTitle": "Implement Admin Portal Operation Guide",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Implement Admin Portal Operation Guide' task into subtasks covering: 1) Admin portal overview and data source configuration, 2) User/tenant management and monitoring/alerting, 3) Backup/recovery, security management, and troubleshooting.",
+      "reasoning": "Creating an admin portal guide involves technical writing and administration knowledge. The complexity is moderate to high due to the need to document the admin portal overview, data source configuration, user and tenant management, monitoring, alerting, backup, recovery, security, and troubleshooting while ensuring a comprehensive and effective admin portal guide."
+    },
+    {
+      "taskId": 97,
+      "taskTitle": "Create Video Walkthroughs",
+      "complexityScore": 6,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 'Create Video Walkthroughs' task into subtasks covering: 1) Getting started and querying walkthroughs, 2) Visualization and data source configuration walkthroughs, 3) User management, troubleshooting, and advanced features walkthroughs.",
+      "reasoning": "Creating video walkthroughs involves script writing, recording, and editing. The complexity is moderate to high due to the need to create videos for various topics (getting started, querying, visualization, configuration, user management, troubleshooting, advanced features) while ensuring comprehensive and effective video walkthroughs."
+    },
+    {
+      "taskId": 98,
+      "taskTitle": "Implement Response Quality Evaluation Metrics",
+      "complexityScore": 7,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement Response Quality Evaluation Metrics' task into subtasks covering: 1) Quality evaluator and metrics definition, 2) User feedback collection and automated evaluation, 3) Quality reporting and improvement suggestions, 4) Trend analysis and optimization.",
+      "reasoning": "Implementing quality evaluation involves metrics design and feedback analysis. The complexity is high due to the need to define evaluation metrics, collect user feedback, perform automated evaluation, generate reports, suggest improvements, and analyze trends while ensuring continuous improvement of AI responses."
+    },
+    {
+      "taskId": 99,
+      "taskTitle": "Implement ISO 27001 / SOC2 Compliance Hooks",
+      "complexityScore": 8,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the 'Implement ISO 27001 / SOC2 Compliance Hooks' task into subtasks covering: 1) Audit logging and access control documentation, 2) Security incident response and risk assessment, 3) Compliance reporting and policy enforcement, 4) Evidence collection and audit preparation.",
+      "reasoning": "Implementing compliance hooks involves security standards and auditing. The complexity is high due to the need to implement audit logging, document access controls, prepare for security incidents, assess risks, generate compliance reports, enforce policies, and collect evidence while ensuring readiness for future compliance audits."
+    },
+    {
+      "taskId": 100,
+      "taskTitle": "Implement Final Integration Testing",
+      "complexityScore": 8,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the 'Implement Final Integration Testing' task into subtasks covering: 1) End-to-end test scenarios and user journey tests, 2) Performance tests and benchmarks, 3) Security and penetration tests, 4) Data integrity and recovery tests, 5) Compliance and acceptance tests.",
+      "reasoning": "Implementing final integration testing involves comprehensive system validation. The complexity is high due to the need to create end-to-end scenarios, test user journeys, perform performance testing, conduct security tests, verify data integrity, test recovery procedures, and validate compliance while ensuring the system meets all requirements and specifications."
+    }
+  ]
+}

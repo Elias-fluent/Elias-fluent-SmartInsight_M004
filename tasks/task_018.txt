@@ -1,0 +1,24 @@
+# Task ID: 18
+# Title: Implement File Repository Connector
+# Status: pending
+# Dependencies: 14
+# Priority: high
+# Description: Create connector implementation for file repositories (TXT, Markdown, PDF, DOCX).
+# Details:
+In SmartInsight.Knowledge project:
+1. Implement FileRepositoryConnector class
+2. Create file system access validator
+3. Implement file discovery and filtering
+4. Add content extraction for different file types:
+   - TXT: Direct reading
+   - Markdown: Parse with markdown parser
+   - PDF: Extract text with PDF library
+   - DOCX: Extract text with Office document library
+5. Create metadata extraction
+6. Implement incremental update detection based on file modification dates
+7. Add error handling and logging
+
+Ensure secure handling of file system credentials.
+
+# Test Strategy:
+Create integration tests with test file repository. Verify discovery, extraction, and transformation for each file type. Test incremental updates with modified files.

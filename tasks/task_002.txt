@@ -1,0 +1,20 @@
+# Task ID: 2
+# Title: Set Up CI/CD Pipeline
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Configure CI/CD pipeline for automated building, testing, and deployment.
+# Details:
+Set up GitHub Actions or Azure DevOps pipeline with the following stages:
+1. Build solution
+2. Run unit tests
+3. Run integration tests
+4. Static code analysis
+5. Security scanning
+6. Docker image building
+7. Deployment to development environment
+
+Enforce GitFlow development process with PR test coverage gating.
+
+# Test Strategy:
+Verify pipeline runs successfully on push to main branch. Test PR validation workflow with intentionally failing tests.

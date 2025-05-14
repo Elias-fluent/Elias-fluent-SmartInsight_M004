@@ -1,0 +1,20 @@
+# Task ID: 36
+# Title: Implement Swagger and OpenAPI Documentation
+# Status: pending
+# Dependencies: 34
+# Priority: medium
+# Description: Create API documentation using Swagger and OpenAPI.
+# Details:
+In SmartInsight.API project:
+1. Implement Swagger setup
+2. Create OpenAPI documentation
+3. Implement XML comments for API endpoints
+4. Add example requests and responses
+5. Create authentication documentation
+6. Implement API versioning documentation
+7. Add schema documentation
+
+Ensure comprehensive and accurate documentation.
+
+# Test Strategy:
+Verify Swagger UI works correctly. Test API documentation accuracy. Validate example requests and responses.

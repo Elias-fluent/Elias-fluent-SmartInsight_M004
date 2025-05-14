@@ -1,0 +1,20 @@
+# Task ID: 22
+# Title: Implement Vector Embedding Generation
+# Status: pending
+# Dependencies: 6, 21
+# Priority: high
+# Description: Create system for generating vector embeddings for semantic search.
+# Details:
+In SmartInsight.Knowledge project:
+1. Implement VectorEmbeddingGenerator class
+2. Create text chunking logic
+3. Implement embedding generation using Ollama
+4. Add batch processing for efficiency
+5. Create embedding storage in Qdrant
+6. Implement tenant isolation for embeddings
+7. Add incremental updating without full reindexing
+
+Optimize for performance with large text corpora.
+
+# Test Strategy:
+Create integration tests with Ollama and Qdrant. Verify embedding generation and storage. Test semantic search with sample queries. Measure performance with large datasets.

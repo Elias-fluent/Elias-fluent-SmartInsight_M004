@@ -1,0 +1,94 @@
+# Task ID: 21
+# Title: Implement Knowledge Graph Creation Pipeline
+# Status: pending
+# Dependencies: 14, 15, 18
+# Priority: high
+# Description: Create pipeline for building knowledge graph from ingested data.
+# Details:
+In SmartInsight.Knowledge project:
+1. Implement KnowledgeGraphBuilder class
+2. Create entity extraction pipeline
+3. Implement relation mapping logic
+4. Add triple-store based implementation (Subject-Predicate-Object)
+5. Create hierarchical taxonomy with inheritance and composition
+6. Implement versioning for temporal knowledge evolution
+7. Add provenance tracking to source documents and data sources
+
+Ensure knowledge graph respects tenant boundaries.
+
+# Test Strategy:
+Create unit tests for entity extraction and relation mapping. Test knowledge graph building with sample data. Verify provenance tracking works correctly.
+
+# Subtasks:
+## 1. Design Entity Extraction Architecture [pending]
+### Dependencies: None
+### Description: Define the overall architecture for entity extraction including NLP components, processing flow, and integration points.
+### Details:
+Create architectural diagrams showing data flow, component interactions, and system boundaries. Include specifications for input/output formats, error handling, and scalability considerations.
+
+## 2. Implement Named Entity Recognition (NER) Module [pending]
+### Dependencies: 21.1
+### Description: Develop the core NER module to identify and extract entities from text documents.
+### Details:
+Select and implement appropriate NLP libraries/models for entity extraction. Include custom entity types relevant to the domain. Ensure proper text preprocessing and post-processing for accuracy.
+
+## 3. Create Entity Disambiguation System [pending]
+### Dependencies: 21.2
+### Description: Build a system to disambiguate entities and resolve coreferences across documents.
+### Details:
+Implement algorithms for entity resolution, coreference resolution, and contextual disambiguation. Create a confidence scoring mechanism for entity matches.
+
+## 4. Design Relation Extraction Framework [pending]
+### Dependencies: 21.3
+### Description: Design the framework for identifying and extracting relationships between entities.
+### Details:
+Define relation types, extraction methods, and validation rules. Include both explicit and implicit relation detection strategies.
+
+## 5. Implement Triple-Store Database [pending]
+### Dependencies: 21.1
+### Description: Set up and configure the triple-store database for storing knowledge graph data.
+### Details:
+Select appropriate triple-store technology, design schema, and implement CRUD operations. Configure for performance, considering query patterns and data volume.
+
+## 6. Develop Relation Mapping Pipeline [pending]
+### Dependencies: 21.4, 21.5
+### Description: Build the pipeline to extract and map relationships into the triple-store format.
+### Details:
+Create transformers to convert extracted relations to RDF triples. Implement validation rules and consistency checks for relation mapping.
+
+## 7. Design Hierarchical Taxonomy Structure [pending]
+### Dependencies: 21.5
+### Description: Design the hierarchical taxonomy structure with inheritance capabilities.
+### Details:
+Define class hierarchies, inheritance rules, and ontological relationships. Create visualization tools for taxonomy exploration.
+
+## 8. Implement Taxonomy Management System [pending]
+### Dependencies: 21.7
+### Description: Build the system to manage and maintain the hierarchical taxonomy.
+### Details:
+Develop APIs for taxonomy creation, modification, and querying. Implement inheritance resolution algorithms and consistency validation.
+
+## 9. Design Knowledge Graph Versioning System [pending]
+### Dependencies: 21.6
+### Description: Design the versioning system to track temporal evolution of the knowledge graph.
+### Details:
+Define versioning strategy, temporal data model, and change tracking mechanisms. Include specifications for querying historical states.
+
+## 10. Implement Versioning and Temporal Query Support [pending]
+### Dependencies: 21.9
+### Description: Implement the versioning system and temporal query capabilities.
+### Details:
+Develop version control mechanisms, temporal indexing, and query interfaces for accessing historical knowledge states.
+
+## 11. Design Provenance Tracking Framework [pending]
+### Dependencies: 21.6
+### Description: Design the framework for tracking the provenance of knowledge graph elements.
+### Details:
+Define provenance metadata schema, source document linking strategy, and confidence scoring approach.
+
+## 12. Implement Provenance Integration and Querying [pending]
+### Dependencies: 21.11, 21.10, 21.8
+### Description: Implement the provenance tracking system and integrate with the knowledge graph pipeline.
+### Details:
+Develop provenance capture mechanisms, source document indexing, and provenance-aware query interfaces. Create visualization tools for provenance exploration.
+

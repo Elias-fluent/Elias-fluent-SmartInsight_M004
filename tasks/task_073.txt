@@ -1,0 +1,20 @@
+# Task ID: 73
+# Title: Implement Dropbox Connector
+# Status: pending
+# Dependencies: 14, 19
+# Priority: low
+# Description: Create connector implementation for Dropbox data sources.
+# Details:
+In SmartInsight.Knowledge project:
+1. Implement DropboxConnector class
+2. Create API client for Dropbox
+3. Implement authentication with OAuth
+4. Add folder and file discovery
+5. Create content extraction
+6. Implement incremental update detection
+7. Add error handling and logging
+
+Ensure secure handling of API credentials.
+
+# Test Strategy:
+Create integration tests with test Dropbox account. Verify authentication, discovery, and extraction. Test incremental updates with changed files.

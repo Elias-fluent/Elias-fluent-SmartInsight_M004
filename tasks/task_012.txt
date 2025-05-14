@@ -1,0 +1,20 @@
+# Task ID: 12
+# Title: Implement Repository Pattern
+# Status: pending
+# Dependencies: 9, 10
+# Priority: high
+# Description: Create repository interfaces and implementations for all entity types.
+# Details:
+In SmartInsight.Data project:
+1. Create IRepository<T> interface
+2. Implement generic Repository<T> class
+3. Create specific repository interfaces for each entity type
+4. Implement concrete repositories with specialized methods
+5. Ensure tenant filtering is applied consistently
+6. Implement transaction support
+7. Add bulk operation methods for ingestion pipelines
+
+Use async/await pattern for all database operations.
+
+# Test Strategy:
+Create unit tests for each repository. Test CRUD operations. Verify tenant filtering works correctly. Test bulk operations with large datasets.

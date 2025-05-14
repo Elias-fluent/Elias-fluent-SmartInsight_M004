@@ -1,0 +1,19 @@
+# Task ID: 6
+# Title: Set Up Ollama Container
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Configure Ollama Docker container for local AI inference.
+# Details:
+Add Ollama container to Docker Compose file:
+1. Use latest Ollama image
+2. Configure environment variables
+3. Set up volume mapping for model persistence
+4. Configure network settings
+5. Set up health check
+6. Pre-download LLaMA 3 and Phi3 models
+
+Ensure container has appropriate resource limits.
+
+# Test Strategy:
+Verify container starts successfully. Test model loading and basic inference. Measure inference time for benchmark purposes.

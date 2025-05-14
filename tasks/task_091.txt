@@ -1,0 +1,21 @@
+# Task ID: 91
+# Title: Implement Data Source Connector Configuration Guides
+# Status: pending
+# Dependencies: 15, 16, 17, 18, 68, 69, 70
+# Priority: high
+# Description: Create guides for configuring different data source connectors.
+# Details:
+In documentation directory:
+1. Create connector overview document
+2. Implement PostgreSQL connector guide
+3. Create MSSQL connector guide
+4. Add MySQL connector guide
+5. Create file repository connector guide
+6. Implement Confluence connector guide
+7. Add JIRA connector guide
+8. Create Git repository connector guide
+
+Ensure comprehensive and accurate connector documentation.
+
+# Test Strategy:
+Verify configuration steps with test data sources. Test troubleshooting steps. Validate security recommendations.

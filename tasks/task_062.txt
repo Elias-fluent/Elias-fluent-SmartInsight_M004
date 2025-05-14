@@ -1,0 +1,20 @@
+# Task ID: 62
+# Title: Set Up Playwright End-to-End Test Suite
+# Status: pending
+# Dependencies: 39, 41
+# Priority: medium
+# Description: Configure Playwright for end-to-end testing and create initial tests.
+# Details:
+In SmartInsight.Tests project:
+1. Set up Playwright test framework
+2. Create test project structure
+3. Implement page object models
+4. Add test utilities
+5. Create test data generators
+6. Implement visual regression testing
+7. Add test reporting
+
+Ensure comprehensive end-to-end testing.
+
+# Test Strategy:
+Verify Playwright setup. Test page object models. Validate visual regression testing. Check test reporting.

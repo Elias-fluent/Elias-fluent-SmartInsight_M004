@@ -1,0 +1,20 @@
+# Task ID: 31
+# Title: Implement Persistent Conversation Memory
+# Status: pending
+# Dependencies: 9, 10
+# Priority: high
+# Description: Create system for storing and retrieving conversation history.
+# Details:
+In SmartInsight.History project:
+1. Implement ConversationMemory class
+2. Create conversation storage using EF Core with JSON columns
+3. Implement session management
+4. Add user context tracking
+5. Create conversation retrieval methods
+6. Implement memory pruning and summarization
+7. Add tenant isolation for conversations
+
+Optimize for performance with long conversations.
+
+# Test Strategy:
+Create unit tests for conversation storage and retrieval. Test memory pruning with large conversations. Verify tenant isolation. Measure performance with different conversation sizes.
