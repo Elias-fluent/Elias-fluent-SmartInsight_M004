@@ -19,19 +19,55 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
+      - name: List workspace contents
+        run: |
+          ls -la
+          find . -name "*.sln" -type f
+      
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
       
       - name: Restore dependencies
-        run: dotnet restore SmartInsight.sln
+        run: |
+          if [ -f "SmartInsight.sln" ]; then
+            dotnet restore SmartInsight.sln
+          else
+            echo "Solution file not found in current directory"
+            find . -name "*.sln" -type f
+            # Try to find the solution file and restore it
+            SOLUTION_FILE=$(find . -name "*.sln" -type f | head -1)
+            if [ ! -z "$SOLUTION_FILE" ]; then
+              echo "Found solution file: $SOLUTION_FILE"
+              dotnet restore "$SOLUTION_FILE"
+            else
+              echo "No solution file found in the repository"
+              exit 1
+            fi
+          fi
       
       - name: Build
-        run: dotnet build SmartInsight.sln --no-restore --configuration Release
+        run: |
+          SOLUTION_FILE=$(find . -name "*.sln" -type f | head -1)
+          if [ ! -z "$SOLUTION_FILE" ]; then
+            echo "Building solution: $SOLUTION_FILE"
+            dotnet build "$SOLUTION_FILE" --no-restore --configuration Release
+          else
+            echo "No solution file found in the repository"
+            exit 1
+          fi
       
       - name: Test
-        run: dotnet test SmartInsight.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+        run: |
+          SOLUTION_FILE=$(find . -name "*.sln" -type f | head -1)
+          if [ ! -z "$SOLUTION_FILE" ]; then
+            echo "Testing solution: $SOLUTION_FILE"
+            dotnet test "$SOLUTION_FILE" --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+          else
+            echo "No solution file found in the repository"
+            exit 1
+          fi
       
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
