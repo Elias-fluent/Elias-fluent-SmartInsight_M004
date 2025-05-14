@@ -1,6 +1,6 @@
 # Task ID: 39
 # Title: Set Up React and TypeScript SPA Project
-# Status: in-progress
+# Status: done
 # Dependencies: None
 # Priority: high
 # Description: Create React and TypeScript SPA project with initial configuration.
