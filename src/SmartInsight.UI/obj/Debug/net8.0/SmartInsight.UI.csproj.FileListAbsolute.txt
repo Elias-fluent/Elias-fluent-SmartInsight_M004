@@ -1,5 +1,6 @@
-C:\Users\EliasDergham\source\SmartInsight_M004\src\SmartInsight.UI\bin\Debug\net8.0\appsettings.Development.json
-C:\Users\EliasDergham\source\SmartInsight_M004\src\SmartInsight.UI\bin\Debug\net8.0\appsettings.json
+C:\Users\EliasDergham\source\SmartInsight_M004\src\SmartInsight.UI\bin\Debug\net8.0\package.json
+C:\Users\EliasDergham\source\SmartInsight_M004\src\SmartInsight.UI\bin\Debug\net8.0\public\manifest.json
+C:\Users\EliasDergham\source\SmartInsight_M004\src\SmartInsight.UI\bin\Debug\net8.0\tsconfig.json
 C:\Users\EliasDergham\source\SmartInsight_M004\src\SmartInsight.UI\bin\Debug\net8.0\SmartInsight.UI.staticwebassets.endpoints.json
 C:\Users\EliasDergham\source\SmartInsight_M004\src\SmartInsight.UI\bin\Debug\net8.0\SmartInsight.UI.exe
 C:\Users\EliasDergham\source\SmartInsight_M004\src\SmartInsight.UI\bin\Debug\net8.0\SmartInsight.UI.deps.json

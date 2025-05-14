@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SmartInsight.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e396a486855958cd4d39a4cc6250e8198261d26b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+62d11353fc3d6ab3873f23e6c0b8e1e29a007f45")]
 [assembly: System.Reflection.AssemblyProductAttribute("SmartInsight.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SmartInsight.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
