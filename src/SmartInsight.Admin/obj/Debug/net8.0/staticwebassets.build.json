@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "TJe1VWBjTqb8kzuMKxadRWIvE8L3/GjYvCM+VxEFXXQ=",
+  "Source": "SmartInsight.Admin",
+  "BasePath": "_content/SmartInsight.Admin",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
