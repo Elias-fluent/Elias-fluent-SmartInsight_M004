@@ -1,0 +1,20 @@
+# Task ID: 28
+# Title: Implement Prompt Template System
+# Status: pending
+# Dependencies: 25
+# Priority: medium
+# Description: Create system for managing and applying prompt templates.
+# Details:
+In SmartInsight.AI project:
+1. Implement PromptTemplateManager class
+2. Create template definition model
+3. Implement template rendering with variable substitution
+4. Add template versioning
+5. Create template validation rules
+6. Implement tenant-specific template overrides
+7. Add logging for template usage
+
+Optimize for flexibility and performance.
+
+# Test Strategy:
+Create unit tests with sample templates. Verify template rendering with different variables. Test tenant-specific overrides. Measure template rendering performance.

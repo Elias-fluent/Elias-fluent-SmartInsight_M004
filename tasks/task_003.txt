@@ -1,0 +1,20 @@
+# Task ID: 3
+# Title: Implement Core Project Base Types
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Create shared enums, constants, DTO definitions, and validation utilities in the Core project.
+# Details:
+Implement the following in SmartInsight.Core:
+1. Base interfaces for cross-module communication
+2. Shared enums and constants
+3. DTO definitions
+4. Validation utilities
+5. Core validation and business rule enforcement types
+6. Common security utilities and hashing functions
+7. Shared exception types and error handling patterns
+
+Use C# 12 features where appropriate.
+
+# Test Strategy:
+Create unit tests for all utility functions and validation logic. Ensure exception types are properly defined with appropriate properties.

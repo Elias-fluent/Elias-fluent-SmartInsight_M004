@@ -1,0 +1,20 @@
+# Task ID: 23
+# Title: Implement Qdrant Client for Vector Similarity Searches
+# Status: pending
+# Dependencies: 5, 22
+# Priority: high
+# Description: Create client for Qdrant vector database to perform similarity searches.
+# Details:
+In SmartInsight.Knowledge project:
+1. Implement QdrantClient class
+2. Create collection management methods
+3. Implement vector search operations
+4. Add filtering by metadata
+5. Create tenant namespace sharding
+6. Implement connection pooling
+7. Add error handling and retry logic
+
+Optimize for performance with large vector collections.
+
+# Test Strategy:
+Create integration tests with Qdrant. Verify collection management and search operations. Test tenant isolation. Measure search performance with large collections.

@@ -1,0 +1,20 @@
+# Task ID: 49
+# Title: Implement Ingestion Monitoring Dashboard
+# Status: pending
+# Dependencies: 39, 42, 43, 44, 48
+# Priority: high
+# Description: Create dashboard for monitoring data source ingestion status.
+# Details:
+In SmartInsight.Admin project:
+1. Implement ingestion status list
+2. Create ingestion detail view
+3. Implement status indicators
+4. Add progress tracking
+5. Create error reporting
+6. Implement manual trigger controls
+7. Add historical ingestion logs
+
+Ensure comprehensive ingestion monitoring.
+
+# Test Strategy:
+Create unit tests for dashboard components. Test status indicators. Verify manual trigger functionality. Test responsive layout on different screen sizes.

@@ -1,0 +1,20 @@
+# Task ID: 37
+# Title: Implement Health Check Endpoints
+# Status: pending
+# Dependencies: 34
+# Priority: medium
+# Description: Create health check endpoints for monitoring system components.
+# Details:
+In SmartInsight.API project:
+1. Implement health check setup
+2. Create database health check
+3. Implement Qdrant health check
+4. Add Ollama health check
+5. Create Redis health check
+6. Implement custom health check UI
+7. Add health check logging
+
+Ensure comprehensive system health monitoring.
+
+# Test Strategy:
+Create integration tests for health check endpoints. Verify health status reporting. Test health check UI. Simulate component failures to validate reporting.

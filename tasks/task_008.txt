@@ -1,0 +1,19 @@
+# Task ID: 8
+# Title: Set Up Seq Container
+# Status: pending
+# Dependencies: 1
+# Priority: medium
+# Description: Configure Seq Docker container for centralized logging and dashboards.
+# Details:
+Add Seq container to Docker Compose file:
+1. Use latest Seq image
+2. Configure environment variables
+3. Set up volume mapping for data persistence
+4. Configure network settings
+5. Set up health check
+6. Configure retention policies
+
+Set up initial dashboards for system monitoring.
+
+# Test Strategy:
+Verify container starts successfully. Test log ingestion. Validate dashboard functionality.

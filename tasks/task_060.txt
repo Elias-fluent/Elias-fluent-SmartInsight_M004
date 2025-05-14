@@ -1,0 +1,20 @@
+# Task ID: 60
+# Title: Set Up Unit Test Framework
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Configure unit test framework and create initial tests.
+# Details:
+In SmartInsight.Tests project:
+1. Set up xUnit test framework
+2. Create test project structure
+3. Implement test utilities
+4. Add mock framework (Moq)
+5. Create test data generators
+6. Implement assertion utilities
+7. Add code coverage reporting
+
+Ensure comprehensive test coverage.
+
+# Test Strategy:
+Verify test framework setup. Test utility functions. Validate mock framework integration. Check code coverage reporting.

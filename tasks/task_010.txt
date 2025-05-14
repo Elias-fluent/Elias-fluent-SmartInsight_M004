@@ -1,0 +1,24 @@
+# Task ID: 10
+# Title: Implement Core Entity Models
+# Status: pending
+# Dependencies: 3
+# Priority: high
+# Description: Create entity classes for all core data models specified in the PRD.
+# Details:
+Create the following entity classes in SmartInsight.Core:
+1. DataSource
+2. Document
+3. Entity
+4. Relation
+5. Term
+6. Tenant
+7. User
+8. ConversationLog
+9. KnowledgeNode
+10. VectorIndex
+11. MetricsLog
+
+Implement properties, relationships, and validation attributes according to the data model specifications.
+
+# Test Strategy:
+Create unit tests for entity validation. Test serialization/deserialization. Verify relationships are correctly defined.

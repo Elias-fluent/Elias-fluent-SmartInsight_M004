@@ -1,0 +1,20 @@
+# Task ID: 20
+# Title: Implement Ingestion Job Scheduler
+# Status: pending
+# Dependencies: 14, 19
+# Priority: high
+# Description: Create scheduling system for automated data source ingestion jobs.
+# Details:
+In SmartInsight.Knowledge project:
+1. Implement IngestionScheduler class using Hangfire
+2. Create job definition model
+3. Implement schedule configuration (hourly, daily, weekly, custom)
+4. Add job execution tracking
+5. Implement retry logic for failed jobs
+6. Create notification system for job status
+7. Add manual trigger capability
+
+Ensure scheduler respects tenant boundaries for job execution.
+
+# Test Strategy:
+Create integration tests with Hangfire. Verify job scheduling and execution. Test retry logic with intentionally failing jobs. Verify notifications are sent correctly.

@@ -1,0 +1,20 @@
+# Task ID: 84
+# Title: Implement Data Export Options
+# Status: pending
+# Dependencies: 42, 82
+# Priority: medium
+# Description: Create system for exporting data in various formats (PNG, JPG, CSV, PDF).
+# Details:
+In SmartInsight.UI project:
+1. Implement ExportManager class
+2. Create PNG export
+3. Implement JPG export
+4. Add CSV export
+5. Create PDF export
+6. Implement batch export
+7. Add export customization options
+
+Ensure flexible and reliable data export.
+
+# Test Strategy:
+Test export functionality for each format. Verify export quality. Test batch export. Validate customization options.

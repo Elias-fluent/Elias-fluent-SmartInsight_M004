@@ -1,0 +1,20 @@
+# Task ID: 32
+# Title: Implement Vector-Based Semantic Search for Conversation History
+# Status: pending
+# Dependencies: 22, 23, 31
+# Priority: medium
+# Description: Create system for semantic search of conversation history.
+# Details:
+In SmartInsight.History project:
+1. Implement ConversationSearcher class
+2. Create embedding generation for conversation turns
+3. Implement vector storage in Qdrant
+4. Add semantic search operations
+5. Create relevance scoring
+6. Implement filtering by metadata
+7. Add tenant isolation for search
+
+Optimize for search accuracy and performance.
+
+# Test Strategy:
+Create integration tests with sample conversations. Verify semantic search accuracy. Test tenant isolation. Measure search performance with large conversation history.

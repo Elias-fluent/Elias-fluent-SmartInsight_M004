@@ -1,0 +1,20 @@
+# Task ID: 79
+# Title: Create Helm Charts for Kubernetes Deployment
+# Status: pending
+# Dependencies: 4, 5, 6, 7, 8
+# Priority: low
+# Description: Create Helm charts for deploying the application on Kubernetes.
+# Details:
+In deployment directory:
+1. Create Helm chart structure
+2. Implement templates for all components
+3. Create values files for different environments
+4. Add deployment configuration
+5. Create service configuration
+6. Implement ingress configuration
+7. Add volume configuration
+
+Ensure flexible and reliable Kubernetes deployment.
+
+# Test Strategy:
+Test chart installation on test cluster. Verify component deployment. Test configuration overrides. Validate upgrade process.
