@@ -201,7 +201,7 @@ namespace SmartInsight.AI.SQL
         }
 
         /// <inheritdoc />
-        public async Task<SmartInsight.AI.SQL.Interfaces.ParameterValidationResult> ValidateParametersAsync(
+        public Task<SmartInsight.AI.SQL.Interfaces.ParameterValidationResult> ValidateParametersAsync(
             Dictionary<string, ExtractedParameter> parameters,
             SqlTemplate template)
         {
@@ -244,11 +244,11 @@ namespace SmartInsight.AI.SQL
                 }
             }
 
-            return result;
+            return Task.FromResult(result);
         }
 
         /// <inheritdoc />
-        public async Task<Dictionary<string, object>> ConvertToSqlParametersAsync(
+        public Task<Dictionary<string, object>> ConvertToSqlParametersAsync(
             Dictionary<string, ExtractedParameter> parameters,
             SqlTemplate template)
         {
@@ -282,16 +282,23 @@ namespace SmartInsight.AI.SQL
                 }
                 
                 // Add parameter with @ prefix for SQL
-                result.Add(param.Key, convertedValue);
+                if (convertedValue != null)
+                {
+                    result.Add(param.Key, convertedValue);
+                }
+                else
+                {
+                    _logger.LogWarning("Parameter {ParamName} has null value, skipping", param.Key);
+                }
             }
             
             _logger.LogDebug("Converted {Count} parameters to SQL parameters", result.Count);
-            return result;
+            return Task.FromResult(result);
         }
 
         #region Private Implementation Methods
 
-        private async Task<Dictionary<string, ExtractedParameter>> TryNamedEntityExtractionAsync(
+        private Task<Dictionary<string, ExtractedParameter>> TryNamedEntityExtractionAsync(
             string query,
             SqlTemplate template,
             Dictionary<string, ExtractedParameter> existingParams,
@@ -376,10 +383,10 @@ namespace SmartInsight.AI.SQL
                 }
             }
 
-            return result;
+            return Task.FromResult(result);
         }
 
-        private async Task<Dictionary<string, ExtractedParameter>> TryPatternMatchingExtractionAsync(
+        private Task<Dictionary<string, ExtractedParameter>> TryPatternMatchingExtractionAsync(
             string query,
             SqlTemplate template,
             Dictionary<string, ExtractedParameter> existingParams,
@@ -473,7 +480,7 @@ namespace SmartInsight.AI.SQL
                 }
             }
 
-            return result;
+            return Task.FromResult(result);
         }
 
         private async Task<Dictionary<string, ExtractedParameter>> TryLlmExtractionAsync(
