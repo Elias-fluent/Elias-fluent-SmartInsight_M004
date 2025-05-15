@@ -413,7 +413,7 @@
             1
           ],
           "details": "Design attribute classes for annotating connector implementations with metadata such as name, description, version, supported data formats, and configuration requirements. Implement reflection-based discovery of these attributes.",
-          "status": "pending"
+          "status": "in-progress"
         },
         {
           "id": 7,

@@ -52,7 +52,7 @@ Implement a connector registry that allows dynamic registration and discovery of
 ### Details:
 Design and implement a factory class that can create instances of specific connector implementations based on type or identifier. Include dependency injection support and configuration parameter handling.
 
-## 6. Define Connector Metadata Attributes [pending]
+## 6. Define Connector Metadata Attributes [in-progress]
 ### Dependencies: 14.1
 ### Description: Create attribute system for connector discovery and documentation
 ### Details:
