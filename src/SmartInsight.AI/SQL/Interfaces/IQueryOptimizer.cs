@@ -59,6 +59,42 @@ namespace SmartInsight.AI.SQL.Interfaces
             int pageSize, 
             int pageNumber = 1, 
             CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Optimizes a SQL query and returns a rich optimization result
+        /// </summary>
+        /// <param name="sql">The SQL query to optimize</param>
+        /// <param name="parameters">The parameters for the query (optional)</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>The optimization result with detailed information</returns>
+        Task<OptimizationResult> OptimizeQueryAsync(
+            string sql,
+            Dictionary<string, object>? parameters = null,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Calculates the complexity score of a SQL query (1-10)
+        /// </summary>
+        /// <param name="sql">The SQL query to analyze</param>
+        /// <param name="parameters">The parameters for the query (optional)</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Complexity score from 1 (simple) to 10 (very complex)</returns>
+        Task<int> GetQueryComplexityAsync(
+            string sql,
+            Dictionary<string, object>? parameters = null,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Analyzes the performance characteristics of a SQL query
+        /// </summary>
+        /// <param name="sql">The SQL query to analyze</param>
+        /// <param name="parameters">The parameters for the query (optional)</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Detailed performance analysis result</returns>
+        Task<QueryPerformanceAnalysis> AnalyzeQueryPerformanceAsync(
+            string sql,
+            Dictionary<string, object>? parameters = null,
+            CancellationToken cancellationToken = default);
     }
 
     /// <summary>

@@ -72,12 +72,12 @@ namespace SmartInsight.AI.SQL.Validators
                     // Validate against naming pattern
                     if (!Regex.IsMatch(objectName, ValidDatabaseIdentifierPattern))
                     {
-                        result.AddIssue(new ParameterValidationIssue
+                        result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                         {
                             ParameterName = param.Key,
                             RuleName = "Database.InvalidIdentifier",
                             Description = $"Database identifier '{objectName}' does not follow naming conventions",
-                            Severity = ValidationSeverity.Warning,
+                            Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                             OriginalValue = objectName,
                             Recommendation = "Database object names should start with a letter and contain only letters, numbers, and underscores"
                         });
@@ -86,12 +86,12 @@ namespace SmartInsight.AI.SQL.Validators
                     // Check for SQL reserved words
                     if (_sqlReservedWords.Contains(objectName))
                     {
-                        result.AddIssue(new ParameterValidationIssue
+                        result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                         {
                             ParameterName = param.Key,
                             RuleName = "Database.ReservedWord",
                             Description = $"'{objectName}' is a SQL reserved word and should be avoided for database objects",
-                            Severity = ValidationSeverity.Warning,
+                            Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                             OriginalValue = objectName,
                             Recommendation = "Choose a different name that is not a SQL reserved word"
                         });
@@ -100,12 +100,12 @@ namespace SmartInsight.AI.SQL.Validators
                     // Check for injection attempts in object names
                     if (ContainsDatabaseInjectionPatterns(objectName))
                     {
-                        result.AddIssue(new ParameterValidationIssue
+                        result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                         {
                             ParameterName = param.Key,
                             RuleName = "Security.ObjectNameInjection",
                             Description = $"Database object name '{objectName}' contains potential SQL injection patterns",
-                            Severity = ValidationSeverity.Critical,
+                            Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Critical,
                             OriginalValue = objectName,
                             Recommendation = "Provide a valid database object name without special characters or SQL syntax"
                         });
@@ -120,12 +120,12 @@ namespace SmartInsight.AI.SQL.Validators
                 var allowedSchemas = new[] { "dbo", "public", "app", "data", "users" };
                 if (!allowedSchemas.Contains(schemaName, StringComparer.OrdinalIgnoreCase))
                 {
-                    result.AddIssue(new ParameterValidationIssue
+                    result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                     {
                         ParameterName = "schema",
                         RuleName = "Database.UnknownSchema",
                         Description = $"Schema '{schemaName}' is not in the list of allowed schemas",
-                        Severity = ValidationSeverity.Warning,
+                        Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                         OriginalValue = schemaName,
                         Recommendation = $"Use one of the allowed schemas: {string.Join(", ", allowedSchemas)}"
                     });

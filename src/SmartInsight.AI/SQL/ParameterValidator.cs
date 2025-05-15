@@ -16,8 +16,8 @@ namespace SmartInsight.AI.SQL
     public class ParameterValidator : IParameterValidator
     {
         private readonly ILogger<ParameterValidator> _logger;
-        private readonly Dictionary<string, ValidationRuleDefinition> _rules;
-        private readonly Dictionary<string, Func<ExtractedParameter, SqlTemplateParameter, Task<ParameterValidationIssue?>>> _ruleHandlers;
+        private readonly Dictionary<string, SmartInsight.AI.SQL.Interfaces.ValidationRuleDefinition> _rules;
+        private readonly Dictionary<string, Func<ExtractedParameter, SqlTemplateParameter, Task<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>>> _ruleHandlers;
 
         /// <summary>
         /// Creates a new instance of ParameterValidator
@@ -26,8 +26,8 @@ namespace SmartInsight.AI.SQL
         public ParameterValidator(ILogger<ParameterValidator> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _rules = new Dictionary<string, ValidationRuleDefinition>();
-            _ruleHandlers = new Dictionary<string, Func<ExtractedParameter, SqlTemplateParameter, Task<ParameterValidationIssue?>>>();
+            _rules = new Dictionary<string, SmartInsight.AI.SQL.Interfaces.ValidationRuleDefinition>();
+            _ruleHandlers = new Dictionary<string, Func<ExtractedParameter, SqlTemplateParameter, Task<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>>>();
             
             RegisterDefaultRules();
         }
@@ -50,12 +50,12 @@ namespace SmartInsight.AI.SQL
             {
                 if (!parameters.ContainsKey(param.Name))
                 {
-                    var issue = new ParameterValidationIssue
+                    var issue = new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                     {
                         ParameterName = param.Name,
                         RuleName = "Required.Missing",
                         Description = $"Required parameter '{param.Name}' is missing",
-                        Severity = ValidationSeverity.Critical,
+                        Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Critical,
                         Recommendation = $"Provide a value for the {param.Name} parameter"
                     };
                     
@@ -74,12 +74,12 @@ namespace SmartInsight.AI.SQL
                 if (templateParam == null)
                 {
                     // Parameter not defined in template
-                    var issue = new ParameterValidationIssue
+                    var issue = new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                     {
                         ParameterName = paramName,
                         RuleName = "Parameter.Unknown",
                         Description = $"Parameter '{paramName}' is not defined in the template",
-                        Severity = ValidationSeverity.Warning,
+                        Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                         OriginalValue = paramValue.Value,
                         Recommendation = "Remove this parameter or use only parameters defined in the template"
                     };
@@ -103,7 +103,7 @@ namespace SmartInsight.AI.SQL
                             var issue = await handler(paramValue, templateParam);
                             if (issue != null)
                             {
-                                result.AddIssue(issue);
+                                result.AddIssue(ConvertInterfaceIssueToModel(issue));
                             }
                         }
                         catch (Exception ex)
@@ -112,12 +112,12 @@ namespace SmartInsight.AI.SQL
                                 rule.Name, paramName);
                             
                             // Add a validation issue for the rule execution failure
-                            var issue = new ParameterValidationIssue
+                            var issue = new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                             {
                                 ParameterName = paramName,
                                 RuleName = "Rule.ExecutionError",
                                 Description = $"Error executing validation rule '{rule.Name}': {ex.Message}",
-                                Severity = ValidationSeverity.Warning,
+                                Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                                 OriginalValue = paramValue.Value
                             };
                             
@@ -134,7 +134,7 @@ namespace SmartInsight.AI.SQL
         }
 
         /// <inheritdoc />
-        public async Task<ParameterValidationIssue?> ValidateParameterAsync(
+        public async Task<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?> ValidateParameterAsync(
             ExtractedParameter parameter,
             SqlTemplateParameter templateParameter,
             string ruleName)
@@ -167,12 +167,12 @@ namespace SmartInsight.AI.SQL
                 _logger.LogError(ex, "Error executing validation rule {RuleName} for parameter {ParamName}", 
                     ruleName, parameter.Name);
                 
-                return new ParameterValidationIssue
+                return new SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue
                 {
                     ParameterName = parameter.Name,
                     RuleName = "Rule.ExecutionError",
                     Description = $"Error executing validation rule '{ruleName}': {ex.Message}",
-                    Severity = ValidationSeverity.Warning,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                     OriginalValue = parameter.Value
                 };
             }
@@ -182,7 +182,7 @@ namespace SmartInsight.AI.SQL
         public void RegisterValidationRule(
             string ruleName,
             string ruleDescription,
-            ValidationSeverity severity,
+            SmartInsight.AI.SQL.Models.ValidationSeverity severity,
             IEnumerable<string>? applicableTypes = null)
         {
             if (string.IsNullOrWhiteSpace(ruleName))
@@ -195,7 +195,7 @@ namespace SmartInsight.AI.SQL
                 throw new ArgumentException($"Rule with name '{ruleName}' already exists", nameof(ruleName));
             }
             
-            var rule = new ValidationRuleDefinition
+            var rule = new SmartInsight.AI.SQL.Interfaces.ValidationRuleDefinition
             {
                 Name = ruleName,
                 Description = ruleDescription,
@@ -209,7 +209,7 @@ namespace SmartInsight.AI.SQL
         }
 
         /// <inheritdoc />
-        public IReadOnlyList<ValidationRuleDefinition> GetAvailableRules()
+        public IReadOnlyList<SmartInsight.AI.SQL.Interfaces.ValidationRuleDefinition> GetAvailableRules()
         {
             return _rules.Values.ToList();
         }
@@ -221,7 +221,7 @@ namespace SmartInsight.AI.SQL
         /// <param name="handler">The handler function that implements the rule</param>
         public void RegisterRuleHandler(
             string ruleName, 
-            Func<ExtractedParameter, SqlTemplateParameter, Task<ParameterValidationIssue?>> handler)
+            Func<ExtractedParameter, SqlTemplateParameter, Task<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>> handler)
         {
             if (!_rules.ContainsKey(ruleName))
             {
@@ -248,7 +248,7 @@ namespace SmartInsight.AI.SQL
             _logger.LogInformation("Set validation rule {RuleName} enabled: {IsEnabled}", ruleName, isEnabled);
         }
         
-        private bool IsRuleApplicableToParameter(ValidationRuleDefinition rule, SqlTemplateParameter parameter)
+        private bool IsRuleApplicableToParameter(SmartInsight.AI.SQL.Interfaces.ValidationRuleDefinition rule, SqlTemplateParameter parameter)
         {
             // If the rule has no specific types, it applies to all
             if (rule.ApplicableTypes.Count == 0)
@@ -266,16 +266,16 @@ namespace SmartInsight.AI.SQL
             RegisterValidationRule(
                 "Required.Missing",
                 "Checks if required parameters are provided",
-                ValidationSeverity.Critical);
+                SmartInsight.AI.SQL.Models.ValidationSeverity.Critical);
                 
             RegisterRuleHandler("Required.Missing", (param, template) => 
-                Task.FromResult<ParameterValidationIssue?>(template.Required && param == null
-                    ? new ParameterValidationIssue
+                Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(template.Required && param == null
+                    ? new SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue
                     {
                         ParameterName = template.Name,
                         RuleName = "Required.Missing",
                         Description = $"Required parameter '{template.Name}' is missing",
-                        Severity = ValidationSeverity.Critical,
+                        Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Critical,
                         Recommendation = $"Provide a value for the {template.Name} parameter"
                     }
                     : null));
@@ -284,23 +284,23 @@ namespace SmartInsight.AI.SQL
             RegisterValidationRule(
                 "Type.Invalid",
                 "Checks if parameter value is compatible with the expected type",
-                ValidationSeverity.Critical);
+                SmartInsight.AI.SQL.Models.ValidationSeverity.Critical);
                 
             RegisterRuleHandler("Type.Invalid", (param, template) =>
             {
                 if (param.Value == null)
                 {
-                    return Task.FromResult<ParameterValidationIssue?>(null);
+                    return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(null);
                 }
                 
                 bool isCompatible = IsTypeCompatible(param.Value, template.Type);
-                return Task.FromResult<ParameterValidationIssue?>(!isCompatible
-                    ? new ParameterValidationIssue
+                return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(!isCompatible
+                    ? new SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue
                     {
                         ParameterName = param.Name,
                         RuleName = "Type.Invalid",
                         Description = $"Value '{param.Value}' is not compatible with type {template.Type}",
-                        Severity = ValidationSeverity.Critical,
+                        Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Critical,
                         OriginalValue = param.Value,
                         Recommendation = $"Provide a value of type {template.Type}"
                     }
@@ -311,18 +311,18 @@ namespace SmartInsight.AI.SQL
             RegisterValidationRule(
                 "Confidence.Low",
                 "Checks if parameter extraction confidence is above threshold",
-                ValidationSeverity.Warning);
+                SmartInsight.AI.SQL.Models.ValidationSeverity.Warning);
                 
             RegisterRuleHandler("Confidence.Low", (param, template) =>
             {
                 const double DEFAULT_CONFIDENCE_THRESHOLD = 0.7;
-                return Task.FromResult<ParameterValidationIssue?>(param.Confidence < DEFAULT_CONFIDENCE_THRESHOLD
-                    ? new ParameterValidationIssue
+                return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(param.Confidence < DEFAULT_CONFIDENCE_THRESHOLD
+                    ? new SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue
                     {
                         ParameterName = param.Name,
                         RuleName = "Confidence.Low",
                         Description = $"Low confidence ({param.Confidence:P0}) in extracted value for parameter '{param.Name}'",
-                        Severity = ValidationSeverity.Warning,
+                        Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                         OriginalValue = param.Confidence,
                         Recommendation = "Verify this parameter value is correct or provide a more specific value"
                     }
@@ -333,14 +333,14 @@ namespace SmartInsight.AI.SQL
             RegisterValidationRule(
                 "Security.SqlInjection",
                 "Checks for potential SQL injection patterns in string parameters",
-                ValidationSeverity.Critical,
+                SmartInsight.AI.SQL.Models.ValidationSeverity.Critical,
                 new[] { "String" });
                 
             RegisterRuleHandler("Security.SqlInjection", (param, template) =>
             {
                 if (param.Value == null || !(param.Value is string strValue))
                 {
-                    return Task.FromResult<ParameterValidationIssue?>(null);
+                    return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(null);
                 }
                 
                 // Check for common SQL injection patterns
@@ -361,33 +361,33 @@ namespace SmartInsight.AI.SQL
                 {
                     if (Regex.IsMatch(strValue, pattern, RegexOptions.IgnoreCase))
                     {
-                        return Task.FromResult<ParameterValidationIssue?>(new ParameterValidationIssue
+                        return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(new SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue
                         {
                             ParameterName = param.Name,
                             RuleName = "Security.SqlInjection",
                             Description = $"Potential SQL injection detected in parameter '{param.Name}'",
-                            Severity = ValidationSeverity.Critical,
+                            Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Critical,
                             OriginalValue = strValue,
                             Recommendation = "Remove SQL syntax from parameter value"
                         });
                     }
                 }
                 
-                return Task.FromResult<ParameterValidationIssue?>(null);
+                return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(null);
             });
             
             // Email format validation
             RegisterValidationRule(
                 "Format.Email",
                 "Validates email address format",
-                ValidationSeverity.Warning,
+                SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                 new[] { "String" });
                 
             RegisterRuleHandler("Format.Email", (param, template) =>
             {
                 if (param.Value == null || !(param.Value is string strValue))
                 {
-                    return Task.FromResult<ParameterValidationIssue?>(null);
+                    return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(null);
                 }
                 
                 // Use a simple regex for email validation
@@ -395,13 +395,13 @@ namespace SmartInsight.AI.SQL
                 string emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
                 bool isValid = Regex.IsMatch(strValue, emailPattern);
                 
-                return Task.FromResult<ParameterValidationIssue?>(!isValid
-                    ? new ParameterValidationIssue
+                return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(!isValid
+                    ? new SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue
                     {
                         ParameterName = param.Name,
                         RuleName = "Format.Email",
                         Description = $"Invalid email format for parameter '{param.Name}'",
-                        Severity = ValidationSeverity.Warning,
+                        Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                         OriginalValue = strValue,
                         Recommendation = "Provide a valid email address (e.g., user@example.com)"
                     }
@@ -412,27 +412,27 @@ namespace SmartInsight.AI.SQL
             RegisterValidationRule(
                 "Format.Url",
                 "Validates URL format",
-                ValidationSeverity.Warning,
+                SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                 new[] { "String" });
                 
             RegisterRuleHandler("Format.Url", (param, template) =>
             {
                 if (param.Value == null || !(param.Value is string strValue))
                 {
-                    return Task.FromResult<ParameterValidationIssue?>(null);
+                    return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(null);
                 }
                 
                 // Check if it's a valid URI
                 bool isValid = Uri.TryCreate(strValue, UriKind.Absolute, out Uri? uriResult) 
                                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
                 
-                return Task.FromResult<ParameterValidationIssue?>(!isValid
-                    ? new ParameterValidationIssue
+                return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(!isValid
+                    ? new SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue
                     {
                         ParameterName = param.Name,
                         RuleName = "Format.Url",
                         Description = $"Invalid URL format for parameter '{param.Name}'",
-                        Severity = ValidationSeverity.Warning,
+                        Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                         OriginalValue = strValue,
                         Recommendation = "Provide a valid URL (e.g., https://example.com)"
                     }
@@ -443,14 +443,14 @@ namespace SmartInsight.AI.SQL
             RegisterValidationRule(
                 "Range.Numeric",
                 "Checks if numeric parameter is within reasonable range",
-                ValidationSeverity.Warning,
+                SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                 new[] { "Int32", "Int64", "Double", "Decimal", "Float" });
                 
             RegisterRuleHandler("Range.Numeric", (param, template) =>
             {
                 if (param.Value == null)
                 {
-                    return Task.FromResult<ParameterValidationIssue?>(null);
+                    return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(null);
                 }
                 
                 bool isOutOfRange = false;
@@ -482,13 +482,13 @@ namespace SmartInsight.AI.SQL
                     rangeDescription = "-1.0e12 to 1.0e12 (not NaN or Infinity)";
                 }
                 
-                return Task.FromResult<ParameterValidationIssue?>(isOutOfRange
-                    ? new ParameterValidationIssue
+                return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(isOutOfRange
+                    ? new SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue
                     {
                         ParameterName = param.Name,
                         RuleName = "Range.Numeric",
                         Description = $"Numeric value '{param.Value}' is outside reasonable range for parameter '{param.Name}'",
-                        Severity = ValidationSeverity.Warning,
+                        Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                         OriginalValue = param.Value,
                         Recommendation = $"Provide a value within range {rangeDescription}"
                     }
@@ -499,14 +499,14 @@ namespace SmartInsight.AI.SQL
             RegisterValidationRule(
                 "Range.Date",
                 "Checks if date parameter is within reasonable range",
-                ValidationSeverity.Warning,
+                SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                 new[] { "DateTime", "DateTimeOffset" });
                 
             RegisterRuleHandler("Range.Date", (param, template) =>
             {
                 if (param.Value == null)
                 {
-                    return Task.FromResult<ParameterValidationIssue?>(null);
+                    return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(null);
                 }
                 
                 var minDate = new DateTime(1900, 1, 1);
@@ -525,13 +525,13 @@ namespace SmartInsight.AI.SQL
                     isOutOfRange = offsetValue.DateTime < minDate || offsetValue.DateTime > maxDate;
                 }
                 
-                return Task.FromResult<ParameterValidationIssue?>(isOutOfRange
-                    ? new ParameterValidationIssue
+                return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(isOutOfRange
+                    ? new SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue
                     {
                         ParameterName = param.Name,
                         RuleName = "Range.Date",
                         Description = $"Date value '{valueDate:yyyy-MM-dd}' is outside reasonable range for parameter '{param.Name}'",
-                        Severity = ValidationSeverity.Warning,
+                        Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                         OriginalValue = param.Value,
                         Recommendation = $"Provide a date between {minDate:yyyy-MM-dd} and {maxDate:yyyy-MM-dd}"
                     }
@@ -542,14 +542,14 @@ namespace SmartInsight.AI.SQL
             RegisterValidationRule(
                 "Format.StringLength",
                 "Checks if string parameter length is within acceptable range",
-                ValidationSeverity.Warning,
+                SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                 new[] { "String" });
                 
             RegisterRuleHandler("Format.StringLength", (param, template) =>
             {
                 if (param.Value == null || !(param.Value is string strValue))
                 {
-                    return Task.FromResult<ParameterValidationIssue?>(null);
+                    return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(null);
                 }
                 
                 const int MIN_LENGTH = 1;
@@ -560,12 +560,12 @@ namespace SmartInsight.AI.SQL
                 
                 if (isTooShort)
                 {
-                    return Task.FromResult<ParameterValidationIssue?>(new ParameterValidationIssue
+                    return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(new SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue
                     {
                         ParameterName = param.Name,
                         RuleName = "Format.StringLength",
                         Description = $"String parameter '{param.Name}' is empty",
-                        Severity = ValidationSeverity.Warning,
+                        Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                         OriginalValue = strValue,
                         Recommendation = "Provide a non-empty string value"
                     });
@@ -573,25 +573,25 @@ namespace SmartInsight.AI.SQL
                 
                 if (isTooLong)
                 {
-                    return Task.FromResult<ParameterValidationIssue?>(new ParameterValidationIssue
+                    return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(new SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue
                     {
                         ParameterName = param.Name,
                         RuleName = "Format.StringLength",
                         Description = $"String parameter '{param.Name}' is too long ({strValue.Length} characters)",
-                        Severity = ValidationSeverity.Warning,
+                        Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                         OriginalValue = strValue,
                         Recommendation = $"Provide a string value shorter than {MAX_LENGTH} characters"
                     });
                 }
                 
-                return Task.FromResult<ParameterValidationIssue?>(null);
+                return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(null);
             });
             
             // RegEx pattern matching
             RegisterValidationRule(
                 "Format.Pattern",
                 "Checks if string parameter matches a regex pattern",
-                ValidationSeverity.Warning,
+                SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                 new[] { "String" });
                 
             // This rule is registered but not automatically applied
@@ -601,14 +601,14 @@ namespace SmartInsight.AI.SQL
             RegisterValidationRule(
                 "Content.Inappropriate",
                 "Checks for inappropriate content in string parameters",
-                ValidationSeverity.Warning,
+                SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                 new[] { "String" });
                 
             RegisterRuleHandler("Content.Inappropriate", (param, template) =>
             {
                 if (param.Value == null || !(param.Value is string strValue))
                 {
-                    return Task.FromResult<ParameterValidationIssue?>(null);
+                    return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(null);
                 }
                 
                 // Simple list of inappropriate terms
@@ -623,26 +623,26 @@ namespace SmartInsight.AI.SQL
                 {
                     if (strValue.Contains(term, StringComparison.OrdinalIgnoreCase))
                     {
-                        return Task.FromResult<ParameterValidationIssue?>(new ParameterValidationIssue
+                        return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(new SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue
                         {
                             ParameterName = param.Name,
                             RuleName = "Content.Inappropriate",
                             Description = $"Parameter '{param.Name}' contains inappropriate content",
-                            Severity = ValidationSeverity.Warning,
+                            Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                             OriginalValue = strValue,
                             Recommendation = "Remove inappropriate content from the parameter value"
                         });
                     }
                 }
                 
-                return Task.FromResult<ParameterValidationIssue?>(null);
+                return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(null);
             });
             
             // Business rule check for value in specific list
             RegisterValidationRule(
                 "Business.AllowedValues",
                 "Checks if value is in list of allowed values",
-                ValidationSeverity.Warning);
+                SmartInsight.AI.SQL.Models.ValidationSeverity.Warning);
                 
             // This rule is registered but not automatically applied
             // It's intended to be used with custom parameter metadata
@@ -688,15 +688,15 @@ namespace SmartInsight.AI.SQL
         /// <param name="errorMessage">Custom error message if validation fails</param>
         /// <param name="severity">Severity of the validation issue</param>
         /// <returns>A validation issue if validation fails, null otherwise</returns>
-        public Task<ParameterValidationIssue?> ValidateRegexPatternAsync(
+        public Task<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?> ValidateRegexPatternAsync(
             ExtractedParameter parameter,
             string pattern,
             string? errorMessage = null,
-            ValidationSeverity severity = ValidationSeverity.Warning)
+            SmartInsight.AI.SQL.Models.ValidationSeverity severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning)
         {
             if (parameter.Value == null || !(parameter.Value is string strValue))
             {
-                return Task.FromResult<ParameterValidationIssue?>(null);
+                return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(null);
             }
             
             try
@@ -705,7 +705,7 @@ namespace SmartInsight.AI.SQL
                 
                 if (!isValid)
                 {
-                    return Task.FromResult<ParameterValidationIssue?>(new ParameterValidationIssue
+                    return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(new SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue
                     {
                         ParameterName = parameter.Name,
                         RuleName = "Format.Pattern",
@@ -719,17 +719,17 @@ namespace SmartInsight.AI.SQL
             catch (ArgumentException ex)
             {
                 _logger.LogError(ex, "Invalid regex pattern: {Pattern}", pattern);
-                return Task.FromResult<ParameterValidationIssue?>(new ParameterValidationIssue
+                return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(new SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue
                 {
                     ParameterName = parameter.Name,
                     RuleName = "Rule.Error",
                     Description = $"Error validating parameter '{parameter.Name}': Invalid regex pattern",
-                    Severity = ValidationSeverity.Warning,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                     OriginalValue = pattern
                 });
             }
             
-            return Task.FromResult<ParameterValidationIssue?>(null);
+            return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(null);
         }
         
         /// <summary>
@@ -741,16 +741,16 @@ namespace SmartInsight.AI.SQL
         /// <param name="errorMessage">Custom error message if validation fails</param>
         /// <param name="severity">Severity of the validation issue</param>
         /// <returns>A validation issue if validation fails, null otherwise</returns>
-        public Task<ParameterValidationIssue?> ValidateAllowedValuesAsync(
+        public Task<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?> ValidateAllowedValuesAsync(
             ExtractedParameter parameter,
             IEnumerable<object> allowedValues,
             bool ignoreCase = true,
             string? errorMessage = null,
-            ValidationSeverity severity = ValidationSeverity.Warning)
+            SmartInsight.AI.SQL.Models.ValidationSeverity severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning)
         {
             if (parameter.Value == null)
             {
-                return Task.FromResult<ParameterValidationIssue?>(null);
+                return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(null);
             }
             
             bool isValid = false;
@@ -768,7 +768,7 @@ namespace SmartInsight.AI.SQL
             if (!isValid)
             {
                 var valuesStr = string.Join(", ", allowedValues.Select(v => v.ToString()));
-                return Task.FromResult<ParameterValidationIssue?>(new ParameterValidationIssue
+                return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(new SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue
                 {
                     ParameterName = parameter.Name,
                     RuleName = "Business.AllowedValues",
@@ -779,7 +779,7 @@ namespace SmartInsight.AI.SQL
                 });
             }
             
-            return Task.FromResult<ParameterValidationIssue?>(null);
+            return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(null);
         }
         
         /// <summary>
@@ -791,16 +791,16 @@ namespace SmartInsight.AI.SQL
         /// <param name="errorMessage">Custom error message if validation fails</param>
         /// <param name="severity">Severity of the validation issue</param>
         /// <returns>A validation issue if validation fails, null otherwise</returns>
-        public Task<ParameterValidationIssue?> ValidateNumberRangeAsync(
+        public Task<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?> ValidateNumberRangeAsync(
             ExtractedParameter parameter,
             double min,
             double max,
             string? errorMessage = null,
-            ValidationSeverity severity = ValidationSeverity.Warning)
+            SmartInsight.AI.SQL.Models.ValidationSeverity severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning)
         {
             if (parameter.Value == null)
             {
-                return Task.FromResult<ParameterValidationIssue?>(null);
+                return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(null);
             }
             
             double? numericValue = null;
@@ -828,7 +828,7 @@ namespace SmartInsight.AI.SQL
             
             if (numericValue.HasValue && (numericValue < min || numericValue > max))
             {
-                return Task.FromResult<ParameterValidationIssue?>(new ParameterValidationIssue
+                return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(new SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue
                 {
                     ParameterName = parameter.Name,
                     RuleName = "Range.Numeric",
@@ -839,7 +839,7 @@ namespace SmartInsight.AI.SQL
                 });
             }
             
-            return Task.FromResult<ParameterValidationIssue?>(null);
+            return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(null);
         }
         
         /// <summary>
@@ -851,21 +851,21 @@ namespace SmartInsight.AI.SQL
         /// <param name="errorMessage">Custom error message if validation fails</param>
         /// <param name="severity">Severity of the validation issue</param>
         /// <returns>A validation issue if validation fails, null otherwise</returns>
-        public Task<ParameterValidationIssue?> ValidateStringLengthAsync(
+        public Task<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?> ValidateStringLengthAsync(
             ExtractedParameter parameter,
             int minLength = 0,
             int maxLength = int.MaxValue,
             string? errorMessage = null,
-            ValidationSeverity severity = ValidationSeverity.Warning)
+            SmartInsight.AI.SQL.Models.ValidationSeverity severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning)
         {
             if (parameter.Value == null || !(parameter.Value is string strValue))
             {
-                return Task.FromResult<ParameterValidationIssue?>(null);
+                return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(null);
             }
             
             if (strValue.Length < minLength)
             {
-                return Task.FromResult<ParameterValidationIssue?>(new ParameterValidationIssue
+                return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(new SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue
                 {
                     ParameterName = parameter.Name,
                     RuleName = "Format.StringLength",
@@ -878,7 +878,7 @@ namespace SmartInsight.AI.SQL
             
             if (strValue.Length > maxLength)
             {
-                return Task.FromResult<ParameterValidationIssue?>(new ParameterValidationIssue
+                return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(new SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue
                 {
                     ParameterName = parameter.Name,
                     RuleName = "Format.StringLength",
@@ -889,7 +889,23 @@ namespace SmartInsight.AI.SQL
                 });
             }
             
-            return Task.FromResult<ParameterValidationIssue?>(null);
+            return Task.FromResult<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue?>(null);
+        }
+
+        /// <summary>
+        /// Converts an interface parameter validation issue to a model parameter validation issue
+        /// </summary>
+        private SmartInsight.AI.SQL.Models.ParameterValidationIssue ConvertInterfaceIssueToModel(SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue issue)
+        {
+            return new SmartInsight.AI.SQL.Models.ParameterValidationIssue
+            {
+                ParameterName = issue.ParameterName,
+                RuleName = issue.RuleName,
+                Description = issue.Description,
+                Severity = issue.Severity,
+                OriginalValue = issue.OriginalValue,
+                Recommendation = issue.Recommendation
+            };
         }
     }
 } 

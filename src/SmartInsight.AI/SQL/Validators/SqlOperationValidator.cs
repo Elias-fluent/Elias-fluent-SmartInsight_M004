@@ -91,12 +91,12 @@ namespace SmartInsight.AI.SQL.Validators
                 // Check for reasonable LIMIT values to prevent performance issues
                 if (limitValue > 1000)
                 {
-                    result.AddIssue(new ParameterValidationIssue
+                    result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                     {
                         ParameterName = "limit",
                         RuleName = "Performance.ExcessiveLimit",
                         Description = $"LIMIT value of {limitValue} is excessively high",
-                        Severity = ValidationSeverity.Warning,
+                        Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                         OriginalValue = limitValue,
                         Recommendation = "Use a lower limit value (≤1000) to avoid performance issues"
                     });
@@ -107,12 +107,12 @@ namespace SmartInsight.AI.SQL.Validators
             bool hasFilterParam = parameters.Any(p => IsLikelyFilterParameter(p.Key));
             if (!hasFilterParam && !template.AllowFullTableScan)
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = string.Empty,
                     RuleName = "Performance.NoFilter",
                     Description = "SELECT operation has no filtering parameters, which may cause full table scan",
-                    Severity = ValidationSeverity.Warning,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                     Recommendation = "Add filter parameters to limit the result set"
                 });
             }
@@ -135,12 +135,12 @@ namespace SmartInsight.AI.SQL.Validators
                 
             if (!hasRequiredField)
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = string.Empty,
                     RuleName = "Validation.MissingInsertData",
                     Description = "INSERT operation is missing data parameters",
-                    Severity = ValidationSeverity.Critical,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Critical,
                     Recommendation = "Provide data values for the INSERT operation"
                 });
             }
@@ -152,12 +152,12 @@ namespace SmartInsight.AI.SQL.Validators
                     param.Value.Value is Guid guidValue && 
                     guidValue == Guid.Empty)
                 {
-                    result.AddIssue(new ParameterValidationIssue
+                    result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                     {
                         ParameterName = param.Key,
                         RuleName = "DataIntegrity.EmptyGuid",
                         Description = $"Empty GUID value for '{param.Key}' parameter",
-                        Severity = ValidationSeverity.Warning,
+                        Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                         OriginalValue = guidValue,
                         Recommendation = "Provide a valid GUID value"
                     });
@@ -179,12 +179,12 @@ namespace SmartInsight.AI.SQL.Validators
             bool hasWhereParam = parameters.Any(p => IsLikelyFilterParameter(p.Key));
             if (!hasWhereParam)
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = string.Empty,
                     RuleName = "Security.UnfilteredUpdate",
                     Description = "UPDATE operation has no filtering parameters, which may affect all rows",
-                    Severity = ValidationSeverity.Critical,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Critical,
                     Recommendation = "Add WHERE clause parameters to limit affected rows"
                 });
             }
@@ -193,12 +193,12 @@ namespace SmartInsight.AI.SQL.Validators
             bool hasSetParam = parameters.Any(p => !IsLikelyFilterParameter(p.Key));
             if (!hasSetParam)
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = string.Empty,
                     RuleName = "Validation.MissingUpdateData",
                     Description = "UPDATE operation is missing data to update",
-                    Severity = ValidationSeverity.Critical,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Critical,
                     Recommendation = "Provide values to update"
                 });
             }
@@ -218,12 +218,12 @@ namespace SmartInsight.AI.SQL.Validators
             bool hasWhereParam = parameters.Any(p => IsLikelyFilterParameter(p.Key));
             if (!hasWhereParam)
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = string.Empty,
                     RuleName = "Security.UnfilteredDelete",
                     Description = "DELETE operation has no filtering parameters, which may affect all rows",
-                    Severity = ValidationSeverity.Critical,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Critical,
                     Recommendation = "Add WHERE clause parameters to limit affected rows"
                 });
             }
@@ -235,12 +235,12 @@ namespace SmartInsight.AI.SQL.Validators
                 
             if (!hasPrimaryKeyFilter && hasWhereParam)
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = string.Empty,
                     RuleName = "Performance.NonKeyDelete",
                     Description = "DELETE operation uses non-primary key filters",
-                    Severity = ValidationSeverity.Warning,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                     Recommendation = "Consider using primary key for DELETE operations"
                 });
             }

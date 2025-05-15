@@ -167,15 +167,18 @@ namespace SmartInsight.AI.SQL
             int executionInterval = 24)
         {
             // Register the log retention options
-            services.Configure<LogRetentionOptions>(options =>
+            services.Configure<SqlLogRetentionOptions>(options =>
             {
-                options.RetentionDays = retentionDays;
-                options.ExecutionInterval = executionInterval;
+                options.DefaultRetentionDays = retentionDays;
+                options.ErrorLogRetentionDays = Math.Max(retentionDays, 90); // Keep errors longer
+                options.PerformanceLogRetentionDays = Math.Max(retentionDays, 60); // Keep performance logs longer
             });
             
             // Register the log retention service
+            services.AddSingleton<ISqlLogRetentionService, SqlLogRetentionService>();
+            
             // Note: To use this, the host needs to support hosted services
-            // services.AddHostedService<SqlLogRetentionService>();
+            // services.AddHostedService<SqlLogRetentionHostedService>();
             
             return services;
         }

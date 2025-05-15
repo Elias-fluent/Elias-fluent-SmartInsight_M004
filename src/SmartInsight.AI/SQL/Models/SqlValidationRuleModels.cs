@@ -10,101 +10,105 @@ namespace SmartInsight.AI.SQL.Models
     /// </summary>
     public class SqlValidationRuleDefinition
     {
+        private string _category = string.Empty;
+        
         /// <summary>
-        /// Unique name of the rule
+        /// Name of the rule
         /// </summary>
         public string Name { get; set; } = null!;
-        
+
         /// <summary>
-        /// Human-readable description of the rule's purpose
+        /// Description of the rule
         /// </summary>
         public string Description { get; set; } = null!;
-        
+
         /// <summary>
         /// Category of the rule
         /// </summary>
-        public ValidationCategory Category { get; set; }
+        public string Category 
+        { 
+            get => _category;
+            set
+            {
+                _category = value;
+                // Update CategoryEnum when string Category is set
+                if (Enum.TryParse<ValidationCategory>(value, true, out var categoryEnum))
+                {
+                    CategoryEnum = categoryEnum;
+                }
+            }
+        }
         
         /// <summary>
-        /// Default severity level if this rule is violated
+        /// Category of the rule as enum
+        /// </summary>
+        public ValidationCategory CategoryEnum { get; set; }
+
+        /// <summary>
+        /// Default severity of any issues found by this rule
         /// </summary>
         public ValidationSeverity DefaultSeverity { get; set; }
-        
+
         /// <summary>
-        /// Whether this rule is enabled
+        /// Whether the rule is enabled
         /// </summary>
         public bool IsEnabled { get; set; } = true;
-        
+
         /// <summary>
-        /// Optional recommendation text to display when rule is violated
+        /// Default recommendation to include with issues
         /// </summary>
         public string? DefaultRecommendation { get; set; }
+
+        /// <summary>
+        /// Function to check SQL and return any issues
+        /// </summary>
+        public Func<string, Dictionary<string, object>?, Task<List<SqlValidationIssue>>>? ValidationFunction { get; set; }
         
         /// <summary>
-        /// The function that implements the rule validation logic
+        /// Function to check SQL and return any issues (with cancellation support)
         /// </summary>
-        public Func<string, Dictionary<string, object>?, CancellationToken, Task<List<SqlValidationIssue>>> ValidationFunction { get; set; } = null!;
+        public Func<string, Dictionary<string, object>?, CancellationToken, Task<List<SqlValidationIssue>>>? ValidationFunctionWithCancellation { get; set; }
     }
-    
+
     /// <summary>
-    /// Represents a set of validation rules that can be applied as a group
+    /// Result of SQL validation
+    /// </summary>
+    public class SqlValidationResult
+    {
+        /// <summary>
+        /// Whether the SQL is valid
+        /// </summary>
+        public bool IsValid { get; set; }
+
+        /// <summary>
+        /// List of issues found
+        /// </summary>
+        public List<SqlValidationIssue> Issues { get; set; } = new List<SqlValidationIssue>();
+    }
+
+    /// <summary>
+    /// Named set of validation rules
     /// </summary>
     public class SqlValidationRuleSet
     {
         /// <summary>
-        /// Unique name of the rule set
+        /// Name of the rule set
         /// </summary>
         public string Name { get; set; } = null!;
-        
+
         /// <summary>
-        /// Human-readable description of the rule set
+        /// Description of the rule set
         /// </summary>
         public string Description { get; set; } = null!;
-        
-        /// <summary>
-        /// Collection of rule names included in this set
-        /// </summary>
-        public List<string> RuleNames { get; set; } = new List<string>();
-        
+
         /// <summary>
         /// When the rule set was created
         /// </summary>
         public DateTime Created { get; set; } = DateTime.UtcNow;
-        
+
         /// <summary>
-        /// When the rule set was last modified
+        /// List of rule names in this set
         /// </summary>
-        public DateTime? LastModified { get; set; }
-    }
-    
-    /// <summary>
-    /// Type of SQL validation rule
-    /// </summary>
-    public enum SqlRuleType
-    {
-        /// <summary>
-        /// Security-related rule
-        /// </summary>
-        Security,
-        
-        /// <summary>
-        /// Performance-related rule
-        /// </summary>
-        Performance,
-        
-        /// <summary>
-        /// Syntax-related rule
-        /// </summary>
-        Syntax,
-        
-        /// <summary>
-        /// Best practice rule
-        /// </summary>
-        BestPractice,
-        
-        /// <summary>
-        /// Business logic rule
-        /// </summary>
-        Business
+        public List<string> RuleNames { get; set; } = new List<string>();
     }
 } 

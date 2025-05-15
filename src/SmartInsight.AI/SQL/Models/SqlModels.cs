@@ -126,6 +126,21 @@ namespace SmartInsight.AI.SQL.Models
         /// Default value for the parameter, if any
         /// </summary>
         public object? DefaultValue { get; set; }
+        
+        /// <summary>
+        /// Minimum allowed value for numeric or date parameters
+        /// </summary>
+        public string? MinValue { get; set; }
+        
+        /// <summary>
+        /// Maximum allowed value for numeric or date parameters
+        /// </summary>
+        public string? MaxValue { get; set; }
+        
+        /// <summary>
+        /// List of allowed values for enum-like parameters
+        /// </summary>
+        public List<string>? AllowedValues { get; set; }
     }
 
     /// <summary>
@@ -142,6 +157,11 @@ namespace SmartInsight.AI.SQL.Models
         /// The extracted value
         /// </summary>
         public object Value { get; set; } = null!;
+        
+        /// <summary>
+        /// The .NET type of the parameter
+        /// </summary>
+        public string Type { get; set; } = string.Empty;
 
         /// <summary>
         /// Confidence score of the extraction (0.0 to 1.0)
@@ -185,6 +205,11 @@ namespace SmartInsight.AI.SQL.Models
         public List<SqlTemplate>? AlternativeTemplates { get; set; }
         
         /// <summary>
+        /// Parameters extracted from the query for the selected template
+        /// </summary>
+        public Dictionary<string, ExtractedParameter> ExtractedParameters { get; set; } = new Dictionary<string, ExtractedParameter>();
+        
+        /// <summary>
         /// Context information about the query origin
         /// </summary>
         public string? QueryContext { get; set; }
@@ -222,32 +247,6 @@ namespace SmartInsight.AI.SQL.Models
     }
 
     /// <summary>
-    /// Result of SQL validation
-    /// </summary>
-    public class SqlValidationResult
-    {
-        /// <summary>
-        /// Whether the SQL is valid
-        /// </summary>
-        public bool IsValid { get; set; }
-
-        /// <summary>
-        /// List of validation issues found
-        /// </summary>
-        public List<SqlValidationIssue> Issues { get; set; } = new List<SqlValidationIssue>();
-
-        /// <summary>
-        /// Whether there are any critical security issues
-        /// </summary>
-        public bool HasSecurityIssues => Issues.Exists(i => i.Category == ValidationCategory.Security && i.Severity == ValidationSeverity.Critical);
-
-        /// <summary>
-        /// Whether there are any critical performance issues
-        /// </summary>
-        public bool HasPerformanceIssues => Issues.Exists(i => i.Category == ValidationCategory.Performance && i.Severity == ValidationSeverity.Critical);
-    }
-
-    /// <summary>
     /// Represents a validation issue found in SQL
     /// </summary>
     public class SqlValidationIssue
@@ -271,6 +270,11 @@ namespace SmartInsight.AI.SQL.Models
         /// Line number where the issue was found
         /// </summary>
         public int? LineNumber { get; set; }
+        
+        /// <summary>
+        /// Character position in the line where the issue was found
+        /// </summary>
+        public int? Position { get; set; }
 
         /// <summary>
         /// Recommendation for fixing the issue
@@ -364,11 +368,21 @@ namespace SmartInsight.AI.SQL.Models
         /// Result data (for SELECT queries)
         /// </summary>
         public object? Data { get; set; }
+        
+        /// <summary>
+        /// Results in a standardized format for display and processing
+        /// </summary>
+        public object? Results { get; set; }
 
         /// <summary>
         /// Query that was executed (sanitized)
         /// </summary>
         public string ExecutedQuery { get; set; } = null!;
+        
+        /// <summary>
+        /// The SQL that was generated before execution
+        /// </summary>
+        public string SqlGenerated { get; set; } = null!;
     }
 
     /// <summary>
@@ -486,7 +500,12 @@ namespace SmartInsight.AI.SQL.Models
         /// <summary>
         /// Other operation type
         /// </summary>
-        Other
+        Other,
+        
+        /// <summary>
+        /// Unknown operation type
+        /// </summary>
+        Unknown
     }
 
     /// <summary>
@@ -498,26 +517,31 @@ namespace SmartInsight.AI.SQL.Models
         /// Whether all required parameters are present and valid
         /// </summary>
         public bool IsValid { get; set; }
-
+        
         /// <summary>
-        /// List of missing required parameters
+        /// Parameters that are required but missing
         /// </summary>
         public List<string> MissingParameters { get; set; } = new List<string>();
-
+        
         /// <summary>
-        /// List of parameters with invalid values
+        /// Parameters that are invalid with error message
         /// </summary>
         public Dictionary<string, string> InvalidParameters { get; set; } = new Dictionary<string, string>();
-
+        
         /// <summary>
-        /// List of parameters with low confidence
+        /// Parameters with low confidence scores
         /// </summary>
         public Dictionary<string, double> LowConfidenceParameters { get; set; } = new Dictionary<string, double>();
         
         /// <summary>
-        /// All validation issues found
+        /// Validation issues for parameters
         /// </summary>
         public List<ParameterValidationIssue> ValidationIssues { get; set; } = new List<ParameterValidationIssue>();
+        
+        /// <summary>
+        /// Alias for ValidationIssues for backward compatibility
+        /// </summary>
+        public List<ParameterValidationIssue> Issues => ValidationIssues;
         
         /// <summary>
         /// Whether there are any security rule violations
@@ -580,6 +604,47 @@ namespace SmartInsight.AI.SQL.Models
     }
 
     /// <summary>
+    /// Issue found during parameter validation
+    /// </summary>
+    public class ParameterValidationIssue
+    {
+        /// <summary>
+        /// Name of the parameter with the issue
+        /// </summary>
+        public string ParameterName { get; set; } = null!;
+        
+        /// <summary>
+        /// Name of the rule that found the issue
+        /// </summary>
+        public string RuleName { get; set; } = null!;
+        
+        /// <summary>
+        /// Description of the issue
+        /// </summary>
+        public string Description { get; set; } = null!;
+        
+        /// <summary>
+        /// Severity of the issue
+        /// </summary>
+        public ValidationSeverity Severity { get; set; }
+        
+        /// <summary>
+        /// The original value that caused the issue
+        /// </summary>
+        public object? OriginalValue { get; set; }
+        
+        /// <summary>
+        /// Recommendation for fixing the issue
+        /// </summary>
+        public string? Recommendation { get; set; }
+        
+        /// <summary>
+        /// Issue description (for backward compatibility with tests)
+        /// </summary>
+        public string Issue => Description;
+    }
+
+    /// <summary>
     /// SQL log statistics
     /// </summary>
     public class SqlLogStatistics
@@ -602,26 +667,65 @@ namespace SmartInsight.AI.SQL.Models
         /// <summary>
         /// Average execution time in milliseconds
         /// </summary>
-        public double? AverageExecutionTimeMs { get; set; }
+        public double? AverageExecutionTimeMs { get; set; } = 0.0;
         
         /// <summary>
         /// Minimum execution time in milliseconds
         /// </summary>
-        public long? MinExecutionTimeMs { get; set; }
+        public long? MinExecutionTimeMs { get; set; } = 0;
         
         /// <summary>
         /// Maximum execution time in milliseconds
         /// </summary>
-        public long? MaxExecutionTimeMs { get; set; }
+        public long? MaxExecutionTimeMs { get; set; } = 0;
+        
+        /// <summary>
+        /// Success rate (percentage of successful queries)
+        /// </summary>
+        public double? SuccessRate { get; set; } = 0.0;
         
         /// <summary>
         /// Count of operations by type
         /// </summary>
-        public Dictionary<SqlOperationType, int>? OperationCounts { get; set; }
+        public Dictionary<SqlOperationType, int>? OperationCounts { get; set; } = new Dictionary<SqlOperationType, int>();
         
         /// <summary>
         /// Most common error messages with counts
         /// </summary>
-        public Dictionary<string, int>? ErrorCounts { get; set; }
+        public Dictionary<string, int>? ErrorCounts { get; set; } = new Dictionary<string, int>();
+        
+        /// <summary>
+        /// Initialize a new instance of SqlLogStatistics
+        /// </summary>
+        public SqlLogStatistics()
+        {
+            // Calculate success rate whenever this class is created/initialized
+            if (TotalQueries > 0)
+            {
+                SuccessRate = (double)SuccessfulQueries / TotalQueries * 100.0;
+            }
+            else
+            {
+                SuccessRate = 0.0;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Extension methods for SqlValidationResult
+    /// </summary>
+    public static class SqlValidationResultExtensions
+    {
+        /// <summary>
+        /// Whether there are any critical security issues
+        /// </summary>
+        public static bool HasSecurityIssues(this SqlValidationResult result) => 
+            result.Issues.Exists(i => i.Category == ValidationCategory.Security && i.Severity == ValidationSeverity.Critical);
+
+        /// <summary>
+        /// Whether there are any critical performance issues
+        /// </summary>
+        public static bool HasPerformanceIssues(this SqlValidationResult result) => 
+            result.Issues.Exists(i => i.Category == ValidationCategory.Performance && i.Severity == ValidationSeverity.Critical);
     }
 } 

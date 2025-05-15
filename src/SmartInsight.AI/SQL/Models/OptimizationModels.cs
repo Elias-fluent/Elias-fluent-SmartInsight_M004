@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using SmartInsight.AI.SQL.Interfaces;
 
 namespace SmartInsight.AI.SQL.Models
@@ -19,6 +21,11 @@ namespace SmartInsight.AI.SQL.Models
         public string OptimizedSql { get; set; } = null!;
         
         /// <summary>
+        /// The optimized query (alias for OptimizedSql for backward compatibility with tests)
+        /// </summary>
+        public string OptimizedQuery => OptimizedSql;
+        
+        /// <summary>
         /// Whether the optimization was successful
         /// </summary>
         public bool IsSuccessful { get; set; }
@@ -34,6 +41,11 @@ namespace SmartInsight.AI.SQL.Models
         public double PerformanceImprovementFactor { get; set; } = 1.0;
         
         /// <summary>
+        /// Estimated improvement percentage (for backward compatibility with tests)
+        /// </summary>
+        public double EstimatedImprovementPercentage => (PerformanceImprovementFactor - 1.0) * 100.0;
+        
+        /// <summary>
         /// Error message if optimization failed
         /// </summary>
         public string? ErrorMessage { get; set; }
@@ -44,6 +56,11 @@ namespace SmartInsight.AI.SQL.Models
         public List<OptimizationSuggestion> Suggestions { get; set; } = new List<OptimizationSuggestion>();
         
         /// <summary>
+        /// Explanation of the optimization (for backward compatibility with tests)
+        /// </summary>
+        public string Explanation => string.Join("; ", Suggestions.ConvertAll(s => s.Description));
+        
+        /// <summary>
         /// Estimated cost of executing the query
         /// </summary>
         public QueryCostEstimate? EstimatedCost { get; set; }
@@ -52,6 +69,14 @@ namespace SmartInsight.AI.SQL.Models
         /// Validation issues identified during optimization
         /// </summary>
         public List<SqlValidationIssue> ValidationIssues { get; set; } = new List<SqlValidationIssue>();
+        
+        /// <summary>
+        /// Index suggestions (for backward compatibility with tests)
+        /// </summary>
+        public List<string> IndexSuggestions => Suggestions
+            .Where(s => s.Description.Contains("index", StringComparison.OrdinalIgnoreCase))
+            .Select(s => s.Description)
+            .ToList();
         
         /// <summary>
         /// Whether the query was actually optimized
@@ -180,5 +205,82 @@ namespace SmartInsight.AI.SQL.Models
         /// Most common query cost level
         /// </summary>
         public QueryCostLevel MostCommonCostLevel { get; set; }
+    }
+    
+    /// <summary>
+    /// Detailed performance analysis for a SQL query
+    /// </summary>
+    public class QueryPerformanceAnalysis
+    {
+        /// <summary>
+        /// The SQL query that was analyzed
+        /// </summary>
+        public string Sql { get; set; } = null!;
+        
+        /// <summary>
+        /// Estimated cost score (higher values indicate higher cost)
+        /// </summary>
+        public double EstimatedCostScore { get; set; }
+        
+        /// <summary>
+        /// List of performance factors affecting the query
+        /// </summary>
+        public List<string> PerformanceFactors { get; set; } = new List<string>();
+        
+        /// <summary>
+        /// List of recommended indexes to improve performance
+        /// </summary>
+        public List<string> RecommendedIndexes { get; set; } = new List<string>();
+        
+        /// <summary>
+        /// Whether the query could benefit from caching
+        /// </summary>
+        public bool CachingRecommended { get; set; }
+        
+        /// <summary>
+        /// Estimated query execution time in milliseconds
+        /// </summary>
+        public long EstimatedExecutionTimeMs { get; set; }
+        
+        /// <summary>
+        /// Estimated memory usage in kilobytes
+        /// </summary>
+        public long EstimatedMemoryUsageKb { get; set; }
+        
+        /// <summary>
+        /// Tables affected by the query
+        /// </summary>
+        public List<string> AffectedTables { get; set; } = new List<string>();
+        
+        /// <summary>
+        /// Potential bottlenecks in the query
+        /// </summary>
+        public List<string> Bottlenecks { get; set; } = new List<string>();
+    }
+    
+    /// <summary>
+    /// Represents a query optimization suggestion
+    /// </summary>
+    public class QueryOptimizationSuggestion
+    {
+        /// <summary>
+        /// The original query before optimization
+        /// </summary>
+        public string OriginalQuery { get; set; } = null!;
+        
+        /// <summary>
+        /// The optimized query
+        /// </summary>
+        public string OptimizedQuery { get; set; } = null!;
+        
+        /// <summary>
+        /// Description of the optimization
+        /// </summary>
+        public string Description { get; set; } = null!;
+        
+        /// <summary>
+        /// Estimated performance improvement percentage
+        /// </summary>
+        public double ImprovementEstimate { get; set; }
     }
 } 

@@ -153,14 +153,13 @@ namespace SmartInsight.AI.SQL
         
         /// <inheritdoc />
         public Task<Guid> LogSqlExecutionAsync(
-            string query,
-            SqlExecutionResult executionResult,
-            TenantContext? tenantContext = null,
+            SqlExecutionResult executionResult, 
+            TenantContext? tenantContext = null, 
             CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrEmpty(query))
+            if (executionResult == null)
             {
-                _logger.LogWarning("Attempted to log SQL execution with empty query");
+                _logger.LogWarning("Attempted to log SQL execution with null execution result");
                 return Task.FromResult(Guid.Empty);
             }
             
@@ -169,7 +168,7 @@ namespace SmartInsight.AI.SQL
             var logEntry = new SqlLogEntry
             {
                 OperationType = operationType,
-                OriginalQuery = query,
+                OriginalQuery = executionResult.SqlGenerated,
                 GeneratedSql = executionResult.ExecutedQuery,
                 IsSuccessful = executionResult.IsSuccessful,
                 ErrorMessage = executionResult.ErrorMessage,
@@ -210,8 +209,7 @@ namespace SmartInsight.AI.SQL
             // Enhanced security event logging
             if (_enableSecurityEventLogging && !executionResult.IsSuccessful)
             {
-                _logger.LogWarning("SQL execution failed. Query: {Query}, Error: {Error}", 
-                    query, executionResult.ErrorMessage);
+                _logger.LogWarning("SQL execution failed. Error: {Error}", executionResult.ErrorMessage);
             }
             
             return Task.FromResult(logEntry.Id);
@@ -289,26 +287,28 @@ namespace SmartInsight.AI.SQL
         /// <inheritdoc />
         public Task<Guid> LogSqlErrorAsync(
             string query,
-            string sql,
-            string error,
+            Exception exception,
             TenantContext? tenantContext = null,
             CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrEmpty(sql))
+            if (string.IsNullOrEmpty(query))
             {
-                _logger.LogWarning("Attempted to log SQL error with empty SQL");
+                _logger.LogWarning("Attempted to log SQL error with empty query");
+                return Task.FromResult(Guid.Empty);
+            }
+
+            if (exception == null)
+            {
+                _logger.LogWarning("Attempted to log SQL error with null exception");
                 return Task.FromResult(Guid.Empty);
             }
             
-            var operationType = DetermineOperationType(sql);
-            
             var logEntry = new SqlLogEntry
             {
-                OperationType = operationType,
+                OperationType = SqlOperationType.Unknown, // Can't determine from exception
                 OriginalQuery = query,
-                GeneratedSql = sql,
                 IsSuccessful = false,
-                ErrorMessage = error
+                ErrorMessage = exception.Message
             };
             
             if (tenantContext != null)
@@ -319,24 +319,10 @@ namespace SmartInsight.AI.SQL
             
             AddLogEntry(logEntry);
             
-            // Enhanced security event logging for all errors
+            // Enhanced security logging
             if (_enableSecurityEventLogging)
             {
-                // Determine if this might be a security-related error
-                bool isPotentialSecurityIssue = error.Contains("permission", StringComparison.OrdinalIgnoreCase) ||
-                                             error.Contains("access", StringComparison.OrdinalIgnoreCase) ||
-                                             error.Contains("denied", StringComparison.OrdinalIgnoreCase) ||
-                                             error.Contains("injection", StringComparison.OrdinalIgnoreCase) ||
-                                             error.Contains("syntax", StringComparison.OrdinalIgnoreCase);
-                
-                if (isPotentialSecurityIssue)
-                {
-                    _logger.LogError("Potential security-related SQL error: {Error}, SQL: {Sql}", error, sql);
-                }
-                else
-                {
-                    _logger.LogWarning("SQL error: {Error}, SQL: {Sql}", error, sql);
-                }
+                _logger.LogWarning(exception, "SQL error occurred. Query: {Query}", query);
             }
             
             return Task.FromResult(logEntry.Id);
@@ -426,6 +412,141 @@ namespace SmartInsight.AI.SQL
             }
             
             return Task.FromResult(statistics);
+        }
+        
+        /// <inheritdoc />
+        public Task<SqlLogStatistics> GetQueryStatisticsAsync(
+            DateTime startDate,
+            DateTime endDate,
+            Guid? tenantId = null,
+            CancellationToken cancellationToken = default)
+        {
+            // Filter logs by date range and tenant
+            List<SqlLogEntry> filteredLogs;
+            lock (_lock)
+            {
+                filteredLogs = _logEntries
+                    .Where(l => l.Timestamp >= startDate && l.Timestamp <= endDate)
+                    .Where(l => !tenantId.HasValue || l.TenantId == tenantId)
+                    .ToList();
+            }
+            
+            if (filteredLogs.Count == 0)
+            {
+                return Task.FromResult(new SqlLogStatistics
+                {
+                    TotalQueries = 0,
+                    SuccessfulQueries = 0,
+                    FailedQueries = 0
+                });
+            }
+            
+            // Calculate statistics
+            var statistics = new SqlLogStatistics
+            {
+                TotalQueries = filteredLogs.Count,
+                SuccessfulQueries = filteredLogs.Count(l => l.IsSuccessful),
+                FailedQueries = filteredLogs.Count(l => !l.IsSuccessful)
+            };
+            
+            // Calculate execution time statistics
+            var executionTimes = filteredLogs
+                .Where(l => l.ExecutionTimeMs.HasValue)
+                .Select(l => l.ExecutionTimeMs.Value)
+                .ToList();
+                
+            if (executionTimes.Any())
+            {
+                statistics.AverageExecutionTimeMs = executionTimes.Average();
+                statistics.MinExecutionTimeMs = executionTimes.Min();
+                statistics.MaxExecutionTimeMs = executionTimes.Max();
+            }
+            
+            // Calculate operation type counts
+            statistics.OperationCounts = filteredLogs
+                .GroupBy(l => l.OperationType)
+                .ToDictionary(g => g.Key, g => g.Count());
+                
+            // Calculate error counts
+            statistics.ErrorCounts = filteredLogs
+                .Where(l => !l.IsSuccessful && !string.IsNullOrEmpty(l.ErrorMessage))
+                .GroupBy(l => l.ErrorMessage ?? "Unknown")
+                .ToDictionary(g => g.Key, g => g.Count());
+                
+            return Task.FromResult(statistics);
+        }
+
+        /// <inheritdoc />
+        public Task<List<SqlLogEntry>> GetRecentQueriesAsync(
+            int limit,
+            Guid? tenantId = null,
+            CancellationToken cancellationToken = default)
+        {
+            limit = Math.Max(1, Math.Min(limit, 100)); // Ensure limit is between 1 and 100
+            
+            List<SqlLogEntry> result;
+            lock (_lock)
+            {
+                result = _logEntries
+                    .Where(l => !tenantId.HasValue || l.TenantId == tenantId)
+                    .OrderByDescending(l => l.Timestamp)
+                    .Take(limit)
+                    .ToList();
+            }
+            
+            return Task.FromResult(result);
+        }
+        
+        /// <inheritdoc />
+        public Task<List<SqlLogEntry>> GetPopularQueriesAsync(
+            int limit,
+            Guid? tenantId = null,
+            CancellationToken cancellationToken = default)
+        {
+            limit = Math.Max(1, Math.Min(limit, 100)); // Ensure limit is between 1 and 100
+            
+            List<SqlLogEntry> result;
+            lock (_lock)
+            {
+                // Group by original query, count occurrences, then take top N
+                result = _logEntries
+                    .Where(l => !tenantId.HasValue || l.TenantId == tenantId)
+                    .GroupBy(l => l.OriginalQuery)
+                    .Select(g => new 
+                    { 
+                        QueryGroup = g, 
+                        Count = g.Count() 
+                    })
+                    .OrderByDescending(x => x.Count)
+                    .Take(limit)
+                    .Select(x => x.QueryGroup.First()) // Take the first log entry from each group
+                    .ToList();
+            }
+            
+            return Task.FromResult(result);
+        }
+        
+        /// <inheritdoc />
+        public Task<List<SqlLogEntry>> GetSlowQueriesAsync(
+            long executionTimeThresholdMs,
+            int limit,
+            Guid? tenantId = null,
+            CancellationToken cancellationToken = default)
+        {
+            limit = Math.Max(1, Math.Min(limit, 100)); // Ensure limit is between 1 and 100
+            
+            List<SqlLogEntry> result;
+            lock (_lock)
+            {
+                result = _logEntries
+                    .Where(l => l.ExecutionTimeMs.HasValue && l.ExecutionTimeMs.Value >= executionTimeThresholdMs)
+                    .Where(l => !tenantId.HasValue || l.TenantId == tenantId)
+                    .OrderByDescending(l => l.ExecutionTimeMs)
+                    .Take(limit)
+                    .ToList();
+            }
+            
+            return Task.FromResult(result);
         }
         
         private void AddLogEntry(SqlLogEntry entry)

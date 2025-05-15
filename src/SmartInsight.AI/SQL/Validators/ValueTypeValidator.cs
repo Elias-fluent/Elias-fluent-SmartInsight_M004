@@ -189,12 +189,12 @@ namespace SmartInsight.AI.SQL.Validators
                 var address = new MailAddress(value);
                 if (address.Address != value)
                 {
-                    result.AddIssue(new ParameterValidationIssue
+                    result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                     {
                         ParameterName = paramName,
                         RuleName = "Format.Email",
                         Description = $"Email address '{value}' for parameter '{paramName}' has invalid format",
-                        Severity = ValidationSeverity.Warning,
+                        Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                         OriginalValue = value,
                         Recommendation = "Provide a valid email address (e.g., user@example.com)"
                     });
@@ -202,12 +202,12 @@ namespace SmartInsight.AI.SQL.Validators
             }
             catch (FormatException)
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = paramName,
                     RuleName = "Format.Email",
                     Description = $"Email address '{value}' for parameter '{paramName}' has invalid format",
-                    Severity = ValidationSeverity.Warning,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                     OriginalValue = value,
                     Recommendation = "Provide a valid email address (e.g., user@example.com)"
                 });
@@ -224,12 +224,12 @@ namespace SmartInsight.AI.SQL.Validators
                           
             if (!isValid)
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = paramName,
                     RuleName = "Format.Url",
                     Description = $"URL '{value}' for parameter '{paramName}' has invalid format",
-                    Severity = ValidationSeverity.Warning,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                     OriginalValue = value,
                     Recommendation = "Provide a valid URL (e.g., https://example.com)"
                 });
@@ -244,12 +244,12 @@ namespace SmartInsight.AI.SQL.Validators
             var digitsOnly = new string(value.Where(char.IsDigit).ToArray());
             if (digitsOnly.Length < 10 || digitsOnly.Length > 15)
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = paramName,
                     RuleName = "Format.PhoneNumber",
                     Description = $"Phone number '{value}' for parameter '{paramName}' has invalid format",
-                    Severity = ValidationSeverity.Warning,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                     OriginalValue = value,
                     Recommendation = "Provide a valid phone number with area code"
                 });
@@ -266,12 +266,12 @@ namespace SmartInsight.AI.SQL.Validators
             // Credit card numbers should have 13-16 digits
             if (digitsOnly.Length < 13 || digitsOnly.Length > 16)
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = paramName,
                     RuleName = "Format.CreditCard",
                     Description = $"Credit card number for parameter '{paramName}' has invalid length",
-                    Severity = ValidationSeverity.Warning,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                     OriginalValue = value,
                     Recommendation = "Provide a valid credit card number (13-16 digits)"
                 });
@@ -298,24 +298,24 @@ namespace SmartInsight.AI.SQL.Validators
             
             if (sum % 10 != 0)
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = paramName,
                     RuleName = "Format.CreditCard",
                     Description = $"Credit card number for parameter '{paramName}' failed checksum validation",
-                    Severity = ValidationSeverity.Warning,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                     OriginalValue = value,
                     Recommendation = "Provide a valid credit card number"
                 });
             }
             
             // Security warning for credit card data
-            result.AddIssue(new ParameterValidationIssue
+            result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
             {
                 ParameterName = paramName,
                 RuleName = "Security.SensitiveData",
                 Description = $"Parameter '{paramName}' appears to contain credit card data",
-                Severity = ValidationSeverity.Critical,
+                Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Critical,
                 OriginalValue = value,
                 Recommendation = "Storing unencrypted credit card data is not recommended and may violate PCI DSS requirements"
             });
@@ -330,24 +330,24 @@ namespace SmartInsight.AI.SQL.Validators
             
             if (digitsOnly.Length != 9)
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = paramName,
                     RuleName = "Format.SSN",
                     Description = $"Social Security Number for parameter '{paramName}' has invalid format",
-                    Severity = ValidationSeverity.Warning,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                     OriginalValue = value,
                     Recommendation = "Provide a valid SSN (9 digits)"
                 });
             }
             
             // Security warning for SSN data
-            result.AddIssue(new ParameterValidationIssue
+            result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
             {
                 ParameterName = paramName,
                 RuleName = "Security.SensitiveData",
                 Description = $"Parameter '{paramName}' appears to contain a Social Security Number",
-                Severity = ValidationSeverity.Critical,
+                Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Critical,
                 OriginalValue = value,
                 Recommendation = "Storing unencrypted SSNs is not recommended and may violate data protection regulations"
             });
@@ -361,12 +361,12 @@ namespace SmartInsight.AI.SQL.Validators
             var segments = value.Split('.');
             if (segments.Length != 4)
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = paramName,
                     RuleName = "Format.IPAddress",
                     Description = $"IP address '{value}' for parameter '{paramName}' has invalid format",
-                    Severity = ValidationSeverity.Warning,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                     OriginalValue = value,
                     Recommendation = "Provide a valid IPv4 address (e.g., 192.168.1.1)"
                 });
@@ -377,12 +377,12 @@ namespace SmartInsight.AI.SQL.Validators
             {
                 if (!int.TryParse(segment, out int value1) || value1 < 0 || value1 > 255)
                 {
-                    result.AddIssue(new ParameterValidationIssue
+                    result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                     {
                         ParameterName = paramName,
                         RuleName = "Format.IPAddress",
                         Description = $"IP address '{value}' for parameter '{paramName}' has invalid segment values",
-                        Severity = ValidationSeverity.Warning,
+                        Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                         OriginalValue = value,
                         Recommendation = "Each segment of an IPv4 address must be between 0 and 255"
                     });
@@ -400,12 +400,12 @@ namespace SmartInsight.AI.SQL.Validators
             
             if (digitsOnly.Length != 5 && digitsOnly.Length != 9)
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = paramName,
                     RuleName = "Format.ZipCode",
                     Description = $"ZIP code '{value}' for parameter '{paramName}' has invalid format",
-                    Severity = ValidationSeverity.Warning,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                     OriginalValue = value,
                     Recommendation = "Provide a valid ZIP code (5 digits or ZIP+4 format)"
                 });
@@ -422,12 +422,12 @@ namespace SmartInsight.AI.SQL.Validators
             
             if (!decimal.TryParse(valueWithoutSymbol, NumberStyles.Currency, CultureInfo.InvariantCulture, out decimal amount))
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = paramName,
                     RuleName = "Format.Currency",
                     Description = $"Currency value '{value}' for parameter '{paramName}' has invalid format",
-                    Severity = ValidationSeverity.Warning,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                     OriginalValue = value,
                     Recommendation = "Provide a valid currency amount (e.g., $10.99)"
                 });
@@ -436,12 +436,12 @@ namespace SmartInsight.AI.SQL.Validators
             
             if (amount < 0)
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = paramName,
                     RuleName = "Business.NegativeCurrency",
                     Description = $"Currency value '{value}' for parameter '{paramName}' is negative",
-                    Severity = ValidationSeverity.Warning,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                     OriginalValue = value,
                     Recommendation = "Check if a negative currency value is intended"
                 });
@@ -449,12 +449,12 @@ namespace SmartInsight.AI.SQL.Validators
             
             if (amount > 1000000)
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = paramName,
                     RuleName = "Business.LargeCurrency",
                     Description = $"Currency value '{value}' for parameter '{paramName}' is unusually large",
-                    Severity = ValidationSeverity.Warning,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                     OriginalValue = value,
                     Recommendation = "Verify this large currency amount is correct"
                 });
@@ -472,12 +472,12 @@ namespace SmartInsight.AI.SQL.Validators
             // Check for dates too far in the past (more than 100 years)
             if (value < now.AddSeconds(-century))
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = paramName,
                     RuleName = "Range.Date",
                     Description = $"Date value '{value:yyyy-MM-dd}' for parameter '{paramName}' is too far in the past",
-                    Severity = ValidationSeverity.Warning,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                     OriginalValue = value,
                     Recommendation = "Provide a more recent date"
                 });
@@ -486,12 +486,12 @@ namespace SmartInsight.AI.SQL.Validators
             // Check for dates too far in the future (more than 100 years)
             if (value > now.AddSeconds(century))
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = paramName,
                     RuleName = "Range.Date",
                     Description = $"Date value '{value:yyyy-MM-dd}' for parameter '{paramName}' is too far in the future",
-                    Severity = ValidationSeverity.Warning,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                     OriginalValue = value,
                     Recommendation = "Provide a more reasonable future date"
                 });
@@ -500,12 +500,12 @@ namespace SmartInsight.AI.SQL.Validators
             // Check for default/uninitialized dates
             if (value == DateTime.MinValue || value == DateTime.MaxValue || value == default)
             {
-                result.AddIssue(new ParameterValidationIssue
+                result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                 {
                     ParameterName = paramName,
                     RuleName = "Format.Date",
                     Description = $"Date value for parameter '{paramName}' appears to be uninitialized",
-                    Severity = ValidationSeverity.Warning,
+                    Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Warning,
                     OriginalValue = value,
                     Recommendation = "Provide a valid date"
                 });
@@ -514,7 +514,7 @@ namespace SmartInsight.AI.SQL.Validators
     }
     
     /// <summary>
-    /// Types of values that can be validated
+    /// Types of parameter values that can be detected and validated
     /// </summary>
     public enum ValueType
     {

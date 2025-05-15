@@ -229,7 +229,7 @@ namespace SmartInsight.Tests.SQL.Security
                 }
                 
                 // The sanitized query should no longer have critical security issues
-                Assert.False(validationResult.HasSecurityIssues, 
+                Assert.False(validationResult.HasSecurityIssues(), 
                     $"Sanitized query still has security issues: {sanitized}");
                 
                 _output.WriteLine($"Original: '{query}'");
