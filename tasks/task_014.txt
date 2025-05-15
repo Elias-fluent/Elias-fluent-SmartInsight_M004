@@ -46,25 +46,25 @@ Define lifecycle events such as OnInitialize, OnConnect, OnExecute, OnDisconnect
 ### Details:
 Implement a connector registry that allows dynamic registration and discovery of connector implementations. Include methods for registering, unregistering, and querying available connectors.
 
-## 5. Implement Connector Factory [in-progress]
+## 5. Implement Connector Factory [done]
 ### Dependencies: 14.1, 14.4
 ### Description: Create factory pattern implementation for instantiating connectors
 ### Details:
 Design and implement a factory class that can create instances of specific connector implementations based on type or identifier. Include dependency injection support and configuration parameter handling.
 
-## 6. Define Connector Metadata Attributes [in-progress]
+## 6. Define Connector Metadata Attributes [done]
 ### Dependencies: 14.1
 ### Description: Create attribute system for connector discovery and documentation
 ### Details:
 Design attribute classes for annotating connector implementations with metadata such as name, description, version, supported data formats, and configuration requirements. Implement reflection-based discovery of these attributes.
 
-## 7. Implement Connector Documentation Generator [pending]
+## 7. Implement Connector Documentation Generator [done]
 ### Dependencies: 14.6
 ### Description: Create system for auto-generating connector documentation
 ### Details:
 Build a documentation generator that can extract connector metadata and produce human-readable documentation. Include support for generating markdown, HTML, or other documentation formats from connector attributes.
 
-## 8. Create Sample Connector Implementation [pending]
+## 8. Create Sample Connector Implementation [done]
 ### Dependencies: 14.1, 14.2, 14.3, 14.5, 14.6
 ### Description: Develop a reference implementation of the connector interface
 ### Details:

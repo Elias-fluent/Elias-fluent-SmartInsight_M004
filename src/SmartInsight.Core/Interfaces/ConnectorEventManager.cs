@@ -296,7 +296,7 @@ public class ConnectorEventManager : IDisposable
                 
             OnConnectorErrorOccurred(this, args);
             
-            return ConnectionResult.Failure(ex.Message, ex.ToString());
+            return ConnectionResult.Failure(ex.Message);
         }
     }
     

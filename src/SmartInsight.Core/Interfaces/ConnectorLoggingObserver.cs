@@ -71,15 +71,17 @@ public class ConnectorLoggingObserver : IConnectorLifecycleObserver
     /// </summary>
     public Task OnConnectorProgressAsync(ConnectorProgressEventArgs args, CancellationToken cancellationToken = default)
     {
-        if (args.Progress % 10 == 0 || args.Progress >= 100) // Only log every 10% to reduce noise
+        double progressPercentage = args.ProgressPercentage;
+        
+        if (progressPercentage % 10 == 0 || progressPercentage >= 100) // Only log every 10% to reduce noise
         {
-            _logger.LogInformation("Connector progress: {ConnectorId} - {Operation} - {Progress}% ({ProcessedItems}/{TotalItems}) {StatusMessage}", 
-                args.ConnectorId, args.Operation, args.Progress, args.ProcessedItems, args.TotalItems, args.StatusMessage ?? "");
+            _logger.LogInformation("Operation progress: {OperationId} - {ProgressPercentage}% ({Current}/{Total}) {Message}", 
+                args.OperationId, progressPercentage, args.Current, args.Total, args.Message);
         }
         else
         {
-            _logger.LogDebug("Connector progress: {ConnectorId} - {Operation} - {Progress}% ({ProcessedItems}/{TotalItems}) {StatusMessage}", 
-                args.ConnectorId, args.Operation, args.Progress, args.ProcessedItems, args.TotalItems, args.StatusMessage ?? "");
+            _logger.LogDebug("Operation progress: {OperationId} - {ProgressPercentage}% ({Current}/{Total}) {Message}", 
+                args.OperationId, progressPercentage, args.Current, args.Total, args.Message);
         }
         
         return Task.CompletedTask;

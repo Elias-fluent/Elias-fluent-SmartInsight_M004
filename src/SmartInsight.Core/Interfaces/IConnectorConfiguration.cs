@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace SmartInsight.Core.Interfaces;
 
 /// <summary>
@@ -90,4 +92,32 @@ public interface IConnectorConfiguration
     /// </summary>
     /// <returns>Serializable configuration</returns>
     IDictionary<string, object> ToSerializable();
+
+    /// <summary>
+    /// Gets a configuration value by key
+    /// </summary>
+    /// <typeparam name="T">Type of the configuration value</typeparam>
+    /// <param name="key">Configuration key</param>
+    /// <param name="defaultValue">Default value if key is not found</param>
+    /// <returns>Configuration value or default</returns>
+    T GetValue<T>(string key, T defaultValue = default);
+    
+    /// <summary>
+    /// Gets all configuration values
+    /// </summary>
+    /// <returns>Dictionary of configuration values</returns>
+    IDictionary<string, object> GetAll();
+    
+    /// <summary>
+    /// Checks if a configuration key exists
+    /// </summary>
+    /// <param name="key">Configuration key</param>
+    /// <returns>True if the key exists, otherwise false</returns>
+    bool HasValue(string key);
+    
+    /// <summary>
+    /// Gets connection parameters for the connector
+    /// </summary>
+    /// <returns>Dictionary of connection parameters</returns>
+    IDictionary<string, string> GetConnectionParameters();
 } 

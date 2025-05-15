@@ -1,82 +1,126 @@
+using System;
+using System.Collections.Generic;
+
 namespace SmartInsight.Core.Interfaces;
 
 /// <summary>
-/// Represents the result of a connection operation
+/// Result of a connection operation
 /// </summary>
 public class ConnectionResult
 {
+    private readonly List<ValidationError> _errors = new();
+    
     /// <summary>
     /// Whether the connection was successful
     /// </summary>
-    public bool IsSuccess { get; }
+    public bool IsSuccess { get; set; }
     
     /// <summary>
-    /// Connection identifier (if successful)
+    /// Error message if the connection failed
     /// </summary>
-    public string? ConnectionId { get; }
+    public string? ErrorMessage { get; set; }
     
     /// <summary>
-    /// Error message (if unsuccessful)
+    /// Connection identifier
     /// </summary>
-    public string? ErrorMessage { get; }
+    public string? ConnectionId { get; set; }
     
     /// <summary>
-    /// Additional error details (if unsuccessful)
+    /// Server version or other version information
     /// </summary>
-    public string? ErrorDetails { get; }
+    public string? ServerVersion { get; set; }
     
     /// <summary>
-    /// Connection information
+    /// Additional information about the connection
     /// </summary>
-    public IDictionary<string, object>? ConnectionInfo { get; }
+    public IDictionary<string, object>? ConnectionInfo { get; set; }
     
     /// <summary>
-    /// Timestamp of the connection
+    /// When the connection was created
     /// </summary>
-    public DateTime Timestamp { get; }
+    public DateTime Timestamp { get; } = DateTime.UtcNow;
     
     /// <summary>
-    /// Creates a new successful connection result
+    /// Connection errors
     /// </summary>
-    /// <param name="connectionId">Connection identifier</param>
-    /// <param name="connectionInfo">Additional connection information</param>
-    /// <returns>A successful connection result</returns>
-    public static ConnectionResult Success(string connectionId, IDictionary<string, object>? connectionInfo = null)
-    {
-        return new ConnectionResult(true, connectionId, null, null, connectionInfo);
-    }
-    
-    /// <summary>
-    /// Creates a new failed connection result
-    /// </summary>
-    /// <param name="errorMessage">Error message</param>
-    /// <param name="errorDetails">Additional error details</param>
-    /// <returns>A failed connection result</returns>
-    public static ConnectionResult Failure(string errorMessage, string? errorDetails = null)
-    {
-        return new ConnectionResult(false, null, errorMessage, errorDetails, null);
-    }
+    public IReadOnlyList<ValidationError> Errors => _errors.AsReadOnly();
     
     /// <summary>
     /// Creates a new connection result
     /// </summary>
-    /// <param name="isSuccess">Whether the connection was successful</param>
-    /// <param name="connectionId">Connection identifier (if successful)</param>
-    /// <param name="errorMessage">Error message (if unsuccessful)</param>
-    /// <param name="errorDetails">Additional error details (if unsuccessful)</param>
-    /// <param name="connectionInfo">Additional connection information</param>
-    private ConnectionResult(
-        bool isSuccess, 
-        string? connectionId, 
-        string? errorMessage, 
-        string? errorDetails, 
-        IDictionary<string, object>? connectionInfo)
+    public ConnectionResult()
     {
-        IsSuccess = isSuccess;
-        ConnectionId = connectionId;
-        ErrorMessage = errorMessage;
-        ErrorDetails = errorDetails;
-        ConnectionInfo = connectionInfo;
-        Timestamp = DateTime.UtcNow;
+    }
+    
+    /// <summary>
+    /// Adds an error to the connection result
+    /// </summary>
+    /// <param name="fieldName">Field name</param>
+    /// <param name="errorMessage">Error message</param>
+    public void AddError(string fieldName, string errorMessage)
+    {
+        _errors.Add(new ValidationError(fieldName, errorMessage));
+    }
+    
+    /// <summary>
+    /// Adds multiple errors to the connection result
+    /// </summary>
+    /// <param name="errors">Collection of validation errors</param>
+    public void AddRange(IEnumerable<ValidationError> errors)
+    {
+        _errors.AddRange(errors);
+    }
+    
+    /// <summary>
+    /// Creates a successful connection result
+    /// </summary>
+    /// <param name="connectionId">Optional connection identifier</param>
+    /// <param name="serverVersion">Optional server version information</param>
+    /// <param name="connectionInfo">Optional additional connection information</param>
+    /// <returns>A successful connection result</returns>
+    public static ConnectionResult Success(
+        string? connectionId = null,
+        string? serverVersion = null,
+        IDictionary<string, object>? connectionInfo = null)
+    {
+        return new ConnectionResult
+        {
+            IsSuccess = true,
+            ConnectionId = connectionId,
+            ServerVersion = serverVersion,
+            ConnectionInfo = connectionInfo
+        };
+    }
+    
+    /// <summary>
+    /// Creates a failed connection result
+    /// </summary>
+    /// <param name="errorMessage">Error message</param>
+    /// <returns>A failed connection result</returns>
+    public static ConnectionResult Failure(string errorMessage)
+    {
+        return new ConnectionResult
+        {
+            IsSuccess = false,
+            ErrorMessage = errorMessage
+        };
+    }
+    
+    /// <summary>
+    /// Creates a failed connection result with validation errors
+    /// </summary>
+    /// <param name="errorMessage">Error message</param>
+    /// <param name="errors">Validation errors</param>
+    /// <returns>A failed connection result</returns>
+    public static ConnectionResult Failure(string errorMessage, IEnumerable<ValidationError> errors)
+    {
+        var result = new ConnectionResult
+        {
+            IsSuccess = false,
+            ErrorMessage = errorMessage
+        };
+        
+        result.AddRange(errors);
+        return result;
     }
 } 

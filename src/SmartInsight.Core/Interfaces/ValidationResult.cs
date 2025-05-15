@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+
 namespace SmartInsight.Core.Interfaces;
 
 /// <summary>
@@ -5,20 +8,23 @@ namespace SmartInsight.Core.Interfaces;
 /// </summary>
 public class ValidationResult
 {
-    /// <summary>
-    /// Whether the validation was successful
-    /// </summary>
-    public bool IsValid { get; }
+    private readonly List<ValidationError> _errors = new();
+    private readonly List<string> _warnings = new();
     
     /// <summary>
-    /// Collection of validation errors if the validation failed
+    /// True if validation passed with no errors
     /// </summary>
-    public IReadOnlyList<ValidationError> Errors { get; }
+    public bool IsValid => !Errors.Any();
+    
+    /// <summary>
+    /// Collection of validation errors
+    /// </summary>
+    public IReadOnlyList<ValidationError> Errors => _errors.AsReadOnly();
     
     /// <summary>
     /// Warning messages that don't prevent validation from succeeding
     /// </summary>
-    public IReadOnlyList<string> Warnings { get; }
+    public IReadOnlyList<string> Warnings => _warnings.AsReadOnly();
     
     /// <summary>
     /// Creates a new successful validation result
@@ -27,7 +33,12 @@ public class ValidationResult
     /// <returns>A successful validation result</returns>
     public static ValidationResult Success(IEnumerable<string>? warnings = null)
     {
-        return new ValidationResult(true, Array.Empty<ValidationError>(), warnings ?? Array.Empty<string>());
+        var result = new ValidationResult();
+        if (warnings != null)
+        {
+            result._warnings.AddRange(warnings);
+        }
+        return result;
     }
     
     /// <summary>
@@ -38,33 +49,58 @@ public class ValidationResult
     /// <returns>A failed validation result</returns>
     public static ValidationResult Failure(IEnumerable<ValidationError> errors, IEnumerable<string>? warnings = null)
     {
-        return new ValidationResult(false, errors.ToList(), warnings ?? Array.Empty<string>());
+        var result = new ValidationResult();
+        result._errors.AddRange(errors);
+        if (warnings != null)
+        {
+            result._warnings.AddRange(warnings);
+        }
+        return result;
     }
     
     /// <summary>
     /// Creates a new failed validation result with a single error
     /// </summary>
-    /// <param name="field">Field that failed validation</param>
-    /// <param name="message">Error message</param>
+    /// <param name="fieldName">Field name</param>
+    /// <param name="errorMessage">Error message</param>
     /// <param name="warnings">Optional warning messages</param>
     /// <returns>A failed validation result</returns>
-    public static ValidationResult Failure(string field, string message, IEnumerable<string>? warnings = null)
+    public static ValidationResult Failure(string fieldName, string errorMessage, IEnumerable<string>? warnings = null)
     {
-        var error = new ValidationError(field, message);
-        return new ValidationResult(false, new[] { error }, warnings ?? Array.Empty<string>());
+        var result = new ValidationResult();
+        result.AddError(fieldName, errorMessage);
+        if (warnings != null)
+        {
+            result._warnings.AddRange(warnings);
+        }
+        return result;
     }
     
     /// <summary>
     /// Creates a new validation result
     /// </summary>
-    /// <param name="isValid">Whether the validation was successful</param>
-    /// <param name="errors">Collection of validation errors</param>
     /// <param name="warnings">Warning messages</param>
-    private ValidationResult(bool isValid, IEnumerable<ValidationError> errors, IEnumerable<string> warnings)
+    private ValidationResult()
     {
-        IsValid = isValid;
-        Errors = errors.ToList().AsReadOnly();
-        Warnings = warnings.ToList().AsReadOnly();
+    }
+    
+    /// <summary>
+    /// Adds an error to the validation result
+    /// </summary>
+    /// <param name="fieldName">Field name</param>
+    /// <param name="errorMessage">Error message</param>
+    public void AddError(string fieldName, string errorMessage)
+    {
+        _errors.Add(new ValidationError(fieldName, errorMessage));
+    }
+    
+    /// <summary>
+    /// Adds a warning message to the validation result
+    /// </summary>
+    /// <param name="warningMessage">Warning message</param>
+    public void AddWarning(string warningMessage)
+    {
+        _warnings.Add(warningMessage);
     }
 }
 
@@ -76,21 +112,21 @@ public class ValidationError
     /// <summary>
     /// Field that failed validation
     /// </summary>
-    public string Field { get; }
+    public string FieldName { get; }
     
     /// <summary>
     /// Error message
     /// </summary>
-    public string Message { get; }
+    public string ErrorMessage { get; }
     
     /// <summary>
     /// Creates a new validation error
     /// </summary>
-    /// <param name="field">Field that failed validation</param>
-    /// <param name="message">Error message</param>
-    public ValidationError(string field, string message)
+    /// <param name="fieldName">Field name</param>
+    /// <param name="errorMessage">Error message</param>
+    public ValidationError(string fieldName, string errorMessage)
     {
-        Field = field;
-        Message = message;
+        FieldName = fieldName;
+        ErrorMessage = errorMessage;
     }
 } 
