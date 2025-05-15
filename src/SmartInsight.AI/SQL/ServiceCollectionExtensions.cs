@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -19,28 +20,47 @@ namespace SmartInsight.AI.SQL
         /// <returns>The same service collection for method chaining</returns>
         public static IServiceCollection AddSqlParameterValidation(this IServiceCollection services)
         {
-            // Register the base parameter validator
+            // Register the parameter validator and extractor
             services.AddSingleton<IParameterValidator, ParameterValidator>();
+            services.AddSingleton<IParameterExtractor, ParameterExtractor>();
             
             // Register specialized validators
-            services.AddSingleton<UserParameterValidator>();
             services.AddSingleton<DatabaseObjectValidator>();
             services.AddSingleton<SqlOperationValidator>();
             services.AddSingleton<ValueTypeValidator>();
             
             // Register ValidationRuleSet factory
-            services.AddTransient<ValidationRuleSet>(provider => {
+            services.AddSingleton<ValidationRuleSet>(provider => {
                 var validator = provider.GetRequiredService<IParameterValidator>();
                 var logger = provider.GetRequiredService<ILogger<ValidationRuleSet>>();
-                return new ValidationRuleSet(validator, logger, "Default", "Default validation rule set");
+                var ruleSet = new ValidationRuleSet(validator, logger, "DefaultRuleSet", "Default validation rule set for SQL parameters");
+                
+                // Add various rules
+                ruleSet.AddRule("Required.Missing");
+                ruleSet.AddRule("Type.Invalid");
+                ruleSet.AddRule("Email.Invalid");
+                ruleSet.AddRule("Url.Invalid");
+                ruleSet.AddRule("DatabaseObject.Invalid");
+                
+                return ruleSet;
             });
-            
-            // Register common validation rule sets
-            services.AddValidationRuleSets();
             
             return services;
         }
         
+        /// <summary>
+        /// Adds tenant scoping enforcement services to the service collection
+        /// </summary>
+        /// <param name="services">The IServiceCollection to add the services to</param>
+        /// <returns>The same service collection for method chaining</returns>
+        public static IServiceCollection AddTenantScopingEnforcement(this IServiceCollection services)
+        {
+            // Register tenant scoping service
+            services.AddSingleton<ITenantScopingService, TenantScopingService>();
+            
+            return services;
+        }
+
         /// <summary>
         /// Adds common validation rule sets to the service collection
         /// </summary>
