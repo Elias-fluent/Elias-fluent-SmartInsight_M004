@@ -18,11 +18,14 @@ node_modules/
 *.suo
 *.ntvs*
 *.njsproj
-*.sln
 *.sw?
 
 # OS specific
 .DS_Store
+
+# Build output
+**/bin/
+**/obj/
 
 # Task files
 # Removed tasks.json and tasks/ to track these files 
