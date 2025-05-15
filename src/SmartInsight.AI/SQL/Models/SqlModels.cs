@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using System.Linq;
+using SmartInsight.AI.SQL.Interfaces;
 
 namespace SmartInsight.AI.SQL.Models
 {
@@ -450,5 +452,95 @@ namespace SmartInsight.AI.SQL.Models
         /// Other operation type
         /// </summary>
         Other
+    }
+
+    /// <summary>
+    /// Result of parameter validation
+    /// </summary>
+    public class ParameterValidationResult
+    {
+        /// <summary>
+        /// Whether all required parameters are present and valid
+        /// </summary>
+        public bool IsValid { get; set; }
+
+        /// <summary>
+        /// List of missing required parameters
+        /// </summary>
+        public List<string> MissingParameters { get; set; } = new List<string>();
+
+        /// <summary>
+        /// List of parameters with invalid values
+        /// </summary>
+        public Dictionary<string, string> InvalidParameters { get; set; } = new Dictionary<string, string>();
+
+        /// <summary>
+        /// List of parameters with low confidence
+        /// </summary>
+        public Dictionary<string, double> LowConfidenceParameters { get; set; } = new Dictionary<string, double>();
+        
+        /// <summary>
+        /// All validation issues found
+        /// </summary>
+        public List<ParameterValidationIssue> ValidationIssues { get; set; } = new List<ParameterValidationIssue>();
+        
+        /// <summary>
+        /// Whether there are any security rule violations
+        /// </summary>
+        public bool HasSecurityViolations => ValidationIssues.Any(i => i.Severity == ValidationSeverity.Critical && 
+                                                                i.RuleName.StartsWith("Security."));
+        
+        /// <summary>
+        /// Whether there are any business rule violations
+        /// </summary>
+        public bool HasBusinessRuleViolations => ValidationIssues.Any(i => i.Severity == ValidationSeverity.Critical && 
+                                                                   i.RuleName.StartsWith("Business."));
+        
+        /// <summary>
+        /// Add a validation issue to this result
+        /// </summary>
+        /// <param name="issue">The validation issue to add</param>
+        public void AddIssue(ParameterValidationIssue issue)
+        {
+            ValidationIssues.Add(issue);
+            IsValid = IsValid && issue.Severity != ValidationSeverity.Critical;
+            
+            // Also track in the appropriate collection for backward compatibility
+            if (issue.RuleName == "Required.Missing")
+            {
+                MissingParameters.Add(issue.ParameterName);
+            }
+            else if (issue.RuleName == "Type.Invalid")
+            {
+                InvalidParameters[issue.ParameterName] = issue.Description;
+            }
+            else if (issue.RuleName == "Confidence.Low")
+            {
+                if (issue.OriginalValue is double confidence)
+                {
+                    LowConfidenceParameters[issue.ParameterName] = confidence;
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Get all issues for a specific parameter
+        /// </summary>
+        /// <param name="parameterName">The name of the parameter</param>
+        /// <returns>The list of validation issues for this parameter</returns>
+        public IEnumerable<ParameterValidationIssue> GetIssuesForParameter(string parameterName)
+        {
+            return ValidationIssues.Where(i => i.ParameterName == parameterName);
+        }
+        
+        /// <summary>
+        /// Get all issues of a specific severity
+        /// </summary>
+        /// <param name="severity">The severity level to filter by</param>
+        /// <returns>The list of validation issues with this severity</returns>
+        public IEnumerable<ParameterValidationIssue> GetIssuesBySeverity(ValidationSeverity severity)
+        {
+            return ValidationIssues.Where(i => i.Severity == severity);
+        }
     }
 } 
