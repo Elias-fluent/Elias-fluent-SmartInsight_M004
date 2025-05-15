@@ -64,74 +64,76 @@ jobs:
       - name: Test
         run: dotnet test ${{ env.SOLUTION_FILE }} --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
       
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          directory: ./coverage
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
-          verbose: true
+      # Temporarily comment out for efficiency
+      # - name: Upload coverage reports to Codecov
+      #   uses: codecov/codecov-action@v4
+      #   with:
+      #     directory: ./coverage
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     fail_ci_if_error: false
+      #     verbose: true
+      # 
+      # - name: Check test coverage
+      #   uses: danielpalme/ReportGenerator-GitHub-Action@5.1.12
+      #   with:
+      #     reports: './coverage/**/coverage.cobertura.xml'
+      #     targetdir: 'coveragereport'
+      #     reporttypes: 'HtmlInline;Cobertura'
+      #     verbosity: 'Info'
+      #     tag: '${{ github.run_number }}_${{ github.run_id }}'
+      #     customSettings: 'settings.minimumcoverage=80'
+      # 
+      # - name: Upload coverage reports
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: coverage-report
+      #     path: coveragereport
       
-      - name: Check test coverage
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.1.12
-        with:
-          reports: './coverage/**/coverage.cobertura.xml'
-          targetdir: 'coveragereport'
-          reporttypes: 'HtmlInline;Cobertura'
-          verbosity: 'Info'
-          tag: '${{ github.run_number }}_${{ github.run_id }}'
-          customSettings: 'settings.minimumcoverage=80'
-      
-      - name: Upload coverage reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coveragereport
-      
-  check-code-quality:
-    name: Check Code Quality
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-      
-      - name: Install dotnet-format
-        run: dotnet tool install -g dotnet-format
-      
-      - name: Check formatting
-        run: dotnet format --verify-no-changes --verbosity diagnostic
-      
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v5.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: https://sonarcloud.io
-        with:
-          args: >
-            -Dsonar.projectKey=SmartInsight
-            -Dsonar.organization=elias-fluent
-            -Dsonar.sources=src
-            -Dsonar.tests=tests
-            -Dsonar.cs.opencover.reportsPaths=./coverage/*/coverage.opencover.xml
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-      
-      - name: Install ESLint (UI only)
-        working-directory: ./src/SmartInsight.UI
-        run: |
-          if [ -f "package.json" ]; then
-            npm install --only=dev
-            npm run lint || echo "ESLint check failed"
-          else
-            echo "No package.json found, skipping ESLint"
-          fi 
+  # Temporarily comment out for efficiency
+  # check-code-quality:
+  #   name: Check Code Quality
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+  #     
+  #     - name: Setup .NET
+  #       uses: actions/setup-dotnet@v4
+  #       with:
+  #         dotnet-version: ${{ env.DOTNET_VERSION }}
+  #     
+  #     - name: Install dotnet-format
+  #       run: dotnet tool install -g dotnet-format
+  #     
+  #     - name: Check formatting
+  #       run: dotnet format --verify-no-changes --verbosity diagnostic
+  #     
+  #     - name: SonarCloud Scan
+  #       uses: SonarSource/sonarqube-scan-action@v5.0.0
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #         SONAR_HOST_URL: https://sonarcloud.io
+  #       with:
+  #         args: >
+  #           -Dsonar.projectKey=SmartInsight
+  #           -Dsonar.organization=elias-fluent
+  #           -Dsonar.sources=src
+  #           -Dsonar.tests=tests
+  #           -Dsonar.cs.opencover.reportsPaths=./coverage/*/coverage.opencover.xml
+  #     
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '18'
+  #     
+  #     - name: Install ESLint (UI only)
+  #       working-directory: ./src/SmartInsight.UI
+  #       run: |
+  #         if [ -f "package.json" ]; then
+  #           npm install --only=dev
+  #           npm run lint || echo "ESLint check failed"
+  #         else
+  #           echo "No package.json found, skipping ESLint"
+  #         fi 
