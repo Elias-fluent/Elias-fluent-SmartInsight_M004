@@ -53,18 +53,53 @@ namespace SmartInsight.AI
         }
 
         /// <summary>
-        /// Adds all SmartInsight AI services to the service collection.
+        /// Adds context management services to the service collection.
+        /// </summary>
+        /// <param name="services">The service collection.</param>
+        /// <param name="configuration">Configuration containing context management settings.</param>
+        /// <returns>The service collection for chaining.</returns>
+        public static IServiceCollection AddContextManagement(
+            this IServiceCollection services,
+            IConfiguration configuration)
+        {
+            // Register options
+            services.Configure<ContextManagerOptions>(configuration.GetSection("ContextManagement"));
+            
+            // Register context manager
+            services.AddSingleton<IContextManager, ContextManager>();
+            
+            return services;
+        }
+
+        /// <summary>
+        /// Adds vector-based intent classification services to the service collection.
+        /// </summary>
+        /// <param name="services">The service collection.</param>
+        /// <param name="configuration">Configuration containing intent classification settings.</param>
+        /// <returns>The service collection for chaining.</returns>
+        public static IServiceCollection AddIntentClassification(
+            this IServiceCollection services,
+            IConfiguration configuration)
+        {
+            services.Configure<IntentClassificationOptions>(configuration.GetSection("IntentClassification"));
+            services.AddSingleton<IIntentClassifier, IntentClassifier>();
+            return services;
+        }
+
+        /// <summary>
+        /// Adds all AI services to the service collection.
         /// </summary>
         /// <param name="services">The service collection.</param>
         /// <param name="configuration">Configuration containing AI settings.</param>
         /// <returns>The service collection for chaining.</returns>
-        public static IServiceCollection AddSmartInsightAI(
+        public static IServiceCollection AddAllAIServices(
             this IServiceCollection services,
             IConfiguration configuration)
         {
             services.AddOllamaClient(configuration);
             services.AddIntentDetection(configuration);
-            
+            services.AddContextManagement(configuration);
+            services.AddIntentClassification(configuration);
             return services;
         }
     }
