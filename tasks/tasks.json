@@ -855,7 +855,7 @@
             1
           ],
           "details": "Create a classification model that uses vector embeddings from the OllamaClient to represent queries semantically. Implement similarity matching algorithms, fine-tuning capabilities, and support for intent templates with variable slots.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -886,7 +886,7 @@
             2
           ],
           "details": "Implement a multi-factor confidence scoring algorithm that considers semantic similarity, context relevance, and historical accuracy. Include threshold management for triggering clarification requests and confidence-based routing logic.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
