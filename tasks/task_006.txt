@@ -1,6 +1,6 @@
 # Task ID: 6
 # Title: Set Up Ollama Container
-# Status: pending
+# Status: done
 # Dependencies: 1
 # Priority: high
 # Description: Configure Ollama Docker container for local AI inference.
