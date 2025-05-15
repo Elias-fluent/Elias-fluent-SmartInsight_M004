@@ -224,7 +224,7 @@ namespace SmartInsight.AI.SQL
         }
         
         /// <inheritdoc />
-        public async Task<QueryCostEstimate> EstimateQueryCostAsync(
+        public Task<QueryCostEstimate> EstimateQueryCostAsync(
             string sql, 
             Dictionary<string, object>? parameters = null, 
             CancellationToken cancellationToken = default)
@@ -305,13 +305,13 @@ namespace SmartInsight.AI.SQL
                 // Determine the overall cost level based on execution time
                 result.CostLevel = DetermineCostLevel(result.EstimatedExecutionTimeMs);
                 
-                return result;
+                return Task.FromResult(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error estimating query cost: {SqlQuery}", sql);
                 result.CostLevel = QueryCostLevel.High; // Assume high cost on error
-                return result;
+                return Task.FromResult(result);
             }
         }
         

@@ -452,7 +452,7 @@ namespace SmartInsight.AI.SQL
             // Calculate execution time statistics
             var executionTimes = filteredLogs
                 .Where(l => l.ExecutionTimeMs.HasValue)
-                .Select(l => l.ExecutionTimeMs.Value)
+                .Select(l => l.ExecutionTimeMs!.Value)  // Using null-forgiving operator since we filter non-nulls
                 .ToList();
                 
             if (executionTimes.Any())
