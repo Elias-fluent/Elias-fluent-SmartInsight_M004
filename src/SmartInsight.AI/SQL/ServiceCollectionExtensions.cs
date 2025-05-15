@@ -82,6 +82,25 @@ namespace SmartInsight.AI.SQL
         }
         
         /// <summary>
+        /// Adds query optimization services to the service collection
+        /// </summary>
+        /// <param name="services">The IServiceCollection to add the services to</param>
+        /// <returns>The same service collection for method chaining</returns>
+        public static IServiceCollection AddQueryOptimization(this IServiceCollection services)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            // Register query optimization services
+            services.AddSingleton<IQueryOptimizer, QueryOptimizer>();
+            services.AddSingleton<ISqlQueryOptimizationService, SqlQueryOptimizationService>();
+            
+            return services;
+        }
+        
+        /// <summary>
         /// Adds tenant scoping services to the service collection
         /// </summary>
         /// <param name="services">The IServiceCollection to add the services to</param>
@@ -116,6 +135,7 @@ namespace SmartInsight.AI.SQL
                 .AddSqlParameterValidation()
                 .AddSqlInjectionPrevention()
                 .AddSqlValidationRulesEngine()
+                .AddQueryOptimization()
                 .AddTenantScoping(tenantColumnMappings);
         }
     }
