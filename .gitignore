@@ -30,4 +30,13 @@ node_modules/
 # Task files (explicitly keep these)
 # IMPORTANT: tasks directory and all its contents must be tracked
 !tasks/
-!tasks/** 
+!tasks/**
+
+# Prevent accidentally using backed up PRD file
+scripts/prd-backup.txt
+
+# Added by Claude Task Master
+*.sln
+# Task files
+tasks.json
+tasks/ 
