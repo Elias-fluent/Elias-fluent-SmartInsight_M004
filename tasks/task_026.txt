@@ -18,3 +18,68 @@ Optimize for accuracy and performance.
 
 # Test Strategy:
 Create unit tests with sample queries. Verify intent detection accuracy. Test reasoning with complex scenarios. Measure performance with different query types.
+
+# Subtasks:
+## 1. Implement IntentDetector Class with Hierarchical Classification [done]
+### Dependencies: None
+### Description: Create the core IntentDetector class that supports hierarchical intent classification to handle complex queries with multiple nested intents.
+### Details:
+Design and implement the IntentDetector class with methods for intent recognition, hierarchical classification structure, and integration with the OllamaClient. Include support for intent confidence thresholds and hierarchical intent relationships.
+
+## 2. Design Intent Classification Model with Vector Embedding Support [pending]
+### Dependencies: 26.1
+### Description: Develop the intent classification model that leverages vector embeddings for semantic understanding of user queries.
+### Details:
+Create a classification model that uses vector embeddings from the OllamaClient to represent queries semantically. Implement similarity matching algorithms, fine-tuning capabilities, and support for intent templates with variable slots.
+
+## 3. Build Chain-of-Thought Reasoning Pipeline [done]
+### Dependencies: 26.1, 26.2
+### Description: Implement a Chain-of-Thought reasoning pipeline that breaks down complex queries into logical reasoning steps.
+### Details:
+Develop a reasoning pipeline that uses step-by-step logical deduction to process complex queries. Include intermediate reasoning state tracking, verification steps, and integration with the intent classification system.
+
+## 4. Implement Context Management for Complex Queries [in-progress]
+### Dependencies: 26.3
+### Description: Create a context management system that maintains conversation history and contextual information for multi-turn interactions.
+### Details:
+Design and implement a context manager that tracks conversation state, handles context windows, manages entity persistence across queries, and supports context-aware intent disambiguation.
+<info added on 2025-05-15T02:05:29.023Z>
+Design and implement a context manager that tracks conversation state, handles context windows, manages entity persistence across queries, and supports context-aware intent disambiguation.
+
+The implementation has made significant progress with the creation of the ConversationContext class in SmartInsight.AI/Models/ContextManagementModels.cs. This class includes several key components:
+
+1. Core ConversationContext class with functionality to track message history
+2. TrackedEntity class for maintaining entity references across conversation turns
+3. DetectedIntent class for recording and accessing intent history
+4. ContextManagementOptions for configuring behavior like context window size
+5. Methods for adding messages, tracked entities, and detected intents
+6. Functions for retrieving relevant history and generating context summaries
+
+The remaining implementation work will focus on:
+1. Creating a dedicated ContextManager service to manage ConversationContext instances
+2. Implementing dependency injection registration in ServiceCollectionExtensions
+3. Adding integration with IntentDetector for automatic context updates
+4. Creating a persistence layer for saving conversation contexts
+5. Implementing context window management with automatic pruning of old messages
+
+This context management system will provide the foundation for maintaining conversation state across multiple turns, which is essential for the chain-of-thought reasoning pipeline that was previously completed. It will also support the upcoming confidence scoring system for ambiguity handling by providing rich contextual information.
+</info added on 2025-05-15T02:05:29.023Z>
+
+## 5. Create Confidence Scoring System for Ambiguity Handling [pending]
+### Dependencies: 26.2
+### Description: Develop a confidence scoring mechanism to quantify certainty in intent classifications and handle ambiguous queries.
+### Details:
+Implement a multi-factor confidence scoring algorithm that considers semantic similarity, context relevance, and historical accuracy. Include threshold management for triggering clarification requests and confidence-based routing logic.
+
+## 6. Build Fallback Strategies for Misclassifications [pending]
+### Dependencies: 26.4, 26.5
+### Description: Implement robust fallback mechanisms to gracefully handle misclassifications and edge cases.
+### Details:
+Create a tiered fallback system with progressive degradation strategies, including clarification requests, generalized intent matching, and explicit handoff protocols. Implement recovery mechanisms to learn from misclassifications.
+
+## 7. Develop Logging System for Training Improvements [pending]
+### Dependencies: 26.3, 26.6
+### Description: Create a comprehensive logging system to capture classification decisions, reasoning steps, and user interactions for continuous improvement.
+### Details:
+Implement structured logging for intent classifications, confidence scores, reasoning paths, and user feedback. Include anonymization capabilities, performance metrics tracking, and tools for identifying training opportunities from logs.
+
