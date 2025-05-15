@@ -5,68 +5,39 @@ namespace SmartInsight.Core.Enums;
 /// </summary>
 public enum DataSourceType
 {
-    /// <summary>
-    /// PostgreSQL database
-    /// </summary>
-    PostgreSQL,
+    /// <summary>SQL Server database</summary>
+    SqlServer = 1,
     
-    /// <summary>
-    /// Microsoft SQL Server database
-    /// </summary>
-    MsSqlServer,
+    /// <summary>PostgreSQL database</summary>
+    PostgreSQL = 2,
     
-    /// <summary>
-    /// MySQL database
-    /// </summary>
-    MySQL,
+    /// <summary>MySQL database</summary>
+    MySQL = 3,
     
-    /// <summary>
-    /// File system (local or network)
-    /// </summary>
-    FileSystem,
+    /// <summary>REST API endpoint</summary>
+    RestApi = 4,
     
-    /// <summary>
-    /// Text files (TXT)
-    /// </summary>
-    TextFile,
+    /// <summary>GraphQL API endpoint</summary>
+    GraphQL = 5,
     
-    /// <summary>
-    /// Markdown documents
-    /// </summary>
-    Markdown,
+    /// <summary>SharePoint document repository</summary>
+    SharePoint = 6,
     
-    /// <summary>
-    /// PDF documents
-    /// </summary>
-    PDF,
+    /// <summary>Confluence wiki</summary>
+    Confluence = 7,
     
-    /// <summary>
-    /// Microsoft Word documents
-    /// </summary>
-    Word,
+    /// <summary>JIRA issue tracker</summary>
+    Jira = 8,
     
-    /// <summary>
-    /// Atlassian Confluence
-    /// </summary>
-    Confluence,
+    /// <summary>File share (network or local)</summary>
+    FileShare = 9,
     
-    /// <summary>
-    /// Atlassian JIRA
-    /// </summary>
-    JIRA,
+    /// <summary>Git repository</summary>
+    Git = 10,
     
-    /// <summary>
-    /// Git repository
-    /// </summary>
-    Git,
+    /// <summary>SVN repository</summary>
+    Svn = 11,
     
-    /// <summary>
-    /// Any REST API endpoint
-    /// </summary>
-    RestApi,
-    
-    /// <summary>
-    /// Custom data source
-    /// </summary>
-    Custom
+    /// <summary>Custom data source type</summary>
+    Custom = 99
 } 
