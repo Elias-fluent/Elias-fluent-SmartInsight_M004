@@ -195,5 +195,61 @@ namespace SmartInsight.AI.Interfaces
             CancellationToken cancellationToken = default);
 
         #endregion
+        
+        #region Embeddings
+        
+        /// <summary>
+        /// Generates an embedding vector for a text using the default model.
+        /// </summary>
+        /// <param name="text">The text to generate an embedding for.</param>
+        /// <param name="parameters">Optional parameters to control generation.</param>
+        /// <param name="cancellationToken">A token to cancel the operation.</param>
+        /// <returns>The embedding response containing the vector.</returns>
+        Task<OllamaEmbeddingResponse> GenerateEmbeddingAsync(
+            string text,
+            Dictionary<string, object>? parameters = null,
+            CancellationToken cancellationToken = default);
+            
+        /// <summary>
+        /// Generates an embedding vector for a text using a specified model.
+        /// </summary>
+        /// <param name="modelName">The name of the model to use.</param>
+        /// <param name="text">The text to generate an embedding for.</param>
+        /// <param name="parameters">Optional parameters to control generation.</param>
+        /// <param name="cancellationToken">A token to cancel the operation.</param>
+        /// <returns>The embedding response containing the vector.</returns>
+        Task<OllamaEmbeddingResponse> GenerateEmbeddingWithModelAsync(
+            string modelName,
+            string text,
+            Dictionary<string, object>? parameters = null,
+            CancellationToken cancellationToken = default);
+            
+        /// <summary>
+        /// Generates embedding vectors for a batch of texts using the default model.
+        /// </summary>
+        /// <param name="texts">The list of texts to generate embeddings for.</param>
+        /// <param name="parameters">Optional parameters to control generation.</param>
+        /// <param name="cancellationToken">A token to cancel the operation.</param>
+        /// <returns>A list of embedding responses containing the vectors.</returns>
+        Task<List<OllamaEmbeddingResponse>> GenerateBatchEmbeddingsAsync(
+            List<string> texts,
+            Dictionary<string, object>? parameters = null,
+            CancellationToken cancellationToken = default);
+            
+        /// <summary>
+        /// Generates embedding vectors for a batch of texts using a specified model.
+        /// </summary>
+        /// <param name="modelName">The name of the model to use.</param>
+        /// <param name="texts">The list of texts to generate embeddings for.</param>
+        /// <param name="parameters">Optional parameters to control generation.</param>
+        /// <param name="cancellationToken">A token to cancel the operation.</param>
+        /// <returns>A list of embedding responses containing the vectors.</returns>
+        Task<List<OllamaEmbeddingResponse>> GenerateBatchEmbeddingsWithModelAsync(
+            string modelName,
+            List<string> texts,
+            Dictionary<string, object>? parameters = null,
+            CancellationToken cancellationToken = default);
+        
+        #endregion
     }
 } 

@@ -1,6 +1,6 @@
 # Task ID: 10
 # Title: Implement Core Entity Models
-# Status: pending
+# Status: done
 # Dependencies: 3
 # Priority: high
 # Description: Create entity classes for all core data models specified in the PRD.

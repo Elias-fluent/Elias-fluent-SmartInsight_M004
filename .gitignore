@@ -12,10 +12,59 @@ node_modules/
 # Environment variables
 .env
 
+# Visual Studio / .NET specific
+.vs/
+**/.vs/
+
+# Build output directories - explicit paths
+**/bin/
+**/obj/
+src/**/bin/
+src/**/obj/
+tests/**/bin/
+tests/**/obj/
+/src/*/bin/
+/src/*/obj/
+/tests/*/bin/
+/tests/*/obj/
+
+# Specific project directories
+/src/SmartInsight.Admin/bin/
+/src/SmartInsight.Admin/obj/
+/src/SmartInsight.AI/bin/
+/src/SmartInsight.AI/obj/
+/src/SmartInsight.API/bin/
+/src/SmartInsight.API/obj/
+/src/SmartInsight.Core/bin/
+/src/SmartInsight.Core/obj/
+/src/SmartInsight.Data/bin/
+/src/SmartInsight.Data/obj/
+/src/SmartInsight.History/bin/
+/src/SmartInsight.History/obj/
+/src/SmartInsight.Knowledge/bin/
+/src/SmartInsight.Knowledge/obj/
+/src/SmartInsight.Telemetry/bin/
+/src/SmartInsight.Telemetry/obj/
+/src/SmartInsight.UI/bin/
+/src/SmartInsight.UI/obj/
+/tests/SmartInsight.Tests/bin/
+/tests/SmartInsight.Tests/obj/
+
+# Build artifacts and user files
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.dbmdl
+*.dbproj.schemaview
+*.jfm
+*.pfx
+*.publishsettings
+orleans.codegen.cs
+
 # Editor directories and files
 .idea
 .vscode
-*.suo
 *.ntvs*
 *.njsproj
 *.sw?
@@ -23,11 +72,60 @@ node_modules/
 # OS specific
 .DS_Store
 
-# Build output
-**/bin/
-**/obj/
-
 # Task files (explicitly keep these)
 # IMPORTANT: tasks directory and all its contents must be tracked
 !tasks/
-!tasks/** 
+!tasks/**
+
+# Prevent accidentally using backed up PRD file
+scripts/prd-backup.txt
+
+# Added by Claude Task Master
+*.suo
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Visual Studio profiler
+*.psess
+*.vsp
+*.vspx
+*.sap
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio files
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.dbmdl
+*.dbproj.schemaview
+*.pfx
+*.publishsettings
+
+# NuGet Packages
+*.nupkg
+# NuGet Symbol Packages
+*.snupkg
+# The packages folder can be ignored because of Package Restore
+**/[Pp]ackages/*
+# except build/, which is used as an MSBuild target.
+!**/[Pp]ackages/build/ 
