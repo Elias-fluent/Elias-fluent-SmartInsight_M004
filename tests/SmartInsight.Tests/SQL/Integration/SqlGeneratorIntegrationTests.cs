@@ -164,7 +164,8 @@ namespace SmartInsight.Tests.SQL.Integration
             }
 
             // Check if critical security issues exist
-            Assert.False(validationResult.HasSecurityIssues, "Generated SQL has critical security issues");
+            bool hasSecurityIssues = validationResult.HasSecurityIssues();
+            Assert.False(hasSecurityIssues, "Generated SQL has critical security issues");
 
             // Optimize the SQL query
             _output.WriteLine("Step 3: Optimizing generated SQL");

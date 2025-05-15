@@ -42,13 +42,11 @@ namespace SmartInsight.AI.SQL.Interfaces
         /// <summary>
         /// Logs SQL execution
         /// </summary>
-        /// <param name="query">The original natural language query</param>
         /// <param name="executionResult">The SQL execution result</param>
         /// <param name="tenantContext">The tenant context</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Log entry ID</returns>
         Task<Guid> LogSqlExecutionAsync(
-            string query, 
             SqlExecutionResult executionResult, 
             TenantContext? tenantContext = null, 
             CancellationToken cancellationToken = default);
@@ -73,15 +71,13 @@ namespace SmartInsight.AI.SQL.Interfaces
         /// Logs a SQL error
         /// </summary>
         /// <param name="query">The original natural language query</param>
-        /// <param name="sql">The SQL that caused the error</param>
-        /// <param name="error">The error message</param>
+        /// <param name="exception">The exception that occurred</param>
         /// <param name="tenantContext">The tenant context</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Log entry ID</returns>
         Task<Guid> LogSqlErrorAsync(
             string query, 
-            string sql, 
-            string error, 
+            Exception exception, 
             TenantContext? tenantContext = null, 
             CancellationToken cancellationToken = default);
 
@@ -107,6 +103,58 @@ namespace SmartInsight.AI.SQL.Interfaces
             DateTime fromDate, 
             DateTime toDate, 
             Guid? tenantId = null, 
+            CancellationToken cancellationToken = default);
+            
+        /// <summary>
+        /// Gets query statistics for a specific time range
+        /// </summary>
+        /// <param name="startDate">Start date for the range</param>
+        /// <param name="endDate">End date for the range</param>
+        /// <param name="tenantId">Optional tenant ID</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Query statistics</returns>
+        Task<SqlLogStatistics> GetQueryStatisticsAsync(
+            DateTime startDate,
+            DateTime endDate,
+            Guid? tenantId = null,
+            CancellationToken cancellationToken = default);
+            
+        /// <summary>
+        /// Gets the most recent queries
+        /// </summary>
+        /// <param name="limit">Maximum number of queries to return</param>
+        /// <param name="tenantId">Optional tenant ID</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>List of recent queries</returns>
+        Task<List<SqlLogEntry>> GetRecentQueriesAsync(
+            int limit,
+            Guid? tenantId = null,
+            CancellationToken cancellationToken = default);
+            
+        /// <summary>
+        /// Gets the most popular queries
+        /// </summary>
+        /// <param name="limit">Maximum number of queries to return</param>
+        /// <param name="tenantId">Optional tenant ID</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>List of popular queries</returns>
+        Task<List<SqlLogEntry>> GetPopularQueriesAsync(
+            int limit,
+            Guid? tenantId = null,
+            CancellationToken cancellationToken = default);
+            
+        /// <summary>
+        /// Gets queries that take longer than a specified threshold
+        /// </summary>
+        /// <param name="executionTimeThresholdMs">Execution time threshold in milliseconds</param>
+        /// <param name="limit">Maximum number of queries to return</param>
+        /// <param name="tenantId">Optional tenant ID</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>List of slow queries</returns>
+        Task<List<SqlLogEntry>> GetSlowQueriesAsync(
+            long executionTimeThresholdMs,
+            int limit,
+            Guid? tenantId = null,
             CancellationToken cancellationToken = default);
     }
 

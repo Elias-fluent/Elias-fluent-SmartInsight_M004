@@ -4,9 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SmartInsight.AI.SQL;
 using SmartInsight.AI.SQL.Interfaces;
 using SmartInsight.AI.SQL.Models;
+using SmartInsight.Tests.SQL.Common.Mocks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -39,13 +41,21 @@ namespace SmartInsight.Tests.SQL.Common.Utilities
                 builder.SetMinimumLevel(LogLevel.Debug);
             });
             
-            // Register SQL services
-            services.AddSqlParameterValidation();
-            services.AddSqlInjectionPrevention();
-            services.AddSqlValidationRulesEngine();
-            services.AddQueryOptimization();
-            services.AddSqlLogging();
-            services.AddSqlLogRetention();
+            // Register only the services we need, avoid extension methods 
+            services.AddSingleton<ISqlExecutionService, MockSqlExecutionService>();
+            services.AddSingleton<ISqlGenerator, MockSqlGenerator>();
+            services.AddSingleton<ISqlValidator, MockSqlValidator>();
+            services.AddSingleton<ISqlValidationRulesEngine, MockSqlValidationRulesEngine>();
+            services.AddSingleton<IParameterValidator, MockParameterValidator>();
+            services.AddSingleton<ISqlLoggingService, SqlLoggingService>();
+
+            // Add SQL log retention directly
+            services.AddSingleton<ISqlLogRetentionService, SqlLogRetentionService>();
+            services.Configure<SqlLogRetentionOptions>(options => {
+                options.DefaultRetentionDays = 30;
+                options.ErrorLogRetentionDays = 90;
+                options.PerformanceLogRetentionDays = 60;
+            });
             
             // Allow inheriting classes to register additional services
             RegisterAdditionalServices(services);

@@ -74,11 +74,11 @@ namespace SmartInsight.AI.SQL.Validators
         /// <param name="parameter">The parameter to validate</param>
         /// <param name="templateParameter">The template parameter definition</param>
         /// <returns>A list of validation issues found</returns>
-        public async Task<List<ParameterValidationIssue>> ApplyAsync(
+        public async Task<List<SmartInsight.AI.SQL.Models.ParameterValidationIssue>> ApplyAsync(
             ExtractedParameter parameter,
             SqlTemplateParameter templateParameter)
         {
-            var issues = new List<ParameterValidationIssue>();
+            var issues = new List<SmartInsight.AI.SQL.Models.ParameterValidationIssue>();
             
             foreach (var ruleName in _ruleNames)
             {
@@ -87,7 +87,7 @@ namespace SmartInsight.AI.SQL.Validators
                     var issue = await _validator.ValidateParameterAsync(parameter, templateParameter, ruleName);
                     if (issue != null)
                     {
-                        issues.Add(issue);
+                        issues.Add(ConvertToModelIssue(issue));
                     }
                 }
                 catch (Exception ex)
@@ -101,16 +101,32 @@ namespace SmartInsight.AI.SQL.Validators
         }
         
         /// <summary>
+        /// Converts an interface issue to a model issue
+        /// </summary>
+        private SmartInsight.AI.SQL.Models.ParameterValidationIssue ConvertToModelIssue(SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue issue)
+        {
+            return new SmartInsight.AI.SQL.Models.ParameterValidationIssue
+            {
+                ParameterName = issue.ParameterName,
+                RuleName = issue.RuleName,
+                Description = issue.Description,
+                Severity = issue.Severity,
+                OriginalValue = issue.OriginalValue,
+                Recommendation = issue.Recommendation
+            };
+        }
+        
+        /// <summary>
         /// Applies all rules in this set to a set of parameters
         /// </summary>
         /// <param name="parameters">The parameters to validate</param>
         /// <param name="template">The SQL template</param>
         /// <returns>A validation result with all issues found</returns>
-        public async Task<Models.ParameterValidationResult> ApplyAsync(
+        public async Task<SmartInsight.AI.SQL.Models.ParameterValidationResult> ApplyAsync(
             Dictionary<string, ExtractedParameter> parameters,
             SqlTemplate template)
         {
-            var result = new Models.ParameterValidationResult
+            var result = new SmartInsight.AI.SQL.Models.ParameterValidationResult
             {
                 IsValid = true
             };

@@ -44,7 +44,7 @@ namespace SmartInsight.Tests.SQL.Unit.Validators
 
             // Assert
             Assert.NotNull(securityRules);
-            Assert.All(securityRules, rule => Assert.Equal(ValidationCategory.Security, rule.Category));
+            Assert.All(securityRules, rule => Assert.Equal("Security", rule.Category));
         }
 
         [Fact]
@@ -56,9 +56,10 @@ namespace SmartInsight.Tests.SQL.Unit.Validators
             {
                 Name = uniqueRuleName,
                 Description = "Test Rule",
-                Category = ValidationCategory.Syntax,
-                Severity = ValidationSeverity.Info,
-                Pattern = @"\bTEST\b",
+                Category = "Syntax",
+                CategoryEnum = ValidationCategory.Syntax,
+                DefaultSeverity = ValidationSeverity.Info,
+                DefaultRecommendation = "Test recommendation",
                 IsEnabled = true
             };
 
@@ -85,9 +86,10 @@ namespace SmartInsight.Tests.SQL.Unit.Validators
                 {
                     Name = uniqueRuleName,
                     Description = "Test Rule",
-                    Category = ValidationCategory.Syntax,
-                    Severity = ValidationSeverity.Info,
-                    Pattern = @"\bTEST\b",
+                    Category = "Syntax",
+                    CategoryEnum = ValidationCategory.Syntax,
+                    DefaultSeverity = ValidationSeverity.Info,
+                    DefaultRecommendation = "Test recommendation",
                     IsEnabled = true
                 };
                 _rulesEngine.AddRule(newRule);
@@ -99,9 +101,10 @@ namespace SmartInsight.Tests.SQL.Unit.Validators
             {
                 Name = existingRule.Name,
                 Description = "Duplicate Test Rule",
-                Category = ValidationCategory.Performance,
-                Severity = ValidationSeverity.Warning,
-                Pattern = @"\bDUPLICATE\b",
+                Category = "Performance",
+                CategoryEnum = ValidationCategory.Performance,
+                DefaultSeverity = ValidationSeverity.Warning,
+                DefaultRecommendation = "Duplicate recommendation",
                 IsEnabled = true
             };
 
@@ -121,9 +124,10 @@ namespace SmartInsight.Tests.SQL.Unit.Validators
             {
                 Name = uniqueRuleName,
                 Description = "Test Rule to Remove",
-                Category = ValidationCategory.Syntax,
-                Severity = ValidationSeverity.Info,
-                Pattern = @"\bREMOVE\b",
+                Category = "Syntax",
+                CategoryEnum = ValidationCategory.Syntax,
+                DefaultSeverity = ValidationSeverity.Info,
+                DefaultRecommendation = "Remove recommendation",
                 IsEnabled = true
             };
             _rulesEngine.AddRule(rule);
@@ -159,9 +163,10 @@ namespace SmartInsight.Tests.SQL.Unit.Validators
             {
                 Name = uniqueRuleName,
                 Description = "Test Rule to Toggle",
-                Category = ValidationCategory.Syntax,
-                Severity = ValidationSeverity.Info,
-                Pattern = @"\bTOGGLE\b",
+                Category = "Syntax",
+                CategoryEnum = ValidationCategory.Syntax,
+                DefaultSeverity = ValidationSeverity.Info,
+                DefaultRecommendation = "Toggle recommendation",
                 IsEnabled = true
             };
             _rulesEngine.AddRule(rule);
@@ -206,9 +211,10 @@ namespace SmartInsight.Tests.SQL.Unit.Validators
             {
                 Name = "NoSelectStar",
                 Description = "Avoid using SELECT * in queries",
-                Category = ValidationCategory.Performance,
-                Severity = ValidationSeverity.Warning,
-                Pattern = @"SELECT\s+\*\s+FROM",
+                Category = "Performance",
+                CategoryEnum = ValidationCategory.Performance,
+                DefaultSeverity = ValidationSeverity.Warning,
+                DefaultRecommendation = "Specify the columns you need",
                 IsEnabled = true
             };
             

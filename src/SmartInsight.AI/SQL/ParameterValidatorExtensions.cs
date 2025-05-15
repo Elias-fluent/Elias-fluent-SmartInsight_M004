@@ -20,11 +20,11 @@ namespace SmartInsight.AI.SQL
         /// <returns>The same validation result for method chaining</returns>
         public static Models.ParameterValidationResult AddIssueIfPresent(
             this Models.ParameterValidationResult result, 
-            ParameterValidationIssue? issue)
+            SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue? issue)
         {
             if (issue != null)
             {
-                result.AddIssue(issue);
+                result.AddIssue(ConvertToDomainModel(issue));
             }
             
             return result;
@@ -38,11 +38,11 @@ namespace SmartInsight.AI.SQL
         /// <returns>The same validation result for method chaining</returns>
         public static Models.ParameterValidationResult AddIssues(
             this Models.ParameterValidationResult result, 
-            IEnumerable<ParameterValidationIssue> issues)
+            IEnumerable<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue> issues)
         {
             foreach (var issue in issues)
             {
-                result.AddIssue(issue);
+                result.AddIssue(ConvertToDomainModel(issue));
             }
             
             return result;
@@ -56,7 +56,7 @@ namespace SmartInsight.AI.SQL
         /// <returns>The same validation result for method chaining</returns>
         public static async Task<Models.ParameterValidationResult> WithCustomValidationAsync(
             this Models.ParameterValidationResult result,
-            Func<Task<IEnumerable<ParameterValidationIssue>>> validationFunc)
+            Func<Task<IEnumerable<SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue>>> validationFunc)
         {
             var issues = await validationFunc();
             return result.AddIssues(issues);
@@ -104,6 +104,22 @@ namespace SmartInsight.AI.SQL
             }
             
             return result;
+        }
+
+        /// <summary>
+        /// Converts an interface parameter validation issue to a domain model
+        /// </summary>
+        private static SmartInsight.AI.SQL.Models.ParameterValidationIssue ConvertToDomainModel(SmartInsight.AI.SQL.Interfaces.ParameterValidationIssue issue)
+        {
+            return new SmartInsight.AI.SQL.Models.ParameterValidationIssue
+            {
+                ParameterName = issue.ParameterName,
+                RuleName = issue.RuleName,
+                Description = issue.Description,
+                Severity = issue.Severity,
+                OriginalValue = issue.OriginalValue,
+                Recommendation = issue.Recommendation
+            };
         }
     }
 } 

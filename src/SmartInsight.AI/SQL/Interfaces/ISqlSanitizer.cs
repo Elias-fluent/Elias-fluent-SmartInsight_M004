@@ -68,6 +68,11 @@ namespace SmartInsight.AI.SQL.Interfaces
         public string Sql { get; set; } = null!;
         
         /// <summary>
+        /// The parameterized SQL (alias for Sql for backward compatibility)
+        /// </summary>
+        public string ParameterizedSql => Sql;
+        
+        /// <summary>
         /// The parameters to use with the query
         /// </summary>
         public Dictionary<string, object> Parameters { get; set; } = new Dictionary<string, object>();

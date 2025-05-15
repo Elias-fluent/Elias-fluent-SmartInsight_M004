@@ -177,40 +177,44 @@ namespace SmartInsight.Tests.SQL.Common.TestData
             {
                 Name = "NoSelectStar",
                 Description = "Avoid using SELECT * in queries for production code",
-                Category = ValidationCategory.Performance,
-                Severity = ValidationSeverity.Warning,
+                Category = "Performance",
+                CategoryEnum = ValidationCategory.Performance,
+                DefaultSeverity = ValidationSeverity.Warning,
                 IsEnabled = true,
-                Pattern = @"SELECT\s+\*\s+FROM"
+                DefaultRecommendation = "Specify only the columns you need"
             };
             
             yield return new SqlValidationRuleDefinition
             {
                 Name = "NoMultipleStatements",
                 Description = "Avoid using multiple statements in a single query (SQL injection risk)",
-                Category = ValidationCategory.Security,
-                Severity = ValidationSeverity.Critical,
+                Category = "Security",
+                CategoryEnum = ValidationCategory.Security,
+                DefaultSeverity = ValidationSeverity.Critical,
                 IsEnabled = true,
-                Pattern = @";(?!\s*$)"
+                DefaultRecommendation = "Use separate queries for multiple operations"
             };
             
             yield return new SqlValidationRuleDefinition
             {
                 Name = "RequireWhereClause",
                 Description = "DELETE and UPDATE statements should include a WHERE clause",
-                Category = ValidationCategory.Security,
-                Severity = ValidationSeverity.Critical,
+                Category = "Security",
+                CategoryEnum = ValidationCategory.Security,
+                DefaultSeverity = ValidationSeverity.Critical,
                 IsEnabled = true,
-                Pattern = @"(DELETE\s+FROM|UPDATE)\s+\w+\s*(?!\s+WHERE)"
+                DefaultRecommendation = "Always include a WHERE clause with DELETE and UPDATE"
             };
 
             yield return new SqlValidationRuleDefinition
             {
                 Name = "AvoidDistinct",
                 Description = "Avoid using DISTINCT unnecessarily as it impacts performance",
-                Category = ValidationCategory.Performance,
-                Severity = ValidationSeverity.Info,
+                Category = "Performance",
+                CategoryEnum = ValidationCategory.Performance,
+                DefaultSeverity = ValidationSeverity.Info,
                 IsEnabled = true,
-                Pattern = @"SELECT\s+DISTINCT"
+                DefaultRecommendation = "Consider alternatives to DISTINCT for better performance"
             };
         }
         

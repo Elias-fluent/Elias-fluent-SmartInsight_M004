@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SmartInsight.AI.SQL.Interfaces;
 using SmartInsight.AI.SQL.Models;
-using SmartInsight.AI.SQL.Options;
 using SmartInsight.Tests.SQL.Common.Utilities;
 using Xunit;
 using Xunit.Abstractions;

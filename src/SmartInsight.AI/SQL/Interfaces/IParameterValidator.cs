@@ -116,5 +116,10 @@ namespace SmartInsight.AI.SQL.Interfaces
         /// Optional recommendation for resolving the issue
         /// </summary>
         public string? Recommendation { get; set; }
+        
+        /// <summary>
+        /// Issue description (for backward compatibility with tests)
+        /// </summary>
+        public string Issue => Description;
     }
 } 

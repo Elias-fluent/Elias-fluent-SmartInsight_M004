@@ -355,6 +355,7 @@ namespace SmartInsight.AI.SQL
             }
         }
         
+        /// <inheritdoc />
         #region Private Helper Methods
         
         /// <summary>
@@ -540,18 +541,202 @@ namespace SmartInsight.AI.SQL
         /// </summary>
         private string RemoveExistingPagination(string sql)
         {
-            // Remove SQL Server style pagination (TOP)
-            sql = Regex.Replace(sql, @"\bTOP\s+\d+\b", "", RegexOptions.IgnoreCase);
+            // Remove SQL Server style pagination
+            sql = Regex.Replace(sql, @"\s+OFFSET\s+\d+\s+ROWS(\s+FETCH\s+NEXT\s+\d+\s+ROWS\s+ONLY)?", "", RegexOptions.IgnoreCase);
             
-            // Remove MySQL/PostgreSQL style pagination (LIMIT/OFFSET)
-            sql = Regex.Replace(sql, @"\bLIMIT\s+\d+(\s+OFFSET\s+\d+)?\b", "", RegexOptions.IgnoreCase);
+            // Remove MySQL/PostgreSQL style pagination
+            sql = Regex.Replace(sql, @"\s+LIMIT\s+\d+(\s+OFFSET\s+\d+)?", "", RegexOptions.IgnoreCase);
             
-            // Remove standard SQL:2008 pagination (OFFSET/FETCH)
-            sql = Regex.Replace(sql, @"\bOFFSET\s+\d+\s+ROWS(\s+FETCH\s+(FIRST|NEXT)\s+\d+\s+ROWS\s+ONLY)?\b", "", RegexOptions.IgnoreCase);
-            
-            return sql.Trim();
+            return sql;
         }
         
         #endregion
+        
+        /// <inheritdoc />
+        public async Task<OptimizationResult> OptimizeQueryAsync(
+            string sql,
+            Dictionary<string, object>? parameters = null,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var analysis = await AnalyzeSqlAsync(sql, parameters, cancellationToken);
+                var costEstimate = await EstimateQueryCostAsync(sql, parameters, cancellationToken);
+                
+                return new OptimizationResult
+                {
+                    OriginalSql = sql,
+                    OptimizedSql = analysis.OptimizedSql,
+                    IsSuccessful = true,
+                    Parameters = parameters ?? new Dictionary<string, object>(),
+                    PerformanceImprovementFactor = analysis.EstimatedImprovementFactor,
+                    Suggestions = analysis.Suggestions,
+                    EstimatedCost = costEstimate
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error optimizing SQL query: {SqlQuery}", sql);
+                return new OptimizationResult
+                {
+                    OriginalSql = sql,
+                    OptimizedSql = sql,
+                    IsSuccessful = false,
+                    ErrorMessage = $"Optimization failed: {ex.Message}",
+                    Parameters = parameters ?? new Dictionary<string, object>()
+                };
+            }
+        }
+        
+        /// <inheritdoc />
+        public async Task<int> GetQueryComplexityAsync(
+            string sql,
+            Dictionary<string, object>? parameters = null,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                int complexityScore = 1; // Start with base complexity
+                
+                // Increase complexity based on query characteristics
+                if (IsSelectQuery(sql))
+                {
+                    int joinCount = CountJoins(sql);
+                    complexityScore += joinCount; // Each join adds complexity
+                    
+                    if (!HasWhereClause(sql))
+                        complexityScore += 2; // Missing WHERE clause adds complexity
+                        
+                    if (HasGroupBy(sql))
+                        complexityScore += 1; // GROUP BY adds complexity
+                        
+                    if (Regex.IsMatch(sql, @"\bSUBSTRING|\bCONCAT|\bCAST|\bCONVERT", RegexOptions.IgnoreCase))
+                        complexityScore += 1; // String manipulation adds complexity
+                        
+                    if (sql.Contains("*") && !sql.Contains("COUNT(*)"))
+                        complexityScore += 1; // SELECT * adds complexity
+                        
+                    if (Regex.IsMatch(sql, @"\bUNION|\bINTERSECT|\bEXCEPT", RegexOptions.IgnoreCase))
+                        complexityScore += 2; // Set operations add complexity
+                        
+                    if (Regex.IsMatch(sql, @"\bEXISTS|\bIN\s*\(", RegexOptions.IgnoreCase))
+                        complexityScore += 1; // Subqueries add complexity
+                }
+                else if (IsUpdateQuery(sql) || IsDeleteQuery(sql))
+                {
+                    complexityScore += 2; // Base increase for data modification
+                    
+                    if (!HasWhereClause(sql))
+                        complexityScore += 3; // Missing WHERE in UPDATE/DELETE is highly complex
+                }
+                
+                // Analyze performance issues for additional complexity
+                var performanceResult = await _sqlValidator.ValidatePerformanceAsync(sql, parameters, cancellationToken);
+                int criticalIssues = performanceResult.Issues.Count(i => i.Severity == ValidationSeverity.Critical);
+                int errorIssues = performanceResult.Issues.Count(i => i.Severity == ValidationSeverity.Error);
+                int warningIssues = performanceResult.Issues.Count(i => i.Severity == ValidationSeverity.Warning);
+                
+                complexityScore += criticalIssues * 2 + errorIssues + (warningIssues > 0 ? 1 : 0);
+                
+                // Cap the score between 1 and 10
+                return Math.Max(1, Math.Min(10, complexityScore));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calculating query complexity: {SqlQuery}", sql);
+                return 5; // Return medium complexity on error
+            }
+        }
+        
+        /// <inheritdoc />
+        public async Task<QueryPerformanceAnalysis> AnalyzeQueryPerformanceAsync(
+            string sql,
+            Dictionary<string, object>? parameters = null,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var costEstimate = await EstimateQueryCostAsync(sql, parameters, cancellationToken);
+                var analysis = await AnalyzeSqlAsync(sql, parameters, cancellationToken);
+                
+                var performanceAnalysis = new QueryPerformanceAnalysis
+                {
+                    Sql = sql,
+                    EstimatedCostScore = (double)costEstimate.CostLevel,
+                    EstimatedExecutionTimeMs = costEstimate.EstimatedExecutionTimeMs,
+                    EstimatedMemoryUsageKb = costEstimate.EstimatedMemoryBytes / 1024,
+                    CachingRecommended = costEstimate.CostLevel >= QueryCostLevel.Medium && IsSelectQuery(sql)
+                };
+                
+                // Extract affected tables
+                // Simple extraction for demo purposes - would need more robust parsing in production
+                var tableMatches = Regex.Matches(sql, @"FROM\s+([a-zA-Z0-9_\[\]\.]+)|JOIN\s+([a-zA-Z0-9_\[\]\.]+)", RegexOptions.IgnoreCase);
+                foreach (Match match in tableMatches)
+                {
+                    string table = match.Groups[1].Value != string.Empty 
+                        ? match.Groups[1].Value 
+                        : match.Groups[2].Value;
+                    
+                    if (!string.IsNullOrWhiteSpace(table) && !performanceAnalysis.AffectedTables.Contains(table))
+                    {
+                        performanceAnalysis.AffectedTables.Add(table);
+                    }
+                }
+                
+                // Add performance factors
+                foreach (var suggestion in analysis.Suggestions)
+                {
+                    performanceAnalysis.PerformanceFactors.Add(suggestion.Description);
+                    
+                    // Check if this is an index recommendation
+                    if (suggestion.Description.Contains("index") || suggestion.Description.Contains("INDEX"))
+                    {
+                        // Simple index recommendation
+                        foreach (var table in performanceAnalysis.AffectedTables)
+                        {
+                            // Extract potential column from WHERE clause
+                            var columnMatches = Regex.Matches(sql, @"WHERE\s+([a-zA-Z0-9_\.]+)\s*=", RegexOptions.IgnoreCase);
+                            foreach (Match match in columnMatches)
+                            {
+                                string column = match.Groups[1].Value;
+                                if (!string.IsNullOrWhiteSpace(column))
+                                {
+                                    string indexName = $"IX_{table.Replace("[", "").Replace("]", "")}_{column.Replace(".", "_")}";
+                                    performanceAnalysis.RecommendedIndexes.Add($"CREATE INDEX {indexName} ON {table}({column})");
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Identify bottlenecks
+                if (!HasWhereClause(sql) && performanceAnalysis.AffectedTables.Any())
+                {
+                    performanceAnalysis.Bottlenecks.Add("Missing WHERE clause causing full table scan");
+                }
+                
+                if (sql.Contains("SELECT *"))
+                {
+                    performanceAnalysis.Bottlenecks.Add("SELECT * retrieving unnecessary columns");
+                }
+                
+                if (CountJoins(sql) >= 3)
+                {
+                    performanceAnalysis.Bottlenecks.Add("Multiple joins increasing query complexity");
+                }
+                
+                return performanceAnalysis;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error analyzing query performance: {SqlQuery}", sql);
+                return new QueryPerformanceAnalysis
+                {
+                    Sql = sql,
+                    EstimatedCostScore = 5.0,
+                    Bottlenecks = new List<string> { "Error during analysis: " + ex.Message }
+                };
+            }
+        }
     }
 } 

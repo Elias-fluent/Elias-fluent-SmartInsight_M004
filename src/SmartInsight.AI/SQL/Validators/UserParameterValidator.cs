@@ -57,12 +57,12 @@ namespace SmartInsight.AI.SQL.Validators
                     // Custom email validation (domain-specific)
                     if (email.EndsWith("@example.com", StringComparison.OrdinalIgnoreCase))
                     {
-                        result.AddIssue(new ParameterValidationIssue
+                        result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                         {
                             ParameterName = "email",
                             RuleName = "Business.RestrictedDomain",
                             Description = "Email addresses from example.com domain are not allowed",
-                            Severity = ValidationSeverity.Critical,
+                            Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Critical,
                             OriginalValue = email,
                             Recommendation = "Provide an email address from an allowed domain"
                         });
@@ -77,12 +77,12 @@ namespace SmartInsight.AI.SQL.Validators
                     // Custom username validation
                     if (username.Length < 5)
                     {
-                        result.AddIssue(new ParameterValidationIssue
+                        result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                         {
                             ParameterName = "username",
                             RuleName = "Business.UsernameLength",
                             Description = "Username must be at least 5 characters long",
-                            Severity = ValidationSeverity.Critical,
+                            Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Critical,
                             OriginalValue = username,
                             Recommendation = "Provide a username with at least 5 characters"
                         });
@@ -91,12 +91,12 @@ namespace SmartInsight.AI.SQL.Validators
                     // Username format validation
                     if (!Regex.IsMatch(username, @"^[a-zA-Z0-9_-]+$"))
                     {
-                        result.AddIssue(new ParameterValidationIssue
+                        result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                         {
                             ParameterName = "username",
                             RuleName = "Business.UsernameFormat",
                             Description = "Username must contain only letters, numbers, underscores, and hyphens",
-                            Severity = ValidationSeverity.Critical,
+                            Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Critical,
                             OriginalValue = username,
                             Recommendation = "Remove special characters from the username"
                         });
@@ -112,12 +112,12 @@ namespace SmartInsight.AI.SQL.Validators
                     var allowedRoles = new[] { "user", "admin", "manager", "readonly" };
                     if (!allowedRoles.Contains(role, StringComparer.OrdinalIgnoreCase))
                     {
-                        result.AddIssue(new ParameterValidationIssue
+                        result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                         {
                             ParameterName = "role",
                             RuleName = "Business.AllowedRole",
                             Description = $"Role '{role}' is not allowed",
-                            Severity = ValidationSeverity.Critical,
+                            Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Critical,
                             OriginalValue = role,
                             Recommendation = $"Provide one of the allowed roles: {string.Join(", ", allowedRoles)}"
                         });
@@ -133,12 +133,12 @@ namespace SmartInsight.AI.SQL.Validators
                     var reservedUsernames = new[] { "admin", "system", "root", "superuser" };
                     if (reservedUsernames.Contains(username2, StringComparer.OrdinalIgnoreCase))
                     {
-                        result.AddIssue(new ParameterValidationIssue
+                        result.AddIssue(new SmartInsight.AI.SQL.Models.ParameterValidationIssue
                         {
                             ParameterName = "username",
                             RuleName = "Business.ReservedUsername",
                             Description = $"Username '{username2}' is reserved",
-                            Severity = ValidationSeverity.Critical,
+                            Severity = SmartInsight.AI.SQL.Models.ValidationSeverity.Critical,
                             OriginalValue = username2,
                             Recommendation = "Choose a different username"
                         });
