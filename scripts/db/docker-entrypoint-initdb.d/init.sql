@@ -1,0 +1,3 @@
+-- This is a symlink to ../init.sql
+-- The contents are loaded dynamically by PostgreSQL container on startup
+-- See ../init.sql for the actual database initialization script 
