@@ -1,29 +1,26 @@
 namespace SmartInsight.Core.Enums;
 
 /// <summary>
-/// User roles within the system
+/// Represents the roles a user can have within the system
 /// </summary>
 public enum UserRole
 {
-    /// <summary>
-    /// System administrator with full access
-    /// </summary>
-    SystemAdmin,
+    /// <summary>Regular user who can query the system</summary>
+    User = 1,
     
-    /// <summary>
-    /// Tenant administrator for a specific organization
-    /// </summary>
-    TenantAdmin,
+    /// <summary>Power user with additional permissions</summary>
+    PowerUser = 2,
+    
+    /// <summary>Tenant administrator with tenant management permissions</summary>
+    TenantAdmin = 3,
+    
+    /// <summary>System administrator with full system access</summary>
+    SystemAdmin = 4,
     
     /// <summary>
     /// Data administrator who can configure data sources
     /// </summary>
     DataAdmin,
-    
-    /// <summary>
-    /// Standard user with basic permissions
-    /// </summary>
-    User,
     
     /// <summary>
     /// Read-only user with limited access
