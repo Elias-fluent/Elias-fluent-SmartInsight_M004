@@ -32,6 +32,11 @@ namespace SmartInsight.AI.Options
         /// Primary model to use for inference. Default is "llama3".
         /// </summary>
         public string PrimaryModel { get; set; } = "llama3";
+        
+        /// <summary>
+        /// Default model to use for operations. Uses the value of PrimaryModel.
+        /// </summary>
+        public string DefaultModel => PrimaryModel;
 
         /// <summary>
         /// Fallback model to use when primary model fails. Default is "phi3".
@@ -59,5 +64,10 @@ namespace SmartInsight.AI.Options
         /// Maximum supported context length in tokens. This varies by model but we set a conservative default.
         /// </summary>
         public int MaxContextLength { get; set; } = 4096;
+        
+        /// <summary>
+        /// Batch size for processing multiple items in parallel. Default is 10.
+        /// </summary>
+        public int BatchSize { get; set; } = 10;
     }
 } 

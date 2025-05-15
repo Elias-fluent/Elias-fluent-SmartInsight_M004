@@ -17,6 +17,7 @@ namespace SmartInsight.AI.Intent
     public class IntentDetector : IIntentDetector
     {
         private readonly IOllamaClient _ollamaClient;
+        private readonly IContextManager _contextManager;
         private readonly IntentDetectionOptions _options;
         private readonly ILogger<IntentDetector> _logger;
 
@@ -109,20 +110,40 @@ Only return the JSON object, no additional text.";
         /// Initializes a new instance of the <see cref="IntentDetector"/> class.
         /// </summary>
         /// <param name="ollamaClient">The Ollama client for LLM access.</param>
+        /// <param name="contextManager">The context manager service.</param>
         /// <param name="options">The options for intent detection.</param>
         /// <param name="logger">The logger instance.</param>
         public IntentDetector(
             IOllamaClient ollamaClient,
+            IContextManager contextManager,
             IOptions<IntentDetectionOptions> options,
             ILogger<IntentDetector> logger)
         {
             _ollamaClient = ollamaClient ?? throw new ArgumentNullException(nameof(ollamaClient));
+            _contextManager = contextManager ?? throw new ArgumentNullException(nameof(contextManager));
             _options = options?.Value ?? new IntentDetectionOptions();
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <inheritdoc />
-        public async Task<IntentDetectionResult> DetectIntentAsync(string query, CancellationToken cancellationToken = default)
+        public async Task<IntentDetectionResult> DetectIntentAsync(
+            string query, 
+            CancellationToken cancellationToken = default)
+        {
+            return await DetectIntentAsync(query, null, cancellationToken);
+        }
+
+        /// <summary>
+        /// Detects the intent from a query with optional conversation ID for context.
+        /// </summary>
+        /// <param name="query">The query to analyze.</param>
+        /// <param name="conversationId">Optional conversation ID for context retrieval.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The detected intent result.</returns>
+        public async Task<IntentDetectionResult> DetectIntentAsync(
+            string query,
+            string conversationId,
+            CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(query))
             {
@@ -132,6 +153,22 @@ Only return the JSON object, no additional text.";
             try
             {
                 _logger.LogDebug("Detecting intent for query: {Query}", query);
+
+                // If conversation ID is provided, get the context and use it
+                if (!string.IsNullOrEmpty(conversationId))
+                {
+                    try
+                    {
+                        var context = await _contextManager.GetOrCreateContextAsync(conversationId, "user");
+                        await _contextManager.AddUserMessageAsync(conversationId, query);
+                        
+                        return await DetectIntentWithContextAsync(query, context.Messages, cancellationToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Error using conversation context, falling back to context-less detection");
+                    }
+                }
 
                 // Format the prompt with the user query
                 string prompt = string.Format(INTENT_DETECTION_PROMPT_TEMPLATE, query);
@@ -155,6 +192,19 @@ Only return the JSON object, no additional text.";
                 {
                     _logger.LogDebug("Self-verification triggered due to low confidence: {Confidence}", result.Confidence);
                     result = await VerifyIntent(query, result, cancellationToken);
+                }
+
+                // Record the intent detection result in the conversation context if available
+                if (!string.IsNullOrEmpty(conversationId))
+                {
+                    try
+                    {
+                        await _contextManager.AddIntentDetectionResultAsync(conversationId, result);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to add intent detection result to conversation context");
+                    }
                 }
 
                 _logger.LogInformation("Intent detection result: {Intent} with confidence {Confidence}", 
@@ -183,7 +233,7 @@ Only return the JSON object, no additional text.";
             // If no context is provided, fall back to the regular intent detection
             if (conversationContext == null || !conversationContext.Any())
             {
-                return await DetectIntentAsync(query, cancellationToken);
+                return await DetectIntentAsync(query, null, cancellationToken);
             }
 
             try
@@ -198,11 +248,10 @@ Only return the JSON object, no additional text.";
                 {
                     Role = "system",
                     Content = "You are an advanced intent classification system. Analyze the user's latest query in the context " +
-                              "of the conversation and determine the most likely intent. Respond with a JSON object containing " +
-                              "the intent, confidence score, and explanation."
+                              "of the conversation history and determine the most likely intent."
                 });
-
-                // Add conversation context messages
+                
+                // Add conversation history messages
                 foreach (var message in conversationContext)
                 {
                     chatMessages.Add(new OllamaChatMessage
@@ -211,14 +260,34 @@ Only return the JSON object, no additional text.";
                         Content = message.Content
                     });
                 }
-
+                
                 // Add the current query as the last user message
                 chatMessages.Add(new OllamaChatMessage
                 {
                     Role = "user",
                     Content = query
                 });
-
+                
+                // Add final system message with output instructions
+                chatMessages.Add(new OllamaChatMessage
+                {
+                    Role = "system",
+                    Content = "Respond in JSON format with the following structure:\n" +
+                              "{\n" +
+                              "  \"intent\": \"<intent_name>\",\n" +
+                              "  \"confidence\": <0.0 to 1.0>,\n" +
+                              "  \"explanation\": \"<brief explanation of your classification>\",\n" +
+                              "  \"entities\": [\n" +
+                              "    {\n" +
+                              "      \"type\": \"<entity_type>\",\n" +
+                              "      \"value\": \"<entity_value>\",\n" +
+                              "      \"confidence\": <0.0 to 1.0>\n" +
+                              "    }\n" +
+                              "  ]\n" +
+                              "}\n\n" +
+                              "Only return the JSON object, no additional text."
+                });
+                
                 // Request chat completion from the LLM
                 var response = await _ollamaClient.GenerateChatCompletionWithModelAsync(
                     _options.ModelName,
@@ -229,13 +298,13 @@ Only return the JSON object, no additional text.";
                         { "top_p", 0.95 }
                     },
                     cancellationToken);
-
+                
                 // Parse the JSON response
                 var result = ParseIntentDetectionResponse(response.Message.Content);
-
-                _logger.LogInformation("Intent detection with context result: {Intent} with confidence {Confidence}", 
+                
+                _logger.LogInformation("Intent detection result with context: {Intent} with confidence {Confidence}", 
                     result.Intent, result.Confidence);
-
+                
                 return result;
             }
             catch (Exception ex)
@@ -250,6 +319,21 @@ Only return the JSON object, no additional text.";
             string query, 
             CancellationToken cancellationToken = default)
         {
+            return await ClassifyHierarchicalIntentAsync(query, null, cancellationToken);
+        }
+
+        /// <summary>
+        /// Classifies the hierarchical intent from a query with optional conversation ID for context.
+        /// </summary>
+        /// <param name="query">The query to analyze.</param>
+        /// <param name="conversationId">Optional conversation ID for context retrieval.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The hierarchical intent result.</returns>
+        public async Task<HierarchicalIntentResult> ClassifyHierarchicalIntentAsync(
+            string query,
+            string conversationId,
+            CancellationToken cancellationToken = default)
+        {
             if (string.IsNullOrWhiteSpace(query))
             {
                 throw new ArgumentException("Query cannot be empty", nameof(query));
@@ -259,9 +343,22 @@ Only return the JSON object, no additional text.";
             {
                 _logger.LogDebug("Classifying hierarchical intent for query: {Query}", query);
 
+                // If conversation ID is provided, add the query to the context
+                if (!string.IsNullOrEmpty(conversationId))
+                {
+                    try
+                    {
+                        await _contextManager.AddUserMessageAsync(conversationId, query);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Error adding user message to conversation context");
+                    }
+                }
+
                 // Format the prompt with the user query
                 string prompt = string.Format(HIERARCHICAL_INTENT_PROMPT_TEMPLATE, query);
-
+                
                 // Request completion from the LLM
                 var response = await _ollamaClient.GenerateCompletionWithModelAsync(
                     _options.ModelName,
@@ -272,12 +369,25 @@ Only return the JSON object, no additional text.";
                         { "top_p", 0.95 }
                     },
                     cancellationToken);
-
+                
                 // Parse the JSON response
                 var result = ParseHierarchicalIntentResponse(response.Response);
-
-                _logger.LogInformation("Hierarchical intent classification result: {TopLevelIntent} with {SubIntentCount} sub-intents", 
+                
+                _logger.LogInformation("Hierarchical intent classification result: {TopIntent} with {SubIntentCount} sub-intents", 
                     result.TopLevelIntent.Intent, result.SubIntents.Count);
+                
+                // Record the intent detection result in the conversation context if available
+                if (!string.IsNullOrEmpty(conversationId))
+                {
+                    try
+                    {
+                        await _contextManager.AddIntentDetectionResultAsync(conversationId, result.TopLevelIntent);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to add intent detection result to conversation context");
+                    }
+                }
 
                 return result;
             }
@@ -294,6 +404,23 @@ Only return the JSON object, no additional text.";
             IEnumerable<ConversationMessage> conversationContext,
             CancellationToken cancellationToken = default)
         {
+            return await PerformReasoningAsync(query, conversationContext, null, cancellationToken);
+        }
+
+        /// <summary>
+        /// Performs reasoning on a query using the chain-of-thought approach with optional conversation ID.
+        /// </summary>
+        /// <param name="query">The query to reason about.</param>
+        /// <param name="conversationContext">Optional conversation context for reasoning.</param>
+        /// <param name="conversationId">Optional conversation ID for updating the context manager.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The reasoning result with detected intent and reasoning steps.</returns>
+        public async Task<ReasoningResult> PerformReasoningAsync(
+            string query,
+            IEnumerable<ConversationMessage> conversationContext,
+            string conversationId,
+            CancellationToken cancellationToken = default)
+        {
             if (string.IsNullOrWhiteSpace(query))
             {
                 throw new ArgumentException("Query cannot be empty", nameof(query));
@@ -303,66 +430,107 @@ Only return the JSON object, no additional text.";
             {
                 _logger.LogDebug("Performing reasoning for query: {Query}", query);
 
-                // Prepare the context section of the prompt
-                string contextSection = string.Empty;
-                if (conversationContext != null && conversationContext.Any())
+                // If conversation ID is provided but no context, try to get it from the context manager
+                if (!string.IsNullOrEmpty(conversationId) && (conversationContext == null || !conversationContext.Any()))
                 {
-                    contextSection = "Conversation Context:\n";
-                    foreach (var message in conversationContext)
+                    try
                     {
-                        contextSection += $"{message.Role}: {message.Content}\n";
+                        var context = await _contextManager.GetOrCreateContextAsync(conversationId, "user");
+                        await _contextManager.AddUserMessageAsync(conversationId, query);
+                        conversationContext = context.Messages;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Error retrieving conversation context, proceeding with available context");
                     }
                 }
 
-                // Format the prompt with the user query and conversation context
-                string prompt = string.Format(REASONING_PROMPT_TEMPLATE, query, contextSection);
-
+                // Format conversation context string
+                string contextString = FormatConversationContext(conversationContext);
+                
+                // Format the prompt with the user query and context
+                string prompt = string.Format(REASONING_PROMPT_TEMPLATE, query, contextString);
+                
                 // Request completion from the LLM
                 var response = await _ollamaClient.GenerateCompletionWithModelAsync(
                     _options.ModelName,
                     prompt,
                     new Dictionary<string, object>
                     {
-                        { "temperature", 0.1 }, // Low temperature for more deterministic results
-                        { "top_p", 0.95 },
-                        { "max_tokens", 1024 } // Ensure enough tokens for detailed reasoning
+                        { "temperature", 0.2 }, // Slightly higher temperature for reasoning
+                        { "top_p", 0.95 }
                     },
                     cancellationToken);
-
+                
                 // Parse the JSON response
                 var result = ParseReasoningResponse(response.Response);
-
-                _logger.LogInformation("Reasoning result: {IsSuccessful}, Intent: {Intent} with {StepCount} reasoning steps", 
-                    result.IsSuccessful, result.DetectedIntent.Intent, result.ReasoningSteps.Count);
+                
+                _logger.LogInformation("Reasoning result: {Intent} with confidence {Confidence} and {StepCount} reasoning steps", 
+                    result.DetectedIntent.Intent, result.DetectedIntent.Confidence, result.ReasoningSteps.Count);
+                
+                // Record the intent detection result in the conversation context if available
+                if (!string.IsNullOrEmpty(conversationId))
+                {
+                    try
+                    {
+                        await _contextManager.AddIntentDetectionResultAsync(conversationId, result.DetectedIntent);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to add intent detection result to conversation context");
+                    }
+                }
 
                 return result;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error performing reasoning for query: {Query}", query);
-                
-                // Return a failed reasoning result rather than throwing
-                return new ReasoningResult
-                {
-                    IsSuccessful = false,
-                    ErrorMessage = $"Failed to perform reasoning: {ex.Message}",
-                    DetectedIntent = new IntentDetectionResult
-                    {
-                        Intent = "error",
-                        Confidence = 0,
-                        Explanation = "Error during reasoning process"
-                    }
-                };
+                throw;
             }
         }
 
         /// <inheritdoc />
         public bool IsConfidentClassification(double confidenceScore)
         {
+            // Check if the confidence score exceeds the configured threshold
             return confidenceScore >= _options.ConfidenceThreshold;
         }
 
         #region Private Helper Methods
+
+        /// <summary>
+        /// Formats conversation context messages into a string for prompt inclusion
+        /// </summary>
+        /// <param name="conversationContext">The conversation messages to format</param>
+        /// <returns>A formatted string representing the conversation context</returns>
+        private string FormatConversationContext(IEnumerable<ConversationMessage> conversationContext)
+        {
+            if (conversationContext == null || !conversationContext.Any())
+            {
+                return "No conversation context available.";
+            }
+
+            var contextBuilder = new System.Text.StringBuilder();
+            contextBuilder.AppendLine("Conversation History:");
+            
+            int messageCount = 0;
+            foreach (var message in conversationContext)
+            {
+                messageCount++;
+                string roleName = message.Role == "user" ? "User" : "Assistant";
+                contextBuilder.AppendLine($"{roleName}: {message.Content}");
+                
+                // Limit the number of messages to include to prevent oversized prompts
+                if (messageCount >= _options.MaxContextWindowMessages && _options.MaxContextWindowMessages > 0)
+                {
+                    contextBuilder.AppendLine("...(earlier conversation history omitted)...");
+                    break;
+                }
+            }
+            
+            return contextBuilder.ToString();
+        }
 
         /// <summary>
         /// Parses the LLM response to extract intent detection information.

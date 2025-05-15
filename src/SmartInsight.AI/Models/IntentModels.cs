@@ -199,5 +199,11 @@ namespace SmartInsight.AI.Models
         /// Whether to enable self-verification of intent classifications.
         /// </summary>
         public bool EnableSelfVerification { get; set; } = true;
+        
+        /// <summary>
+        /// Maximum number of conversation messages to include in the context window.
+        /// Set to 0 to include all messages.
+        /// </summary>
+        public int MaxContextWindowMessages { get; set; } = 10;
     }
 } 
