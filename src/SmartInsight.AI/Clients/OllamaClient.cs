@@ -453,7 +453,6 @@ namespace SmartInsight.AI.Clients
                     {
                         Model = model,
                         Prompt = prompt,
-                        Stream = false,
                         Options = allParameters
                     };
                     
@@ -532,7 +531,6 @@ namespace SmartInsight.AI.Clients
                     {
                         Model = model,
                         Prompt = prompt,
-                        Stream = true,
                         Options = allParameters
                     };
                     
@@ -627,7 +625,6 @@ namespace SmartInsight.AI.Clients
                     {
                         Model = model,
                         Messages = messages,
-                        Stream = false,
                         Options = allParameters
                     };
                     
@@ -706,7 +703,6 @@ namespace SmartInsight.AI.Clients
                     {
                         Model = model,
                         Messages = messages,
-                        Stream = true,
                         Options = allParameters
                     };
                     
@@ -746,6 +742,141 @@ namespace SmartInsight.AI.Clients
                 modelName,
                 cancellationToken
             ).ConfigureAwait(false);
+        }
+
+        #endregion
+
+        #region Embeddings
+
+        /// <inheritdoc />
+        public async Task<OllamaEmbeddingResponse> GenerateEmbeddingAsync(
+            string text,
+            Dictionary<string, object>? parameters = null,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(_options.DefaultModel))
+            {
+                throw new InvalidOperationException("DefaultModel is not configured in OllamaOptions");
+            }
+
+            return await GenerateEmbeddingWithModelAsync(
+                _options.DefaultModel, text, parameters, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<OllamaEmbeddingResponse> GenerateEmbeddingWithModelAsync(
+            string modelName,
+            string text,
+            Dictionary<string, object>? parameters = null,
+            CancellationToken cancellationToken = default)
+        {
+            return await TryWithFallbackAsync(
+                async (model) =>
+                {
+                    return await SendRequestWithRetryAsync(
+                        async (token) =>
+                        {
+                            // Check if model exists
+                            var modelExists = await ModelExistsAsync(model, token).ConfigureAwait(false);
+                            if (!modelExists)
+                            {
+                                throw new OllamaException($"Model '{model}' not found");
+                            }
+
+                            var request = new OllamaEmbeddingRequest
+                            {
+                                Model = model,
+                                Prompt = text
+                            };
+
+                            var content = CreateJsonContent(request, parameters);
+                            var response = await _httpClient.PostAsync("embeddings", content, token).ConfigureAwait(false);
+                            await EnsureSuccessStatusCodeAsync(response, "generate embedding").ConfigureAwait(false);
+
+                            var result = await response.Content.ReadFromJsonAsync<OllamaEmbeddingResponse>(_jsonOptions, token)
+                                .ConfigureAwait(false);
+
+                            if (result == null)
+                            {
+                                throw new OllamaException("Failed to parse embedding response");
+                            }
+
+                            _logger.LogDebug("Generated embedding with model {Model}, vector dimension: {Dimension}",
+                                result.Model, result.Embedding.Count);
+
+                            return result;
+                        },
+                        $"generate embedding with model {model}",
+                        cancellationToken
+                    ).ConfigureAwait(false);
+                },
+                modelName,
+                cancellationToken
+            ).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task<List<OllamaEmbeddingResponse>> GenerateBatchEmbeddingsAsync(
+            List<string> texts,
+            Dictionary<string, object>? parameters = null,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(_options.DefaultModel))
+            {
+                throw new InvalidOperationException("DefaultModel is not configured in OllamaOptions");
+            }
+
+            return await GenerateBatchEmbeddingsWithModelAsync(
+                _options.DefaultModel, texts, parameters, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<List<OllamaEmbeddingResponse>> GenerateBatchEmbeddingsWithModelAsync(
+            string modelName,
+            List<string> texts,
+            Dictionary<string, object>? parameters = null,
+            CancellationToken cancellationToken = default)
+        {
+            if (texts == null || texts.Count == 0)
+            {
+                return new List<OllamaEmbeddingResponse>();
+            }
+
+            // Process texts in batches to avoid overloading the API
+            var batchSize = _options.BatchSize > 0 ? _options.BatchSize : 10;
+            var results = new List<OllamaEmbeddingResponse>();
+            var tasks = new List<Task<OllamaEmbeddingResponse>>();
+
+            // Process in batches with controlled concurrency
+            for (int i = 0; i < texts.Count; i += batchSize)
+            {
+                var batchTexts = texts.Skip(i).Take(batchSize).ToList();
+                tasks.Clear();
+
+                foreach (var text in batchTexts)
+                {
+                    tasks.Add(GenerateEmbeddingWithModelAsync(modelName, text, parameters, cancellationToken));
+                }
+
+                try
+                {
+                    var batchResults = await Task.WhenAll(tasks).ConfigureAwait(false);
+                    results.AddRange(batchResults);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error generating batch embeddings");
+                    throw;
+                }
+
+                // Add a short delay between batches to prevent overloading the API
+                if (i + batchSize < texts.Count)
+                {
+                    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            return results;
         }
 
         #endregion
