@@ -36,6 +36,16 @@ namespace SmartInsight.AI.Models
         public string Intent { get; set; } = null!;
 
         /// <summary>
+        /// The top intent detected (same as Intent, provided for naming consistency).
+        /// </summary>
+        public string TopIntent => Intent;
+
+        /// <summary>
+        /// The original query that was processed.
+        /// </summary>
+        public string Query { get; set; } = null!;
+
+        /// <summary>
         /// The confidence score of the intent detection (0.0 to 1.0).
         /// </summary>
         public double Confidence { get; set; }
@@ -88,6 +98,11 @@ namespace SmartInsight.AI.Models
         public string Value { get; set; } = null!;
 
         /// <summary>
+        /// The original text from which the entity was extracted
+        /// </summary>
+        public string Text { get; set; } = null!;
+
+        /// <summary>
         /// The confidence score of the entity extraction (0.0 to 1.0).
         /// </summary>
         public double Confidence { get; set; }
@@ -122,6 +137,21 @@ namespace SmartInsight.AI.Models
         /// Extracted entities from the reasoning process.
         /// </summary>
         public List<Entity> ExtractedEntities { get; set; } = new List<Entity>();
+
+        /// <summary>
+        /// Alias for ExtractedEntities for API consistency.
+        /// </summary>
+        public List<Entity> Entities => ExtractedEntities;
+
+        /// <summary>
+        /// The original query that was processed.
+        /// </summary>
+        public string Query { get; set; } = null!;
+
+        /// <summary>
+        /// Dictionary for structured data extracted during reasoning.
+        /// </summary>
+        public Dictionary<string, object> StructuredData { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Whether the reasoning was successful.

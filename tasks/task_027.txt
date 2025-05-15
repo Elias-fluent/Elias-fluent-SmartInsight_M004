@@ -20,13 +20,13 @@ Ensure generated SQL is safe and respects tenant boundaries.
 Create unit tests with sample natural language queries. Verify generated SQL is correct and safe. Test tenant scoping enforcement. Measure SQL generation performance.
 
 # Subtasks:
-## 1. Design SQL Template System Architecture [pending]
+## 1. Design SQL Template System Architecture [done]
 ### Dependencies: None
 ### Description: Create the overall architecture for the SQL template system including template storage, retrieval, and execution flow.
 ### Details:
 Define how templates will be stored, versioned, and accessed. Design the interface between natural language inputs and template selection. Establish template validation rules and error handling protocols.
 
-## 2. Implement Parameter Extraction Logic [pending]
+## 2. Implement Parameter Extraction Logic [in-progress]
 ### Dependencies: 27.1
 ### Description: Develop the system to extract parameters from natural language inputs and map them to SQL query parameters.
 ### Details:
