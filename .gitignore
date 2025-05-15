@@ -17,6 +17,8 @@ node_modules/
 **/.vs/
 **/bin/
 **/obj/
+tests/**/bin/
+tests/**/obj/
 *.user
 *.userosscache
 *.suo
@@ -48,9 +50,6 @@ scripts/prd-backup.txt
 
 # Added by Claude Task Master
 *.suo
-# Task files
-tasks.json
-tasks/
 
 # .NET Core
 project.lock.json
