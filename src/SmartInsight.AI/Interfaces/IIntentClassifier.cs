@@ -52,6 +52,20 @@ namespace SmartInsight.AI.Interfaces
             CancellationToken cancellationToken = default);
         
         /// <summary>
+        /// Classify a query with conversation context for enhanced confidence scoring
+        /// </summary>
+        /// <param name="query">The query to classify</param>
+        /// <param name="conversationId">The conversation ID for context retrieval</param>
+        /// <param name="similarityThreshold">Optional override for similarity threshold</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Classification result with context-aware confidence</returns>
+        Task<ClassificationResult> ClassifyWithContextAsync(
+            string query,
+            string conversationId,
+            double? similarityThreshold = null,
+            CancellationToken cancellationToken = default);
+        
+        /// <summary>
         /// Update examples for an existing intent
         /// </summary>
         /// <param name="intentName">The intent name</param>
