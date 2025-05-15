@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
   ZAxis
 } from 'recharts';
-import { ChartContainer, ChartContainerProps } from './ChartContainer';
+import { ChartContainer, type ChartContainerProps } from './ChartContainer';
 
 export interface ScatterDataPoint {
   x: number;
@@ -68,7 +68,7 @@ export const ScatterPlot: React.FC<ScatterPlotProps> = ({
       shape: item.shape || shapes[index % shapes.length] as 'circle',
       opacity: item.opacity !== undefined ? item.opacity : 0.8
     }));
-  }, [series]);
+  }, [series, defaultColors]);
 
   // Calculate domain from data if not provided
   const calculatedDomains = useMemo(() => {
@@ -126,7 +126,7 @@ export const ScatterPlot: React.FC<ScatterPlotProps> = ({
           
           <Tooltip 
             cursor={{ strokeDasharray: '3 3' }}
-            formatter={(value, name, props) => {
+            formatter={(value, name) => {
               return [`${value}`, name];
             }}
             labelFormatter={(label) => {

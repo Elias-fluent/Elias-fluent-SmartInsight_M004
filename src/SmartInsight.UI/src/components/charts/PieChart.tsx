@@ -1,14 +1,6 @@
-import React, { useMemo } from 'react';
-import {
-  PieChart as RechartsPieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieProps
-} from 'recharts';
-import { ChartContainer, ChartContainerProps } from './ChartContainer';
+import React from 'react';
+import {  PieChart as RechartsPieChart,  Pie,  Cell,  Tooltip,  Legend,  ResponsiveContainer} from 'recharts';import type { PieProps } from 'recharts';
+import { ChartContainer, type ChartContainerProps } from './ChartContainer';
 
 export interface PieChartDataItem {
   name: string;
@@ -59,7 +51,7 @@ export const PieChart: React.FC<PieChartProps> = ({
 
   // Custom label formatter that shows name and percentage
   const renderCustomizedLabel = (props: any) => {
-    const { cx, cy, midAngle, innerRadius, outerRadius, percent, index, name } = props;
+    const { cx, cy, midAngle, innerRadius, outerRadius, percent } = props;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
     const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);

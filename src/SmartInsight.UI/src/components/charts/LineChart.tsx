@@ -9,7 +9,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { ChartContainer, ChartContainerProps } from './ChartContainer';
+import { ChartContainer, type ChartContainerProps } from './ChartContainer';
 
 export interface LineChartDataItem {
   [key: string]: string | number | Date;
@@ -51,7 +51,6 @@ export const LineChart: React.FC<LineChartProps> = ({
   showGrid = true,
   showDots = true,
   curveType = 'linear',
-  areaChart = false,
   ...containerProps
 }) => {
   // Default colors for lines if not specified
@@ -70,7 +69,7 @@ export const LineChart: React.FC<LineChartProps> = ({
       type: item.type || curveType,
       connectNulls: item.connectNulls ?? true
     }));
-  }, [series, curveType]);
+  }, [series, curveType, defaultColors]);
 
   return (
     <ChartContainer {...containerProps}>
