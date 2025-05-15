@@ -923,7 +923,7 @@
         25,
         26
       ],
-      "status": "in-progress",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -1029,7 +1029,7 @@
             9
           ],
           "details": "Create architecture documentation. Write developer guides. Design security best practices. Develop troubleshooting guides. Build example templates and usage patterns.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -1501,7 +1501,7 @@
       "dependencies": [
         1
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
