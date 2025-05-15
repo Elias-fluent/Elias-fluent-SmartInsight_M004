@@ -7,9 +7,8 @@ import {
   ScatterPlot,
   DataTable,
   ChartOptions,
-  ChartDisplayOptions
 } from './index';
-import type { ColumnDef } from '@tanstack/react-table';
+import type { ChartDisplayOptions } from './index';
 
 const ChartExamples: React.FC = () => {
   // Sample data for the charts
@@ -69,7 +68,8 @@ const ChartExamples: React.FC = () => {
     total: item.value + item.value2 + item.value3
   }));
 
-  const tableColumns: ColumnDef<typeof tableData[0]>[] = [
+  // Define the columns for the data table
+  const tableColumns = [
     {
       accessorKey: 'month',
       header: 'Month'

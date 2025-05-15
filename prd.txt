@@ -1,0 +1,494 @@
+# Overview
+
+SmartInsight is a secure, modular, fully local-first AI-powered business intelligence and enterprise knowledge assistant platform.
+It is designed to serve every department and employee across an organization, from technical teams to business stakeholders, by providing natural language access to internal structured and unstructured data.
+SmartInsight unifies enterprise knowledge from databases, documents, wikis, code repositories, and ticketing systems into a single AI-powered knowledge model.
+Its air-gapped architecture eliminates any external cloud dependencies, ensuring full privacy, security, and compliance.
+
+**SmartInsight's core value:**
+"Become the organization's internal knowledge assistant for all roles, by unifying structured + unstructured internal data into a single AI-powered knowledge layer."
+
+# Core Features
+
+* **Automated data ingestion**: Configure once, continuous integration from PostgreSQL, MSSQL, MySQL, TXT, Markdown, PDF, DOCX, Confluence, JIRA, Git and code repositories.
+* Enterprise-wide conversational AI assistant for all roles.
+* Safe SQL generation + data visualizations.
+* Persistent chat memory per user.
+* Multi-tenant isolation with RBAC.
+* Local-only inference using Ollama (zero cloud exposure).
+* Strongly versioned RESTful APIs for integration.
+* Full audit logging, usage telemetry, and system metrics.
+* Admin portal for data source configuration, user management, and system monitoring.
+
+# User Experience
+
+## User Personas
+
+* Developer → search codebase, configs, documentation, internal APIs.
+* Business Analyst → connect datasets, analyze metrics, explore dashboards.
+* Department Manager → view KPI summaries and operational reports.
+* Project Manager → query project data, milestones, blockers.
+* Customer Success or Support Agent → search internal knowledge for fast answers.
+* Executive / Director → request summaries, operational reports, business forecasts.
+* Internal Staff → quickly query any internal system or documentation without technical skills.
+* **System Administrator** → configure data sources, manage users, monitor system health.
+
+## Key User Flows
+
+1. **Administrator**: Configure data source connections (connection strings, API tokens, repository access).
+2. **System**: Automatically ingests and indexes data into knowledge graph on schedule.
+3. **System**: Continuously updates knowledge with new or changed information.
+4. **User**: Authenticates + selects tenant.
+5. **User**: Queries SmartInsight via conversational chat.
+6. **System**: AI responds with answers, insights, or dashboards.
+7. **User**: Saves or exports results.
+8. **Administrator**: Monitors logs, telemetry, and system performance.
+
+## UI/UX Considerations
+
+* Fully responsive React + TypeScript SPA (shadcn/ui + Tailwind CSS).
+* Accessibility: WCAG 2.1 AA compliant.
+* Major modules: chat window, dashboard, visualizations, data source configuration, ingestion status monitor, history viewer, admin panel.
+
+# Technical Architecture
+
+## System Components
+
+**SmartInsight.Core**
+
+* Shared enums, constants, DTO definitions, validation utilities.
+* All base interfaces for consistent cross-module communication.
+* Core validation + business rule enforcement types.
+* Common security utilities + hashing functions.
+* Shared exception types + error handling patterns.
+* Implement using .NET 8 with C# 12.
+
+**SmartInsight.Data**
+
+* PostgreSQL connection owner and all DB query execution logic.
+* Entity Framework Core repository layer.
+* ASP.NET Identity with TenantId extensions.
+* PostgreSQL Row-Level Security (RLS) enforcement for strict tenant isolation.
+* Optimized bulk operations for ingestion pipelines.
+* Transaction management + data consistency guarantees.
+* Migration automation for schema changes.
+* Implement using Entity Framework Core 8 with PostgreSQL provider.
+
+**SmartInsight.Knowledge**
+
+* **Automated data source connector framework** for databases, systems, and repositories.
+* **Scheduled ingestion jobs** that run at configurable intervals.
+* **Credential management** for secure data source access (encrypted connection strings, API tokens).
+* **Connector implementation** for PostgreSQL, MSSQL, MySQL, file shares, Confluence, JIRA, Git repos.
+* Knowledge graph creation + maintenance pipeline.
+* Entity extraction + relation mapping logic.
+* Vector embedding generation for semantic search.
+* Incremental updating without full reindexing.
+* Qdrant client for vector similarity searches.
+* Implement using .NET background services with Hangfire for scheduling.
+
+**SmartInsight.AI**
+
+* Conversational LLM agent via Ollama (LLaMA 3 primary, Phi3 fallback).
+* AI reasoning + intent detection.
+* Safe SQL generator + tenant-scoped vector embeddings.
+* Automated prompt templates with safeguards.
+* Parameter validation + input sanitization.
+* Semantic routing for specialized domain queries.
+* Output verification against safety rules.
+* Implement using Ollama C# client with custom prompt management system.
+
+**SmartInsight.History**
+
+* Persistent conversation memory per session + user.
+* Session logs.
+* Conversation context management.
+* Memory pruning + summarization for context window limits.
+* Vector-index based semantic search of conversation history.
+* Conversation branching + thread management.
+* Implement using EF Core with JSON columns for conversation storage.
+
+**SmartInsight.API**
+
+* REST API layer.
+* OAuth2 + JWT authentication + tenant scoping enforcement.
+* Strongly versioned API contract.
+* Rate limiting + throttling.
+* Swagger + OpenAPI documentation.
+* Health check endpoints for monitoring.
+* Background task queue management.
+* Implement using ASP.NET Core 8 Web API with MediatR for CQRS pattern.
+
+**SmartInsight.UI**
+
+* React + TypeScript SPA frontend.
+* State management, chat assistant, visualization rendering.
+* Recharts visualization library integration.
+* Responsive layouts with Tailwind CSS.
+* Accessibility hooks + ARIA compliance.
+* Optimistic UI updates for perceived performance.
+* Progressive loading + lazy component rendering.
+* Implement using React 18+ with TypeScript and shadcn/ui components.
+
+**SmartInsight.Admin**
+
+* **Data source configuration UI** for adding/editing connection parameters.
+* **Connection testing** for data source validation.
+* **Ingestion scheduling** interface for setting refresh intervals.
+* **Ingestion monitoring** dashboard showing status of each source.
+* User + tenant management.
+* System performance monitoring dashboard.
+* User activity + security audit trails.
+* Resource usage tracking + alerting.
+* Configuration version control + rollback.
+* Implement using same React stack as UI with admin-specific components.
+
+**SmartInsight.Telemetry**
+
+* Serilog + Seq logging + metrics pipeline.
+* Structured system events for auditing and observability.
+* Performance counter collection + analysis.
+* Custom health check dashboard.
+* Alert rules + notification system.
+* Trace correlation across services.
+* Log export + retention policy enforcement.
+* Implement using Serilog with Seq integration.
+
+**SmartInsight.Tests**
+
+* Full unit + integration test coverage.
+* Playwright end-to-end test suite per build.
+* Mock data generators for all entity types.
+* Test fixtures for common scenarios.
+* Performance benchmark tests.
+* Security vulnerability testing.
+* Database migration testing.
+* Implement using xUnit, Moq, and Playwright.
+
+## Data Models
+
+### Core Entity Types
+
+* **DataSource**: Connection parameters (connection strings, API endpoints, tokens), authentication credentials (encrypted), refresh schedules, validation rules, source type, tenant ownership.
+* **Document**: Source material extracted from data sources with metadata, content type, access control, source reference.
+* **Entity**: Named object extracted from documents with unique identifier, type classification, confidence score.
+* **Relation**: Connection between entities with type, strength, provenance, directional properties.
+* **Term**: Domain-specific vocabulary with definitions + synonyms, tenant-specific meanings.
+* **Tenant**: Organization unit with isolation boundaries + security settings, data source access rights.
+* **User**: Identity with role + permission claims + tenant associations.
+* **ConversationLog**: Chat interactions with timestamps, user context, response data, feedback indicators.
+* **KnowledgeNode**: Graph node with connections to related entities, semantic properties.
+* **VectorIndex**: Embedding storage with similarity search capabilities, tenant isolation.
+* **MetricsLog**: System performance + usage statistics for dashboards.
+
+### Data Relationships
+
+* **DataSources belong to Tenants** and are configured by Administrators.
+* DataSources generate Documents through automated ingestion.
+* Documents are owned by a Tenant and processed into Entities.
+* Entities form Relations that build the Knowledge Graph.
+* Users belong to one or more Tenants with specific Roles.
+* ConversationLogs reference Users, Tenants, and contain interaction history.
+
+## Knowledge Graph Architecture
+
+* Triple-store based implementation (Subject-Predicate-Object).
+* Entity recognition via named entity extraction + custom rules.
+* Relation discovery through co-occurrence + semantic analysis.
+* Semantic layer with vector embeddings for similarity matching.
+* Hierarchical taxonomy with inheritance + composition.
+* Versioning for temporal knowledge evolution.
+* Provenance tracking to source documents and data sources.
+* **Automated incremental updates** when source data changes.
+
+## Data Source Connector Framework
+
+* **Base connector interface** with standard methods for configuration, validation, extraction, and transformation.
+* **Database connectors** supporting SQL Server, PostgreSQL, MySQL with secure connection string management.
+* **API connectors** for REST and GraphQL endpoints with OAuth, token, and basic authentication.
+* **Document repository connectors** for SharePoint, Confluence, JIRA, file shares.
+* **Version control connectors** for Git, SVN with credential management.
+* **Custom connector SDK** for extending to additional sources.
+* **Validation logic** to verify access before saving credentials.
+* **Scheduling system** for configuring ingestion frequency (hourly, daily, weekly, custom).
+* **Failure handling** with retry logic and administrator notifications.
+
+## APIs and Integrations
+
+* RESTful APIs (strongly versioned, OAuth2 secured).
+* Plugin connector framework for new data source types.
+* OpenAPI 3.0 specification + auto-generated clients.
+* WebSocket endpoints for real-time updates.
+* Batch import/export endpoints for bulk operations.
+* Health + metrics API for monitoring integration.
+
+## Infrastructure Requirements
+
+### Layered Architecture
+
+1. **Infrastructure Layer**
+
+   * Docker containers.
+   * docker-compose (default), Helm chart support (Phase 3).
+   * PostgreSQL with RLS enforcement.
+   * Qdrant vector similarity DB with tenant namespace sharding.
+   * Ollama running on-premises for local AI inference only.
+   * Redis for caching + distributed locking (optional).
+   * Seq for centralized logging + dashboards.
+
+2. **Application Layer**
+
+   * Modular microservices for all business logic + AI pipeline.
+   * Frontend SPA interface.
+   * Background workers for asynchronous processing.
+   * **Scheduled jobs for automated data source ingestion**.
+
+3. **Security Layer**
+
+   * OAuth2 + JWT authentication.
+   * RLS enforced at PostgreSQL level.
+   * Strict tenant scoping + isolation across all services.
+   * Input validation + output encoding.
+   * Secure communication with TLS 1.3.
+   * **Encrypted storage of data source credentials**.
+   * Secrets management with environment isolation.
+
+### Hardware Requirements
+
+* **Minimum Server Specs**:
+  * CPU: 8 cores (16 recommended for production)
+  * RAM: 16GB (32GB recommended for production)
+  * Storage: 100GB SSD (500GB recommended for production)
+  * Network: 1Gbps
+  * GPU: Optional but recommended for inference acceleration
+
+* **Client Requirements**:
+  * Modern web browser (Chrome, Firefox, Edge, Safari)
+  * Minimum 4GB RAM
+  * Responsive design supports desktop, tablet, mobile
+
+### Data + Control Flow
+
+```
+[Administrator] → [Admin UI] → Configure Data Sources with credentials
+  → [Knowledge Service] → Schedule automated ingestion jobs
+
+[Scheduled Job] → [Knowledge Service] → Connect to Data Source
+  → Extract data → Process into Knowledge Graph
+  → Store in Qdrant + PostgreSQL
+
+[User] → [SPA UI] → [API Gateway]
+  → Auth → SmartInsight.API → Tenant Validation
+  → Knowledge Request → SmartInsight.Knowledge → Knowledge Graph
+  → AI Request → SmartInsight.AI → Ollama → SQL
+  → DB Query → SmartInsight.Data → PostgreSQL
+  → Result → SmartInsight.History → Log
+  → Result → SmartInsight.UI → User
+```
+
+## Performance Requirements
+
+* **Response Time**:
+  * Chat responses: < 2 seconds for simple queries
+  * SQL generation: < 5 seconds for complex queries
+  * Data visualization rendering: < 3 seconds
+  * Document ingestion: Process 1MB/second minimum
+  * Search indexing: < 30 minutes for 10GB corpus
+
+* **Scalability**:
+  * Support 100+ concurrent users per deployment
+  * Handle 1,000+ queries per hour
+  * Store 10+ million knowledge graph nodes
+  * Manage 100+ tenants with full isolation
+
+* **Availability**:
+  * 99.9% uptime during business hours
+  * < 30 second restart time after system updates
+  * Zero data loss on controlled shutdowns
+
+## Backup & Disaster Recovery
+
+* Automated daily PostgreSQL backups
+* Point-in-time recovery capability
+* Knowledge graph export/import functionality
+* Configuration backup/restore through admin portal
+* Documented recovery procedures for system administrators
+* Failover testing as part of deployment verification
+
+# Development Roadmap
+
+## MVP Requirements (Phase 1)
+
+* Identity + RBAC + multi-tenant foundation.
+* **Data source connector framework** for PostgreSQL, file repositories.
+* **Automated ingestion pipeline** with scheduling.
+* Knowledge graph generation.
+* Ollama local LLM integration.
+* Chat assistant interface + safe SQL validator.
+* Recharts visualization engine.
+* Conversation memory + session persistence.
+* Docker-compose deployment baseline.
+* Basic Admin portal with data source configuration.
+
+## Future Enhancements
+
+### Phase 2
+
+* Advanced charting + drilldowns.
+* Full Admin portal (logs, metrics, ingestion triggers).
+* **Additional connectors** for JIRA, Confluence, Git/code repositories.
+* Data lineage graph + explainable AI query tracing.
+* Tenant-specific LLM prompt template overrides.
+* Enhanced logging + internal system metrics dashboard.
+
+### Phase 3
+
+* **Additional connectors**: SharePoint, Google Drive, Dropbox, internal file shares.
+* Git repo document + code ingestion.
+* Workflow automation engine.
+* Helm charts for Kubernetes production deployment.
+* Responsive mobile-optimized frontend SPA.
+
+# Logical Dependency Chain
+
+1. Core project setup + Identity + DB schema foundation.
+2. **Data source connector framework** + automated ingestion pipeline.
+3. Knowledge graph builder + vector storage integration.
+4. Add AI engine + SQL generation + validation layer.
+5. Connect backend pipeline to frontend conversational chat UI.
+6. Integrate Recharts visualization engine.
+7. Deliver Admin portal with data source configuration.
+8. Add Phase 2 connectors + lineage engine.
+9. Phase 3 automation + Helm deployment + mobile SPA enhancements.
+
+# Testing Strategy
+
+## Unit Testing
+
+* Minimum 80% code coverage across all modules.
+* Focus on business logic + validation rules.
+* Component isolation with mocked dependencies.
+* Automated test runs on each PR.
+
+## Integration Testing
+
+* End-to-end workflow validation.
+* API contract verification.
+* Database migration testing.
+* Cross-module communication verification.
+* **Data source connector validation** with mock external systems.
+
+## Performance Testing
+
+* Load testing with simulated user traffic.
+* Benchmark tests for critical operations.
+* Response time verification against requirements.
+* Resource utilization monitoring.
+* **Ingestion performance testing** with large datasets.
+
+## Security Testing
+
+* Static code analysis in CI pipeline.
+* OWASP Top 10 vulnerability scanning.
+* Authentication + authorization verification.
+* Data isolation breach testing.
+* Input validation + injection attack prevention.
+* **Credential storage security verification**.
+
+## Acceptance Criteria
+
+* All user stories have explicit acceptance criteria.
+* Each feature has documented test scenarios.
+* UI components meet WCAG 2.1 AA standards.
+* Performance meets specified response times.
+* Zero high or critical security vulnerabilities.
+
+# ML Model Management
+
+## Model Selection
+
+* LLaMA 3 primary model for general queries.
+* Phi3 as fallback for lightweight operations.
+* Domain-specific fine-tuning potential in Phase 2.
+
+## Model Deployment
+
+* Ollama for local inference with no cloud dependencies.
+* Model versioning with compatibility tracking.
+* A/B testing capability for prompt engineering.
+
+## Monitoring & Evaluation
+
+* Response quality evaluation metrics.
+* Performance tracking by query type.
+* User feedback collection + analysis.
+* Regular prompt template optimization.
+* Inference time + resource usage tracking.
+
+# Documentation & Training
+
+## System Documentation
+
+* Architecture diagrams + component interactions.
+* API reference with examples.
+* Deployment guides for different environments.
+* **Data source connector configuration guides**.
+* Troubleshooting guides + known issues.
+
+## User Documentation
+
+* Role-specific user manuals.
+* Query formulation guidelines.
+* Data visualization tutorials.
+* Admin portal operation guide.
+* Video walkthroughs for common tasks.
+
+# Risks and Mitigations
+
+* Performance bottlenecks → Load testing + horizontal scaling readiness.
+* Knowledge drift → Scheduled data refresh jobs per source.
+* Data isolation risks → PostgreSQL RLS + strict namespace partitioning.
+* Scope creep → Phase-based locked delivery gates.
+* **Data source authentication failures** → Robust credential management + alerting.
+* **Ingestion errors** → Detailed logging + validation rules + error reporting.
+* Developer onboarding → Clear modular structure + complete documentation + test coverage.
+* Compliance readiness → ISO 27001 / SOC2 hooks designed for optional future audits.
+
+# Technical Specifications
+
+* **Data source connectors**: Implementation required for PostgreSQL, MSSQL, MySQL, file repositories (initial phase).
+* **Ingestion scheduling**: Configurable intervals (hourly/daily/weekly/custom).
+* **Credential storage**: AES-256 encryption for connection strings, API keys, tokens.
+* **Maximum document size**: 50MB per document for parsing (larger files require database connector).
+* **Connector validation**: Required test connection feature before saving.
+* PostgreSQL RLS enforced at all times.
+* Password policy: min 8 characters + 1 number, lockout after 3 attempts, mandatory password rotation after 60 days.
+* APIs secured via OAuth2 + JWT tokens.
+* No cloud inference calls: Ollama inference is strictly local-only.
+* GitFlow development process enforced + PR test coverage gating.
+* Playwright full E2E test automation integrated into every build pipeline.
+* Data export options: PNG, JPG, CSV, PDF supported.
+* Maximum database size: 1TB initially, horizontally scalable.
+* Maximum vector index size: 100GB initially, shardable for growth.
+* Supported browsers: Chrome 90+, Firefox 90+, Edge 90+, Safari 15+.
+* Accessibility compliance: WCAG 2.1 AA minimum, AAA target.
+
+## Implementation Guidelines for AI Development
+
+* Use modular architecture for clear separation of concerns.
+* Follow single responsibility principle for all components.
+* Implement comprehensive input validation at all boundaries.
+* Apply dependency injection for testable components.
+* Use strongly typed interfaces for cross-component communication.
+* Ensure tenant isolation at every layer of the stack.
+* Implement the data source connector framework with extensibility in mind.
+* Create base abstractions for all connector types with specific implementations.
+* Secure all credentials with proper encryption at rest.
+* Add detailed logging with structured data for troubleshooting.
+* Implement incremental update logic for each data source type.
+* Design for backward compatibility in API contracts.
+* Handle errors gracefully with appropriate user feedback.
+* Cache expensive operations where appropriate.
+* Implement retry logic for transient failures.
+* Consider resource constraints in all algorithms.
+* Add telemetry points for performance monitoring. 
