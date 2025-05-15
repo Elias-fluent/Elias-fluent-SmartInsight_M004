@@ -1,11 +1,26 @@
+using SmartInsight.Telemetry.Services;
+using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog
+builder.Host.UseSerilogConfig();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add telemetry services
+builder.Services.AddTelemetryServices(builder.Configuration, builder.Environment.EnvironmentName);
+
 var app = builder.Build();
+
+// Use Serilog request logging
+app.UseSerilogRequestLogging();
+
+// Configure Serilog with the application services
+app.UseSerilogConfiguration(app.Configuration, app.Environment);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
