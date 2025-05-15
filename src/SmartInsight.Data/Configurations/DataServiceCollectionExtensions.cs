@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SmartInsight.Core.Entities;
 using SmartInsight.Core.Interfaces;
 using SmartInsight.Data.Contexts;
+using SmartInsight.Data.Repositories;
 using System;
 
 namespace SmartInsight.Data.Configurations;
@@ -42,6 +44,12 @@ public static class DataServiceCollectionExtensions
                     npgsql.CommandTimeout(30);
                 });
         });
+        
+        // Register repository services
+        services.AddRepositories();
+        
+        // Register entity-specific repositories
+        services.AddEntityRepository<User, UserRepository>();
         
         return services;
     }
