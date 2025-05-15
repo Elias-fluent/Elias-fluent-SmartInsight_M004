@@ -12,20 +12,31 @@ node_modules/
 # Environment variables
 .env
 
+# Visual Studio / .NET specific
+.vs/
+**/.vs/
+**/bin/
+**/obj/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.dbmdl
+*.dbproj.schemaview
+*.jfm
+*.pfx
+*.publishsettings
+orleans.codegen.cs
+
 # Editor directories and files
 .idea
 .vscode
-*.suo
 *.ntvs*
 *.njsproj
 *.sw?
 
 # OS specific
 .DS_Store
-
-# Build output
-**/bin/
-**/obj/
 
 # Task files (explicitly keep these)
 # IMPORTANT: tasks directory and all its contents must be tracked
@@ -36,7 +47,18 @@ node_modules/
 scripts/prd-backup.txt
 
 # Added by Claude Task Master
-*.sln
+*.suo
 # Task files
 tasks.json
-tasks/ 
+tasks/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Visual Studio profiler
+*.psess
+*.vsp
+*.vspx
+*.sap 
