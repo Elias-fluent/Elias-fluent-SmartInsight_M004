@@ -23,32 +23,32 @@ src/**/bin/
 src/**/obj/
 tests/**/bin/
 tests/**/obj/
-/src/*/bin/
-/src/*/obj/
-/tests/*/bin/
-/tests/*/obj/
+src/*/bin/
+src/*/obj/
+tests/*/bin/
+tests/*/obj/
 
 # Specific project directories
-/src/SmartInsight.Admin/bin/
-/src/SmartInsight.Admin/obj/
-/src/SmartInsight.AI/bin/
-/src/SmartInsight.AI/obj/
-/src/SmartInsight.API/bin/
-/src/SmartInsight.API/obj/
-/src/SmartInsight.Core/bin/
-/src/SmartInsight.Core/obj/
-/src/SmartInsight.Data/bin/
-/src/SmartInsight.Data/obj/
-/src/SmartInsight.History/bin/
-/src/SmartInsight.History/obj/
-/src/SmartInsight.Knowledge/bin/
-/src/SmartInsight.Knowledge/obj/
-/src/SmartInsight.Telemetry/bin/
-/src/SmartInsight.Telemetry/obj/
-/src/SmartInsight.UI/bin/
-/src/SmartInsight.UI/obj/
-/tests/SmartInsight.Tests/bin/
-/tests/SmartInsight.Tests/obj/
+src/SmartInsight.Admin/bin/
+src/SmartInsight.Admin/obj/
+src/SmartInsight.AI/bin/
+src/SmartInsight.AI/obj/
+src/SmartInsight.API/bin/
+src/SmartInsight.API/obj/
+src/SmartInsight.Core/bin/
+src/SmartInsight.Core/obj/
+src/SmartInsight.Data/bin/
+src/SmartInsight.Data/obj/
+src/SmartInsight.History/bin/
+src/SmartInsight.History/obj/
+src/SmartInsight.Knowledge/bin/
+src/SmartInsight.Knowledge/obj/
+src/SmartInsight.Telemetry/bin/
+src/SmartInsight.Telemetry/obj/
+src/SmartInsight.UI/bin/
+src/SmartInsight.UI/obj/
+tests/SmartInsight.Tests/bin/
+tests/SmartInsight.Tests/obj/
 
 # Build artifacts and user files
 *.user
