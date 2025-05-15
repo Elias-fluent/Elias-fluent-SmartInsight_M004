@@ -15,10 +15,20 @@ node_modules/
 # Visual Studio / .NET specific
 .vs/
 **/.vs/
+
+# Build output directories - explicit paths
 **/bin/
 **/obj/
+src/**/bin/
+src/**/obj/
 tests/**/bin/
 tests/**/obj/
+/src/*/bin/
+/src/*/obj/
+/tests/*/bin/
+/tests/*/obj/
+
+# Build artifacts and user files
 *.user
 *.userosscache
 *.suo
