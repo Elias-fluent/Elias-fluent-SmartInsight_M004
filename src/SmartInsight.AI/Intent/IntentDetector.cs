@@ -18,6 +18,7 @@ namespace SmartInsight.AI.Intent
     {
         private readonly IOllamaClient _ollamaClient;
         private readonly IContextManager _contextManager;
+        private readonly IFallbackManager _fallbackManager;
         private readonly IntentDetectionOptions _options;
         private readonly ILogger<IntentDetector> _logger;
 
@@ -134,16 +135,19 @@ Only return the JSON object, no additional text.";
         /// </summary>
         /// <param name="ollamaClient">The Ollama client for LLM access.</param>
         /// <param name="contextManager">The context manager service.</param>
+        /// <param name="fallbackManager">The fallback manager for handling low-confidence results.</param>
         /// <param name="options">The options for intent detection.</param>
         /// <param name="logger">The logger instance.</param>
         public IntentDetector(
             IOllamaClient ollamaClient,
             IContextManager contextManager,
+            IFallbackManager fallbackManager,
             IOptions<IntentDetectionOptions> options,
             ILogger<IntentDetector> logger)
         {
             _ollamaClient = ollamaClient ?? throw new ArgumentNullException(nameof(ollamaClient));
             _contextManager = contextManager ?? throw new ArgumentNullException(nameof(contextManager));
+            _fallbackManager = fallbackManager ?? throw new ArgumentNullException(nameof(fallbackManager));
             _options = options?.Value ?? new IntentDetectionOptions();
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -207,6 +211,70 @@ Only return the JSON object, no additional text.";
                         // Parse the result
                         var result = ParseIntentDetectionResponse(response.Response);
                         
+                        // Apply fallback if confidence is low
+                        if (_fallbackManager.NeedsFallback(result))
+                        {
+                            _logger.LogInformation(
+                                "Intent detection result has low confidence ({Confidence}), applying fallback strategies", 
+                                result.Confidence);
+                                
+                            var fallbackResult = await _fallbackManager.ApplyFallbackAsync(
+                                query, 
+                                result, 
+                                conversationId, 
+                                cancellationToken);
+                                
+                            // Use the final result from fallback processing
+                            result = fallbackResult.FinalResult;
+                            
+                            // Record fallback details in context
+                            // Add fallback level as a special entity for context tracking
+                            var fallbackEntity = new Entity
+                            {
+                                Type = "fallback_level",
+                                Value = fallbackResult.FallbackLevel.ToString(),
+                                Confidence = 1.0
+                            };
+                            
+                            if (!result.Entities.Any(e => e.Type == "fallback_level"))
+                            {
+                                result.Entities.Add(fallbackEntity);
+                            }
+                            
+                            // If fallback requires user interaction, add that as an entity too
+                            if (fallbackResult.RequiresUserInteraction)
+                            {
+                                result.Entities.Add(new Entity
+                                {
+                                    Type = "requires_clarification",
+                                    Value = "true",
+                                    Confidence = 1.0
+                                });
+                                
+                                // Add clarification questions as special entities
+                                for (int i = 0; i < fallbackResult.ClarificationQuestions.Count; i++)
+                                {
+                                    result.Entities.Add(new Entity
+                                    {
+                                        Type = $"clarification_question_{i + 1}",
+                                        Value = fallbackResult.ClarificationQuestions[i],
+                                        Confidence = 1.0
+                                    });
+                                }
+                            }
+                            
+                            // Add fallback reason as an entity
+                            if (!string.IsNullOrEmpty(fallbackResult.FallbackReason))
+                            {
+                                result.Entities.Add(new Entity
+                                {
+                                    Type = "fallback_reason",
+                                    Value = fallbackResult.FallbackReason,
+                                    Confidence = 1.0
+                                });
+                            }
+                        }
+                        
                         // Record the result in context
                         await _contextManager.AddIntentDetectionResultAsync(conversationId, result);
                         
@@ -246,6 +314,69 @@ Only return the JSON object, no additional text.";
                     noContextResult = await VerifyIntent(query, noContextResult, cancellationToken);
                 }
 
+                // Apply fallback if confidence is still low after self-verification
+                if (_fallbackManager.NeedsFallback(noContextResult))
+                {
+                    _logger.LogInformation(
+                        "Context-less intent detection result has low confidence ({Confidence}), applying fallback strategies", 
+                        noContextResult.Confidence);
+                        
+                    var fallbackResult = await _fallbackManager.ApplyFallbackAsync(
+                        query, 
+                        noContextResult, 
+                        null, // No conversation ID for this path
+                        cancellationToken);
+                        
+                    // Use the final result from fallback processing
+                    noContextResult = fallbackResult.FinalResult;
+                    
+                    // Add fallback level as a special entity for context tracking
+                    var fallbackEntity = new Entity
+                    {
+                        Type = "fallback_level",
+                        Value = fallbackResult.FallbackLevel.ToString(),
+                        Confidence = 1.0
+                    };
+                    
+                    if (!noContextResult.Entities.Any(e => e.Type == "fallback_level"))
+                    {
+                        noContextResult.Entities.Add(fallbackEntity);
+                    }
+                    
+                    // If fallback requires user interaction, add that as an entity too
+                    if (fallbackResult.RequiresUserInteraction)
+                    {
+                        noContextResult.Entities.Add(new Entity
+                        {
+                            Type = "requires_clarification",
+                            Value = "true",
+                            Confidence = 1.0
+                        });
+                        
+                        // Add clarification questions as special entities
+                        for (int i = 0; i < fallbackResult.ClarificationQuestions.Count; i++)
+                        {
+                            noContextResult.Entities.Add(new Entity
+                            {
+                                Type = $"clarification_question_{i + 1}",
+                                Value = fallbackResult.ClarificationQuestions[i],
+                                Confidence = 1.0
+                            });
+                        }
+                    }
+                    
+                    // Add fallback reason as an entity
+                    if (!string.IsNullOrEmpty(fallbackResult.FallbackReason))
+                    {
+                        noContextResult.Entities.Add(new Entity
+                        {
+                            Type = "fallback_reason",
+                            Value = fallbackResult.FallbackReason,
+                            Confidence = 1.0
+                        });
+                    }
+                }
+
                 // Record the intent detection result in the conversation context if available
                 if (!string.IsNullOrEmpty(conversationId))
                 {
@@ -255,12 +386,9 @@ Only return the JSON object, no additional text.";
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex, "Failed to add intent detection result to conversation context");
+                        _logger.LogWarning(ex, "Failed to record intent detection result in context");
                     }
                 }
-
-                _logger.LogInformation("Intent detection result: {Intent} with confidence {Confidence}", 
-                    noContextResult.Intent, noContextResult.Confidence);
 
                 return noContextResult;
             }
@@ -282,68 +410,25 @@ Only return the JSON object, no additional text.";
                 throw new ArgumentException("Query cannot be empty", nameof(query));
             }
 
-            // If no context is provided, fall back to the regular intent detection
-            if (conversationContext == null || !conversationContext.Any())
+            if (conversationContext == null)
             {
-                return await DetectIntentAsync(query, null, cancellationToken);
+                conversationContext = new List<ConversationMessage>();
             }
 
             try
             {
-                _logger.LogDebug("Detecting intent with context for query: {Query}", query);
+                _logger.LogDebug("Detecting intent with explicit context for query: {Query}", query);
 
-                // Convert the conversation context to Ollama chat messages
-                var chatMessages = new List<OllamaChatMessage>();
+                // Format the conversation context for the prompt
+                string formattedContext = FormatConversationContext(conversationContext);
                 
-                // Add a system message with instructions
-                chatMessages.Add(new OllamaChatMessage
-                {
-                    Role = "system",
-                    Content = "You are an advanced intent classification system. Analyze the user's latest query in the context " +
-                              "of the conversation history and determine the most likely intent."
-                });
+                // Format the prompt with context and query
+                string prompt = string.Format(CONTEXT_AWARE_DETECTION_PROMPT_TEMPLATE, formattedContext, query);
                 
-                // Add conversation history messages
-                foreach (var message in conversationContext)
-                {
-                    chatMessages.Add(new OllamaChatMessage
-                    {
-                        Role = message.Role,
-                        Content = message.Content
-                    });
-                }
-                
-                // Add the current query as the last user message
-                chatMessages.Add(new OllamaChatMessage
-                {
-                    Role = "user",
-                    Content = query
-                });
-                
-                // Add final system message with output instructions
-                chatMessages.Add(new OllamaChatMessage
-                {
-                    Role = "system",
-                    Content = "Respond in JSON format with the following structure:\n" +
-                              "{\n" +
-                              "  \"intent\": \"<intent_name>\",\n" +
-                              "  \"confidence\": <0.0 to 1.0>,\n" +
-                              "  \"explanation\": \"<brief explanation of your classification>\",\n" +
-                              "  \"entities\": [\n" +
-                              "    {\n" +
-                              "      \"type\": \"<entity_type>\",\n" +
-                              "      \"value\": \"<entity_value>\",\n" +
-                              "      \"confidence\": <0.0 to 1.0>\n" +
-                              "    }\n" +
-                              "  ]\n" +
-                              "}\n\n" +
-                              "Only return the JSON object, no additional text."
-                });
-                
-                // Request chat completion from the LLM
-                var response = await _ollamaClient.GenerateChatCompletionWithModelAsync(
+                // Request completion from the LLM
+                var response = await _ollamaClient.GenerateCompletionWithModelAsync(
                     _options.ModelName,
-                    chatMessages,
+                    prompt,
                     new Dictionary<string, object>
                     {
                         { "temperature", 0.1 }, // Low temperature for more deterministic results
@@ -351,10 +436,73 @@ Only return the JSON object, no additional text.";
                     },
                     cancellationToken);
                 
-                // Parse the JSON response
-                var result = ParseIntentDetectionResponse(response.Message.Content);
+                // Parse the result
+                var result = ParseIntentDetectionResponse(response.Response);
                 
-                _logger.LogInformation("Intent detection result with context: {Intent} with confidence {Confidence}", 
+                // Apply fallback if confidence is low
+                if (_fallbackManager.NeedsFallback(result))
+                {
+                    _logger.LogInformation(
+                        "Intent detection with context result has low confidence ({Confidence}), applying fallback strategies", 
+                        result.Confidence);
+                        
+                    var fallbackResult = await _fallbackManager.ApplyFallbackWithContextAsync(
+                        query, 
+                        result, 
+                        conversationContext, 
+                        cancellationToken);
+                        
+                    // Use the final result from fallback processing
+                    result = fallbackResult.FinalResult;
+                    
+                    // Add fallback level as a special entity for context tracking
+                    var fallbackEntity = new Entity
+                    {
+                        Type = "fallback_level",
+                        Value = fallbackResult.FallbackLevel.ToString(),
+                        Confidence = 1.0
+                    };
+                    
+                    if (!result.Entities.Any(e => e.Type == "fallback_level"))
+                    {
+                        result.Entities.Add(fallbackEntity);
+                    }
+                    
+                    // If fallback requires user interaction, add that as an entity too
+                    if (fallbackResult.RequiresUserInteraction)
+                    {
+                        result.Entities.Add(new Entity
+                        {
+                            Type = "requires_clarification",
+                            Value = "true",
+                            Confidence = 1.0
+                        });
+                        
+                        // Add clarification questions as special entities
+                        for (int i = 0; i < fallbackResult.ClarificationQuestions.Count; i++)
+                        {
+                            result.Entities.Add(new Entity
+                            {
+                                Type = $"clarification_question_{i + 1}",
+                                Value = fallbackResult.ClarificationQuestions[i],
+                                Confidence = 1.0
+                            });
+                        }
+                    }
+                    
+                    // Add fallback reason as an entity
+                    if (!string.IsNullOrEmpty(fallbackResult.FallbackReason))
+                    {
+                        result.Entities.Add(new Entity
+                        {
+                            Type = "fallback_reason",
+                            Value = fallbackResult.FallbackReason,
+                            Confidence = 1.0
+                        });
+                    }
+                }
+                
+                _logger.LogInformation("Intent detection with explicit context result: {Intent} with confidence {Confidence}", 
                     result.Intent, result.Confidence);
                 
                 return result;

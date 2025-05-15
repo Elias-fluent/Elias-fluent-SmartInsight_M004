@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using SmartInsight.AI.Clients;
 using SmartInsight.AI.Intent;
 using SmartInsight.AI.Interfaces;
@@ -90,6 +91,25 @@ namespace SmartInsight.AI
         }
 
         /// <summary>
+        /// Adds fallback strategy services to the service collection.
+        /// </summary>
+        /// <param name="services">The service collection.</param>
+        /// <param name="configuration">Configuration containing fallback strategy settings.</param>
+        /// <returns>The service collection for chaining.</returns>
+        public static IServiceCollection AddFallbackStrategies(
+            this IServiceCollection services,
+            IConfiguration configuration)
+        {
+            // Register options
+            services.Configure<FallbackOptions>(configuration.GetSection("Fallback"));
+            
+            // Register fallback manager
+            services.AddScoped<IFallbackManager, FallbackManager>();
+            
+            return services;
+        }
+
+        /// <summary>
         /// Adds all AI services to the service collection.
         /// </summary>
         /// <param name="services">The service collection.</param>
@@ -103,6 +123,7 @@ namespace SmartInsight.AI
             services.AddIntentDetection(configuration);
             services.AddContextManagement(configuration);
             services.AddIntentClassification(configuration);
+            services.AddFallbackStrategies(configuration);
             return services;
         }
     }

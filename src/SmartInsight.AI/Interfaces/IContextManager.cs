@@ -19,6 +19,15 @@ namespace SmartInsight.AI.Interfaces
         Task<ConversationContext> GetOrCreateContextAsync(string conversationId, string userId);
         
         /// <summary>
+        /// Gets an existing conversation context
+        /// </summary>
+        /// <param name="conversationId">The conversation ID</param>
+        /// <returns>The conversation context</returns>
+        /// <exception cref="System.ArgumentException">Thrown when conversation ID is null or empty</exception>
+        /// <exception cref="System.InvalidOperationException">Thrown when context is not found</exception>
+        Task<ConversationContext> GetContextAsync(string conversationId);
+        
+        /// <summary>
         /// Adds a user message to the conversation context
         /// </summary>
         /// <param name="conversationId">The conversation ID</param>
