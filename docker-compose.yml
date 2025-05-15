@@ -11,7 +11,7 @@ services:
       postgres:
         condition: service_healthy
       qdrant:
-        condition: service_started
+        condition: service_healthy
     ports:
       - "5000:80"
     environment:
@@ -54,14 +54,25 @@ services:
     command: ["postgres", "-c", "row_security=on", "-c", "shared_preload_libraries=pg_stat_statements"]
 
   qdrant:
-    image: qdrant/qdrant:latest
+    build:
+      context: ./scripts/qdrant
+      dockerfile: Dockerfile
+    image: ${GITHUB_REPOSITORY_OWNER:-localhost}/smartinsight-qdrant:${TAG:-latest}
     restart: always
+    environment:
+      - QDRANT_HOST=localhost
+      - QDRANT_PORT=6333
+      - QDRANT_ALLOW_RECOVERY_MODE=true
+      - QDRANT_SERVICE__HTTP_PORT=6333
+      - QDRANT_SERVICE__ENABLE_TLS=${QDRANT_ENABLE_TLS:-false}
+      - QDRANT_LOG_LEVEL=${QDRANT_LOG_LEVEL:-INFO}
     ports:
       - "6333:6333"
     networks:
       - smartinsight-network
     volumes:
       - qdrant-data:/qdrant/storage
+      - qdrant-snapshots:/qdrant/snapshots
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
       interval: 30s
@@ -103,6 +114,39 @@ services:
       retries: 3
       start_period: 30s
 
+  # Backup service for Qdrant data
+  qdrant-backup:
+    image: alpine:latest
+    restart: always
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    volumes:
+      - qdrant-snapshots:/backups
+    environment:
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      - BACKUP_INTERVAL_HOURS=${BACKUP_INTERVAL_HOURS:-12}
+      - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-7}
+    command: >
+      /bin/sh -c "
+        apk add --no-cache curl jq findutils;
+        mkdir -p /backups;
+        while true; do
+          echo 'Creating Qdrant snapshot...';
+          timestamp=$$(date +%Y%m%d%H%M%S);
+          snapshot_name=\"backup-$$timestamp\";
+          curl -s -X POST \"http://$$QDRANT_HOST:$$QDRANT_PORT/snapshots\" -H 'Content-Type: application/json' -d '{\"snapshot_name\": \"'\"$$snapshot_name\"'\"}';
+          echo 'Snapshot created: '\"$$snapshot_name\";
+          
+          # Clean up old backups
+          find /backups -type f -name 'backup-*' -mtime +$$BACKUP_RETENTION_DAYS -delete;
+          
+          echo 'Waiting $$BACKUP_INTERVAL_HOURS hours for next backup...';
+          sleep $$(( $$BACKUP_INTERVAL_HOURS * 3600 ));
+        done
+      "
+
 networks:
   smartinsight-network:
     driver: bridge
@@ -110,6 +154,7 @@ networks:
 volumes:
   postgres-data:
   qdrant-data:
+  qdrant-snapshots:
   ollama-models:
   seq-data:
   api-logs: 
