@@ -65,6 +65,9 @@ namespace SmartInsight.AI
             // Register options
             services.Configure<ContextManagerOptions>(configuration.GetSection("ContextManagement"));
             
+            // Register context repository
+            services.AddSingleton<IContextRepository, InMemoryContextRepository>();
+            
             // Register context manager
             services.AddSingleton<IContextManager, ContextManager>();
             
