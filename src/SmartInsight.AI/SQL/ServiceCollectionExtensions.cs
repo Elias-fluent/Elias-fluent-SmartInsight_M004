@@ -22,6 +22,9 @@ namespace SmartInsight.AI.SQL
             
             // Register specialized validators
             services.AddSingleton<UserParameterValidator>();
+            services.AddSingleton<DatabaseObjectValidator>();
+            services.AddSingleton<SqlOperationValidator>();
+            services.AddSingleton<ValueTypeValidator>();
             
             return services;
         }
