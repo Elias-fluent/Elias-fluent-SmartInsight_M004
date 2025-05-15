@@ -1,13 +1,5 @@
 import React, { useState } from 'react';
-import {
-  ChartContainer,
-  BarChart,
-  LineChart,
-  PieChart,
-  ScatterPlot,
-  DataTable,
-  ChartOptions,
-} from './index';
+import {  BarChart,  LineChart,  PieChart,  ScatterPlot,  DataTable,  ChartOptions,} from './index';
 import type { ChartDisplayOptions } from './index';
 
 const ChartExamples: React.FC = () => {

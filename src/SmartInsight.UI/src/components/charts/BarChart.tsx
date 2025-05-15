@@ -1,16 +1,6 @@
 import React, { useMemo } from 'react';
-import {
-  BarChart as RechartsBarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  TooltipProps
-} from 'recharts';
-import { ChartContainer, ChartContainerProps } from './ChartContainer';
+import {  BarChart as RechartsBarChart,  Bar,  XAxis,  YAxis,  CartesianGrid,  Tooltip,  Legend,  ResponsiveContainer} from 'recharts';
+import { ChartContainer, type ChartContainerProps } from './ChartContainer';
 
 export interface BarChartDataItem {
   [key: string]: string | number;
@@ -61,7 +51,7 @@ export const BarChart: React.FC<BarChartProps> = ({
       color: item.color || defaultColors[index % defaultColors.length],
       stackId: stacked ? (item.stackId || 'stack1') : undefined
     }));
-  }, [series, stacked]);
+  }, [series, stacked, defaultColors]);
 
   return (
     <ChartContainer {...containerProps}>

@@ -1,6 +1,6 @@
 # Task ID: 27
 # Title: Implement Safe SQL Generator
-# Status: pending
+# Status: in-progress
 # Dependencies: 25, 26
 # Priority: high
 # Description: Create system for generating safe SQL queries from natural language.

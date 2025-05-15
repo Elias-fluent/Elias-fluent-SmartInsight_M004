@@ -1,12 +1,15 @@
-import React from 'react';
+// import React from 'react';
 import MainLayout from './components/layout/MainLayout';
 import Dashboard from './pages/Dashboard';
+import { StoreProvider } from './store/StoreContext';
 
 function App() {
   return (
-    <MainLayout>
-      <Dashboard />
-    </MainLayout>
+    <StoreProvider>
+      <MainLayout>
+        <Dashboard />
+      </MainLayout>
+    </StoreProvider>
   );
 }
 

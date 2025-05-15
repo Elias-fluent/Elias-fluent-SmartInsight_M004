@@ -14,8 +14,8 @@ import {
   getPaginationRowModel,
   getFilteredRowModel,
   useReactTable,
-  ColumnDef,
-  SortingState
+  type ColumnDef,
+  type SortingState
 } from '@tanstack/react-table';
 import { Input } from '../ui/input';
 import {
@@ -28,7 +28,39 @@ import {
   ChevronsLeft,
   ChevronsRight
 } from 'lucide-react';
-import { Button } from '../ui/button';
+
+// Utility function to handle class names for button variants
+const buttonVariants = ({ variant, size, className }: any) => {
+  const baseClasses = "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none";
+  const variantClasses = 
+    variant === 'outline' ? 'border border-input bg-background hover:bg-accent hover:text-accent-foreground' :
+    variant === 'secondary' ? 'bg-secondary text-secondary-foreground hover:bg-secondary/80' :
+    variant === 'ghost' ? 'hover:bg-accent hover:text-accent-foreground' : 
+    variant === 'link' ? 'text-primary underline-offset-4 hover:underline' :
+    'bg-primary text-primary-foreground hover:bg-primary/90';
+  const sizeClasses = 
+    size === 'sm' ? 'h-9 px-3' :
+    size === 'lg' ? 'h-11 px-8' :
+    size === 'icon' ? 'h-10 w-10 p-0' :
+    'h-10 px-4 py-2';
+
+  return [baseClasses, variantClasses, sizeClasses, className].filter(Boolean).join(" ");
+};
+
+const Button = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  size?: 'default' | 'sm' | 'lg' | 'icon';
+}>(({ className, variant = 'default', size = 'default', ...props }, ref) => {
+  return (
+    <button
+      className={buttonVariants({ variant, size, className })}
+      ref={ref}
+      {...props}
+    />
+  );
+});
+Button.displayName = "Button";
+
 import { 
   Select, 
   SelectContent, 
@@ -36,7 +68,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '../ui/select';
-import { ChartContainer, ChartContainerProps } from './ChartContainer';
+import { ChartContainer, type ChartContainerProps } from './ChartContainer';
 
 export interface DataTableProps<TData extends object> extends Omit<ChartContainerProps, 'children'> {
   data: TData[];
@@ -113,7 +145,7 @@ export function DataTable<TData extends object>({
   }, [bordered, fullWidth]);
 
   const rowClasses = useMemo(() => {
-    const classes = [];
+    const classes: string[] = [];
     if (striped) classes.push('even:bg-muted/50');
     if (dense) classes.push('h-8');
     return classes.join(' ');
