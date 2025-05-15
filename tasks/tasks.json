@@ -941,7 +941,7 @@
             1
           ],
           "details": "Create parsers to identify parameters in natural language. Implement type inference for parameters. Design parameter mapping to SQL placeholders. Include handling for optional parameters and defaults.",
-          "status": "in-progress"
+          "status": "done"
         },
         {
           "id": 3,
@@ -951,7 +951,7 @@
             2
           ],
           "details": "Implement type checking, range validation, format validation, and sanitization. Create custom validators for different parameter types. Design validation error reporting system.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,

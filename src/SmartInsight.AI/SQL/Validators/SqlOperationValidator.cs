@@ -80,7 +80,7 @@ namespace SmartInsight.AI.SQL.Validators
         /// <summary>
         /// Validates parameters for SELECT operations
         /// </summary>
-        private async Task ValidateSelectOperationAsync(
+        private Task<Models.ParameterValidationResult> ValidateSelectOperationAsync(
             Dictionary<string, ExtractedParameter> parameters,
             SqlTemplate template,
             Models.ParameterValidationResult result)
@@ -116,12 +116,14 @@ namespace SmartInsight.AI.SQL.Validators
                     Recommendation = "Add filter parameters to limit the result set"
                 });
             }
+
+            return Task.FromResult(result);
         }
         
         /// <summary>
         /// Validates parameters for INSERT operations
         /// </summary>
-        private async Task ValidateInsertOperationAsync(
+        private Task<Models.ParameterValidationResult> ValidateInsertOperationAsync(
             Dictionary<string, ExtractedParameter> parameters,
             SqlTemplate template,
             Models.ParameterValidationResult result)
@@ -161,12 +163,14 @@ namespace SmartInsight.AI.SQL.Validators
                     });
                 }
             }
+
+            return Task.FromResult(result);
         }
         
         /// <summary>
         /// Validates parameters for UPDATE operations
         /// </summary>
-        private async Task ValidateUpdateOperationAsync(
+        private Task<Models.ParameterValidationResult> ValidateUpdateOperationAsync(
             Dictionary<string, ExtractedParameter> parameters,
             SqlTemplate template,
             Models.ParameterValidationResult result)
@@ -198,12 +202,14 @@ namespace SmartInsight.AI.SQL.Validators
                     Recommendation = "Provide values to update"
                 });
             }
+
+            return Task.FromResult(result);
         }
         
         /// <summary>
         /// Validates parameters for DELETE operations
         /// </summary>
-        private async Task ValidateDeleteOperationAsync(
+        private Task<Models.ParameterValidationResult> ValidateDeleteOperationAsync(
             Dictionary<string, ExtractedParameter> parameters,
             SqlTemplate template,
             Models.ParameterValidationResult result)
@@ -238,6 +244,8 @@ namespace SmartInsight.AI.SQL.Validators
                     Recommendation = "Consider using primary key for DELETE operations"
                 });
             }
+
+            return Task.FromResult(result);
         }
         
         /// <summary>

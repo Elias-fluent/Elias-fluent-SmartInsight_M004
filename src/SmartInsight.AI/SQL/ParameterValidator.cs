@@ -183,7 +183,7 @@ namespace SmartInsight.AI.SQL
             string ruleName,
             string ruleDescription,
             ValidationSeverity severity,
-            IEnumerable<string> applicableTypes = null)
+            IEnumerable<string>? applicableTypes = null)
         {
             if (string.IsNullOrWhiteSpace(ruleName))
             {
