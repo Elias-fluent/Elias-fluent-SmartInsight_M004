@@ -8,7 +8,7 @@
       "testStrategy": "Verify solution builds successfully with all projects. Ensure project references are correctly configured.",
       "priority": "high",
       "dependencies": [],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -21,7 +21,7 @@
       "dependencies": [
         1
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -34,7 +34,7 @@
       "dependencies": [
         1
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -47,7 +47,7 @@
       "dependencies": [
         1
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -60,7 +60,7 @@
       "dependencies": [
         1
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -73,7 +73,7 @@
       "dependencies": [
         1
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -206,7 +206,7 @@
       "dependencies": [
         3
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -221,7 +221,97 @@
         10
       ],
       "status": "pending",
-      "subtasks": []
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create Custom IdentityUser with TenantId",
+          "description": "Extend the base IdentityUser class to include a TenantId property for multi-tenant support",
+          "dependencies": [],
+          "details": "Create a new ApplicationUser class that inherits from IdentityUser and adds a TenantId property. Update the DbContext to use this custom user class. Ensure the TenantId is properly mapped in the database schema.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Implement Custom UserStore with Tenant Filtering",
+          "description": "Create a tenant-aware UserStore that filters user operations by TenantId",
+          "dependencies": [
+            1
+          ],
+          "details": "Extend the UserStore<ApplicationUser> class to override key methods like FindByIdAsync, FindByNameAsync, etc. to include TenantId in queries. Ensure all CRUD operations respect tenant boundaries by adding TenantId filters.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Extend UserManager for Tenant Operations",
+          "description": "Customize UserManager to handle tenant-specific user management operations",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Create a custom ApplicationUserManager that extends UserManager<ApplicationUser> with methods for tenant-specific operations. Add validation to ensure users can only be created, updated, or deleted within their tenant context.",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "Extend SignInManager for Tenant Validation",
+          "description": "Modify SignInManager to validate tenant context during authentication",
+          "dependencies": [
+            1,
+            3
+          ],
+          "details": "Create a custom ApplicationSignInManager that extends SignInManager<ApplicationUser> to validate tenant context during sign-in. Implement logic to prevent users from accessing resources outside their tenant.",
+          "status": "pending"
+        },
+        {
+          "id": 5,
+          "title": "Implement Tenant-Aware Role Management",
+          "description": "Extend role management to support tenant-specific roles",
+          "dependencies": [
+            1,
+            3
+          ],
+          "details": "Create a custom ApplicationRole class with TenantId property. Implement a tenant-aware RoleStore and RoleManager to ensure roles are scoped to tenants. Update role assignment logic to respect tenant boundaries.",
+          "status": "pending"
+        },
+        {
+          "id": 6,
+          "title": "Create Tenant-Specific Claim Types",
+          "description": "Define and implement tenant-specific claim types for RBAC",
+          "dependencies": [
+            3,
+            5
+          ],
+          "details": "Define a set of tenant-specific claim types for RBAC. Implement helpers to generate and validate these claims. Ensure claims include tenant context to prevent cross-tenant authorization issues.",
+          "status": "pending"
+        },
+        {
+          "id": 7,
+          "title": "Implement Tenant Context Middleware",
+          "description": "Create middleware to establish tenant context for each request",
+          "dependencies": [
+            3,
+            4
+          ],
+          "details": "Implement middleware that determines the current tenant context from the request (e.g., subdomain, header, or claim) and makes it available throughout the request pipeline. Ensure this context is used by the identity components.",
+          "status": "pending"
+        },
+        {
+          "id": 8,
+          "title": "Create Integration Tests for Tenant-Aware Identity",
+          "description": "Develop comprehensive tests for the tenant-aware identity system",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "details": "Create integration tests that verify tenant isolation in the identity system. Test scenarios like cross-tenant access attempts, tenant-specific role assignments, and proper tenant filtering in user queries. Ensure security boundaries are maintained.",
+          "status": "pending"
+        }
+      ]
     },
     {
       "id": 12,
@@ -734,7 +824,7 @@
       "dependencies": [
         6
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -1029,7 +1119,7 @@
       "testStrategy": "Verify project builds successfully. Test component rendering. Validate TypeScript configuration. Check accessibility compliance.",
       "priority": "high",
       "dependencies": [],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
