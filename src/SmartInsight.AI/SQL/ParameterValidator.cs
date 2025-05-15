@@ -38,7 +38,7 @@ namespace SmartInsight.AI.SQL
             SqlTemplate template)
         {
             _logger.LogDebug("Validating {Count} parameters against template {TemplateId}", 
-                parameters.Count, template.TemplateId);
+                parameters.Count, template.Id);
 
             var result = new Models.ParameterValidationResult
             {

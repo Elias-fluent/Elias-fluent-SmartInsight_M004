@@ -14,10 +14,15 @@ namespace SmartInsight.AI.SQL.Models
         /// <summary>
         /// Unique identifier for the template
         /// </summary>
-        public string TemplateId { get; set; } = null!;
+        public string Id { get; set; } = null!;
 
         /// <summary>
-        /// Human-readable description of the template
+        /// Name of the template
+        /// </summary>
+        public string Name { get; set; } = null!;
+
+        /// <summary>
+        /// Description of the template
         /// </summary>
         public string Description { get; set; } = null!;
 
@@ -70,6 +75,21 @@ namespace SmartInsight.AI.SQL.Models
         /// Whether this template allows operations without filtering (full table scan)
         /// </summary>
         public bool AllowFullTableScan { get; set; } = false;
+
+        /// <summary>
+        /// The database type this template is for
+        /// </summary>
+        public string DatabaseType { get; set; } = "SQLServer";
+
+        /// <summary>
+        /// Sample natural language queries that would use this template
+        /// </summary>
+        public List<string> SampleQueries { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Keywords for template matching
+        /// </summary>
+        public List<string> Keywords { get; set; } = new List<string>();
     }
 
     /// <summary>
@@ -135,65 +155,70 @@ namespace SmartInsight.AI.SQL.Models
     }
 
     /// <summary>
-    /// Result of template selection process
+    /// Result of template selection
     /// </summary>
     public class TemplateSelectionResult
     {
+        /// <summary>
+        /// Whether the template selection was successful
+        /// </summary>
+        public bool IsSuccessful { get; set; }
+
+        /// <summary>
+        /// Error message if selection failed
+        /// </summary>
+        public string? ErrorMessage { get; set; }
+
         /// <summary>
         /// The selected template, if any
         /// </summary>
         public SqlTemplate? SelectedTemplate { get; set; }
 
         /// <summary>
-        /// Confidence score of the selection (0.0 to 1.0)
+        /// Confidence score of the selection
         /// </summary>
-        public double Confidence { get; set; }
+        public double ConfidenceScore { get; set; }
 
         /// <summary>
-        /// Whether a suitable template was found
+        /// Alternative templates that could have been selected
         /// </summary>
-        public bool TemplateFound => SelectedTemplate != null;
-
+        public List<SqlTemplate>? AlternativeTemplates { get; set; }
+        
         /// <summary>
-        /// Alternative templates that were considered
+        /// Context information about the query origin
         /// </summary>
-        public List<SqlTemplate> AlternativeTemplates { get; set; } = new List<SqlTemplate>();
-
-        /// <summary>
-        /// Explanation of the selection process
-        /// </summary>
-        public string? Explanation { get; set; }
+        public string? QueryContext { get; set; }
     }
 
     /// <summary>
-    /// Result of SQL generation process
+    /// Result of SQL generation
     /// </summary>
     public class SqlGenerationResult
     {
-        /// <summary>
-        /// The generated SQL query
-        /// </summary>
-        public string Sql { get; set; } = null!;
-
-        /// <summary>
-        /// Parameters collection for the SQL query
-        /// </summary>
-        public Dictionary<string, object> Parameters { get; set; } = new Dictionary<string, object>();
-
         /// <summary>
         /// Whether the generation was successful
         /// </summary>
         public bool IsSuccessful { get; set; }
 
         /// <summary>
+        /// Generated SQL
+        /// </summary>
+        public string Sql { get; set; } = null!;
+
+        /// <summary>
+        /// Parameters for the SQL
+        /// </summary>
+        public Dictionary<string, object>? Parameters { get; set; }
+
+        /// <summary>
         /// Error message if generation failed
         /// </summary>
         public string? ErrorMessage { get; set; }
-
+        
         /// <summary>
-        /// The template that was used for generation
+        /// ID of the template used for generation
         /// </summary>
-        public SqlTemplate? SourceTemplate { get; set; }
+        public string? TemplateId { get; set; }
     }
 
     /// <summary>
@@ -285,22 +310,27 @@ namespace SmartInsight.AI.SQL.Models
     }
 
     /// <summary>
-    /// Severity levels for validation issues
+    /// Severity of a validation issue
     /// </summary>
     public enum ValidationSeverity
     {
         /// <summary>
-        /// Informational issues
+        /// Information only
         /// </summary>
         Info,
-
+        
         /// <summary>
-        /// Warning issues
+        /// Warning that should be addressed
         /// </summary>
         Warning,
-
+        
         /// <summary>
-        /// Critical issues
+        /// Error that must be fixed
+        /// </summary>
+        Error,
+        
+        /// <summary>
+        /// Critical issue that prevents execution
         /// </summary>
         Critical
     }
@@ -547,5 +577,51 @@ namespace SmartInsight.AI.SQL.Models
         {
             return ValidationIssues.Where(i => i.Severity == severity);
         }
+    }
+
+    /// <summary>
+    /// SQL log statistics
+    /// </summary>
+    public class SqlLogStatistics
+    {
+        /// <summary>
+        /// Total number of queries
+        /// </summary>
+        public int TotalQueries { get; set; }
+
+        /// <summary>
+        /// Number of successful queries
+        /// </summary>
+        public int SuccessfulQueries { get; set; }
+
+        /// <summary>
+        /// Number of failed queries
+        /// </summary>
+        public int FailedQueries { get; set; }
+        
+        /// <summary>
+        /// Average execution time in milliseconds
+        /// </summary>
+        public double? AverageExecutionTimeMs { get; set; }
+        
+        /// <summary>
+        /// Minimum execution time in milliseconds
+        /// </summary>
+        public long? MinExecutionTimeMs { get; set; }
+        
+        /// <summary>
+        /// Maximum execution time in milliseconds
+        /// </summary>
+        public long? MaxExecutionTimeMs { get; set; }
+        
+        /// <summary>
+        /// Count of operations by type
+        /// </summary>
+        public Dictionary<SqlOperationType, int>? OperationCounts { get; set; }
+        
+        /// <summary>
+        /// Most common error messages with counts
+        /// </summary>
+        public Dictionary<string, int>? ErrorCounts { get; set; }
     }
 } 
