@@ -206,7 +206,7 @@
       "dependencies": [
         3
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -824,7 +824,7 @@
       "dependencies": [
         6
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -838,7 +838,79 @@
         25
       ],
       "status": "pending",
-      "subtasks": []
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement IntentDetector Class with Hierarchical Classification",
+          "description": "Create the core IntentDetector class that supports hierarchical intent classification to handle complex queries with multiple nested intents.",
+          "dependencies": [],
+          "details": "Design and implement the IntentDetector class with methods for intent recognition, hierarchical classification structure, and integration with the OllamaClient. Include support for intent confidence thresholds and hierarchical intent relationships.",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Design Intent Classification Model with Vector Embedding Support",
+          "description": "Develop the intent classification model that leverages vector embeddings for semantic understanding of user queries.",
+          "dependencies": [
+            1
+          ],
+          "details": "Create a classification model that uses vector embeddings from the OllamaClient to represent queries semantically. Implement similarity matching algorithms, fine-tuning capabilities, and support for intent templates with variable slots.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Build Chain-of-Thought Reasoning Pipeline",
+          "description": "Implement a Chain-of-Thought reasoning pipeline that breaks down complex queries into logical reasoning steps.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Develop a reasoning pipeline that uses step-by-step logical deduction to process complex queries. Include intermediate reasoning state tracking, verification steps, and integration with the intent classification system.",
+          "status": "done"
+        },
+        {
+          "id": 4,
+          "title": "Implement Context Management for Complex Queries",
+          "description": "Create a context management system that maintains conversation history and contextual information for multi-turn interactions.",
+          "dependencies": [
+            3
+          ],
+          "details": "Design and implement a context manager that tracks conversation state, handles context windows, manages entity persistence across queries, and supports context-aware intent disambiguation.\n<info added on 2025-05-15T02:05:29.023Z>\nDesign and implement a context manager that tracks conversation state, handles context windows, manages entity persistence across queries, and supports context-aware intent disambiguation.\n\nThe implementation has made significant progress with the creation of the ConversationContext class in SmartInsight.AI/Models/ContextManagementModels.cs. This class includes several key components:\n\n1. Core ConversationContext class with functionality to track message history\n2. TrackedEntity class for maintaining entity references across conversation turns\n3. DetectedIntent class for recording and accessing intent history\n4. ContextManagementOptions for configuring behavior like context window size\n5. Methods for adding messages, tracked entities, and detected intents\n6. Functions for retrieving relevant history and generating context summaries\n\nThe remaining implementation work will focus on:\n1. Creating a dedicated ContextManager service to manage ConversationContext instances\n2. Implementing dependency injection registration in ServiceCollectionExtensions\n3. Adding integration with IntentDetector for automatic context updates\n4. Creating a persistence layer for saving conversation contexts\n5. Implementing context window management with automatic pruning of old messages\n\nThis context management system will provide the foundation for maintaining conversation state across multiple turns, which is essential for the chain-of-thought reasoning pipeline that was previously completed. It will also support the upcoming confidence scoring system for ambiguity handling by providing rich contextual information.\n</info added on 2025-05-15T02:05:29.023Z>",
+          "status": "in-progress"
+        },
+        {
+          "id": 5,
+          "title": "Create Confidence Scoring System for Ambiguity Handling",
+          "description": "Develop a confidence scoring mechanism to quantify certainty in intent classifications and handle ambiguous queries.",
+          "dependencies": [
+            2
+          ],
+          "details": "Implement a multi-factor confidence scoring algorithm that considers semantic similarity, context relevance, and historical accuracy. Include threshold management for triggering clarification requests and confidence-based routing logic.",
+          "status": "pending"
+        },
+        {
+          "id": 6,
+          "title": "Build Fallback Strategies for Misclassifications",
+          "description": "Implement robust fallback mechanisms to gracefully handle misclassifications and edge cases.",
+          "dependencies": [
+            4,
+            5
+          ],
+          "details": "Create a tiered fallback system with progressive degradation strategies, including clarification requests, generalized intent matching, and explicit handoff protocols. Implement recovery mechanisms to learn from misclassifications.",
+          "status": "pending"
+        },
+        {
+          "id": 7,
+          "title": "Develop Logging System for Training Improvements",
+          "description": "Create a comprehensive logging system to capture classification decisions, reasoning steps, and user interactions for continuous improvement.",
+          "dependencies": [
+            3,
+            6
+          ],
+          "details": "Implement structured logging for intent classifications, confidence scores, reasoning paths, and user feedback. Include anonymization capabilities, performance metrics tracking, and tools for identifying training opportunities from logs.",
+          "status": "pending"
+        }
+      ]
     },
     {
       "id": 27,
