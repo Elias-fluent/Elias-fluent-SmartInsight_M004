@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace SmartInsight.Core.Interfaces;
 
 /// <summary>
@@ -28,7 +30,7 @@ public class DataStructureInfo
     /// <summary>
     /// Fields or columns in the data structure
     /// </summary>
-    public IReadOnlyList<FieldInfo> Fields { get; }
+    public IEnumerable<FieldInfo> Fields { get; }
     
     /// <summary>
     /// Additional metadata about the data structure
@@ -46,6 +48,11 @@ public class DataStructureInfo
     public string FullPath { get; }
     
     /// <summary>
+    /// Parent structure if this is a nested structure
+    /// </summary>
+    public string? ParentName { get; }
+    
+    /// <summary>
     /// Creates a new data structure info
     /// </summary>
     /// <param name="name">Name of the data structure</param>
@@ -56,6 +63,7 @@ public class DataStructureInfo
     /// <param name="metadata">Additional metadata about the data structure</param>
     /// <param name="recordCount">Approximate number of records in the data structure</param>
     /// <param name="fullPath">Full path or identifier to access the data structure</param>
+    /// <param name="parentName">Parent structure name</param>
     public DataStructureInfo(
         string name, 
         string type, 
@@ -64,16 +72,18 @@ public class DataStructureInfo
         string? description = null,
         IDictionary<string, object>? metadata = null,
         long? recordCount = null,
-        string? fullPath = null)
+        string? fullPath = null,
+        string? parentName = null)
     {
         Name = name;
         Type = type;
         Schema = schema;
         Description = description;
-        Fields = fields.ToList().AsReadOnly();
+        Fields = fields;
         Metadata = metadata;
         RecordCount = recordCount;
         FullPath = fullPath ?? (Schema != null ? $"{Schema}.{Name}" : Name);
+        ParentName = parentName;
     }
 }
 
@@ -133,6 +143,16 @@ public class FieldInfo
     public IDictionary<string, object>? Metadata { get; }
     
     /// <summary>
+    /// Whether the field is required
+    /// </summary>
+    public bool IsRequired { get; }
+    
+    /// <summary>
+    /// Additional field properties
+    /// </summary>
+    public IDictionary<string, object>? Properties { get; }
+    
+    /// <summary>
     /// Creates a new field info
     /// </summary>
     /// <param name="name">Name of the field</param>
@@ -145,6 +165,8 @@ public class FieldInfo
     /// <param name="scale">Scale of the field (for numeric types)</param>
     /// <param name="defaultValue">Default value of the field</param>
     /// <param name="metadata">Additional metadata about the field</param>
+    /// <param name="isRequired">Whether the field is required</param>
+    /// <param name="properties">Additional field properties</param>
     public FieldInfo(
         string name, 
         string dataType, 
@@ -155,7 +177,9 @@ public class FieldInfo
         int? precision = null,
         int? scale = null,
         object? defaultValue = null,
-        IDictionary<string, object>? metadata = null)
+        IDictionary<string, object>? metadata = null,
+        bool isRequired = false,
+        IDictionary<string, object>? properties = null)
     {
         Name = name;
         DataType = dataType;
@@ -167,5 +191,7 @@ public class FieldInfo
         Scale = scale;
         DefaultValue = defaultValue;
         Metadata = metadata;
+        IsRequired = isRequired;
+        Properties = properties;
     }
 } 

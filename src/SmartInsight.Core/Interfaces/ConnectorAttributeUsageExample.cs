@@ -104,7 +104,7 @@ public class SqlServerConnectorExample : IDataSourceConnector
     
     public string Version => "1.0.0";
     
-    public ConnectionState ConnectionState { get; private set; } = ConnectionState.Initialized;
+    public ConnectionState ConnectionState { get; private set; } = ConnectionState.Disconnected;
     
     public event EventHandler<ConnectorStateChangedEventArgs>? StateChanged;
     

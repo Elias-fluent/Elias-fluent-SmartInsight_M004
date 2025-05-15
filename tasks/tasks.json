@@ -403,7 +403,7 @@
             4
           ],
           "details": "Design and implement a factory class that can create instances of specific connector implementations based on type or identifier. Include dependency injection support and configuration parameter handling.",
-          "status": "in-progress"
+          "status": "done"
         },
         {
           "id": 6,
@@ -413,7 +413,7 @@
             1
           ],
           "details": "Design attribute classes for annotating connector implementations with metadata such as name, description, version, supported data formats, and configuration requirements. Implement reflection-based discovery of these attributes.",
-          "status": "in-progress"
+          "status": "done"
         },
         {
           "id": 7,
@@ -423,7 +423,7 @@
             6
           ],
           "details": "Build a documentation generator that can extract connector metadata and produce human-readable documentation. Include support for generating markdown, HTML, or other documentation formats from connector attributes.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 8,
@@ -437,7 +437,7 @@
             6
           ],
           "details": "Implement a sample connector that demonstrates proper implementation of the interface, lifecycle events, configuration handling, and metadata attributes. This will serve as a reference for developers creating new connectors.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },

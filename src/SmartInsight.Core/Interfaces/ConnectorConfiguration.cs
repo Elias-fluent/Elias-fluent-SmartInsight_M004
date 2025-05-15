@@ -161,6 +161,82 @@ public class ConnectorConfiguration : IConnectorConfiguration
     }
     
     /// <summary>
+    /// Gets a configuration value by key
+    /// </summary>
+    /// <typeparam name="T">Type of the configuration value</typeparam>
+    /// <param name="key">Configuration key</param>
+    /// <param name="defaultValue">Default value if key is not found</param>
+    /// <returns>Configuration value or default</returns>
+    public T GetValue<T>(string key, T defaultValue = default)
+    {
+        // First look in connection parameters for string values
+        if (typeof(T) == typeof(string) && ConnectionParameters.TryGetValue(key, out var strValue))
+        {
+            return (T)(object)strValue;
+        }
+        
+        // Then look in settings for other types
+        if (Settings.TryGetValue(key, out var objValue))
+        {
+            if (objValue is T typedValue)
+            {
+                return typedValue;
+            }
+            
+            try
+            {
+                // Try to convert using JSON serialization
+                var json = JsonSerializer.Serialize(objValue);
+                var result = JsonSerializer.Deserialize<T>(json);
+                return result ?? defaultValue;
+            }
+            catch
+            {
+                // If conversion fails, return default
+                return defaultValue;
+            }
+        }
+        
+        return defaultValue;
+    }
+    
+    /// <summary>
+    /// Gets all configuration values
+    /// </summary>
+    /// <returns>Dictionary of configuration values</returns>
+    public IDictionary<string, object> GetAll()
+    {
+        var result = new Dictionary<string, object>(Settings);
+        
+        // Add connection parameters as strings
+        foreach (var param in ConnectionParameters)
+        {
+            result[param.Key] = param.Value;
+        }
+        
+        return result;
+    }
+    
+    /// <summary>
+    /// Checks if a configuration key exists
+    /// </summary>
+    /// <param name="key">Configuration key</param>
+    /// <returns>True if the key exists, otherwise false</returns>
+    public bool HasValue(string key)
+    {
+        return ConnectionParameters.ContainsKey(key) || Settings.ContainsKey(key);
+    }
+    
+    /// <summary>
+    /// Gets connection parameters for the connector
+    /// </summary>
+    /// <returns>Dictionary of connection parameters</returns>
+    public IDictionary<string, string> GetConnectionParameters()
+    {
+        return new Dictionary<string, string>(ConnectionParameters);
+    }
+    
+    /// <summary>
     /// Validates the configuration
     /// </summary>
     /// <returns>Result indicating if configuration is valid</returns>
@@ -249,39 +325,33 @@ public class ConnectorConfiguration : IConnectorConfiguration
     /// <summary>
     /// Gets a redacted copy of the connection parameters (sensitive values hidden)
     /// </summary>
-    /// <returns>Redacted connection parameters</returns>
+    /// <returns>Dictionary with redacted values</returns>
     private IDictionary<string, string> GetRedactedConnectionParameters()
     {
         var result = new Dictionary<string, string>();
         
         foreach (var param in ConnectionParameters)
         {
-            // Redact sensitive parameters like passwords, keys, etc.
-            if (IsSensitiveParameter(param.Key))
-                result[param.Key] = "********";
-            else
-                result[param.Key] = param.Value;
+            result[param.Key] = IsSensitiveParameter(param.Key) ? "********" : param.Value;
         }
         
         return result;
     }
     
     /// <summary>
-    /// Determines if a parameter name is considered sensitive
+    /// Checks if a parameter name indicates a sensitive value
     /// </summary>
     /// <param name="paramName">Parameter name</param>
-    /// <returns>True if sensitive, false otherwise</returns>
+    /// <returns>True if sensitive, otherwise false</returns>
     private static bool IsSensitiveParameter(string paramName)
     {
-        if (string.IsNullOrWhiteSpace(paramName))
-            return false;
-            
-        var normalizedName = paramName.ToLowerInvariant();
+        var sensitiveKeywords = new[] 
+        { 
+            "password", "secret", "key", "token", "credential", "auth", 
+            "apikey", "api_key", "accesskey", "access_key" 
+        };
         
-        return normalizedName.Contains("password") ||
-               normalizedName.Contains("secret") ||
-               normalizedName.Contains("key") ||
-               normalizedName.Contains("token") ||
-               normalizedName.Contains("credential");
+        return sensitiveKeywords.Any(keyword => 
+            paramName.Contains(keyword, StringComparison.OrdinalIgnoreCase));
     }
 } 
