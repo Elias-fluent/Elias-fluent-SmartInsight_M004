@@ -77,8 +77,6 @@ orleans.codegen.cs
 !tasks/
 !tasks/**
 
-# Prevent accidentally using backed up PRD file
-scripts/prd-backup.txt
 
 # Added by Claude Task Master
 *.suo
@@ -128,4 +126,10 @@ bld/
 # The packages folder can be ignored because of Package Restore
 **/[Pp]ackages/*
 # except build/, which is used as an MSBuild target.
-!**/[Pp]ackages/build/ 
+!**/[Pp]ackages/build/
+
+# Added by Claude Task Master
+*.sln
+# Task files
+tasks.json
+tasks/ 
