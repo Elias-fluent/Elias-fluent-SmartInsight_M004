@@ -163,7 +163,7 @@ namespace SmartInsight.AI.SQL
             {
                 try
                 {
-                    var issues = await rule.ValidationFunctionWithCancellation(sql, parameters, cancellationToken);
+                    var issues = await rule.ValidationFunctionWithCancellation!(sql, parameters, cancellationToken);
                     result.Issues.AddRange(issues);
                 }
                 catch (Exception ex)
@@ -274,7 +274,7 @@ namespace SmartInsight.AI.SQL
                 {
                     try
                     {
-                        var issues = await rule.ValidationFunctionWithCancellation(sql, parameters, cancellationToken);
+                        var issues = await rule.ValidationFunctionWithCancellation!(sql, parameters, cancellationToken);
                         result.Issues.AddRange(issues);
                     }
                     catch (Exception ex)
