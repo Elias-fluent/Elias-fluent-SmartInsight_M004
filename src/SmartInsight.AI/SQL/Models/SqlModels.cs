@@ -65,6 +65,11 @@ namespace SmartInsight.AI.SQL.Models
         /// Tags for categorization and searching
         /// </summary>
         public List<string> Tags { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Whether this template allows operations without filtering (full table scan)
+        /// </summary>
+        public bool AllowFullTableScan { get; set; } = false;
     }
 
     /// <summary>
