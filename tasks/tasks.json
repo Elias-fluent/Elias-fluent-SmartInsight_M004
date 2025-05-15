@@ -961,7 +961,7 @@
             1
           ],
           "details": "Create tenant context management. Implement automatic tenant filtering for all queries. Design override protection mechanisms. Test multi-tenant query isolation. Document tenant scoping patterns.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -972,7 +972,7 @@
             3
           ],
           "details": "Implement parameterized queries. Create whitelist-based input validation. Develop query structure verification. Design escape sequence handling. Test with common SQL injection patterns.",
-          "status": "pending"
+          "status": "in-progress"
         },
         {
           "id": 6,
