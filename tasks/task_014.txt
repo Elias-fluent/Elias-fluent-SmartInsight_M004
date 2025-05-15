@@ -1,6 +1,6 @@
 # Task ID: 14
 # Title: Implement Data Source Connector Interface
-# Status: in-progress
+# Status: done
 # Dependencies: 3, 10
 # Priority: high
 # Description: Create the base interface for all data source connectors.
