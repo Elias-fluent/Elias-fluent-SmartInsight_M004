@@ -124,19 +124,81 @@ namespace SmartInsight.AI.SQL
         }
         
         /// <summary>
-        /// Adds all SQL services to the service collection
+        /// Adds SQL logging services to the service collection
+        /// </summary>
+        /// <param name="services">The IServiceCollection to add the services to</param>
+        /// <param name="maxLogEntries">Maximum number of log entries to keep in memory</param>
+        /// <param name="enableQueryOriginTracking">Whether to track query origin details</param>
+        /// <param name="enablePerfMetricsLogging">Whether to log performance metrics</param>
+        /// <param name="enableSecurityEventLogging">Whether to log security events</param>
+        /// <returns>The same service collection for method chaining</returns>
+        public static IServiceCollection AddSqlLogging(
+            this IServiceCollection services,
+            int maxLogEntries = 10000,
+            bool enableQueryOriginTracking = true,
+            bool enablePerfMetricsLogging = true,
+            bool enableSecurityEventLogging = true)
+        {
+            // Register the SQL logging service
+            services.AddSingleton<ISqlLoggingService>(provider =>
+            {
+                var logger = provider.GetRequiredService<ILogger<SqlLoggingService>>();
+                return new SqlLoggingService(
+                    logger,
+                    maxLogEntries,
+                    enableQueryOriginTracking,
+                    enablePerfMetricsLogging,
+                    enableSecurityEventLogging);
+            });
+            
+            return services;
+        }
+        
+        /// <summary>
+        /// Adds SQL log retention services to the service collection
+        /// </summary>
+        /// <param name="services">The IServiceCollection to add the services to</param>
+        /// <param name="retentionDays">Number of days to retain logs</param>
+        /// <param name="executionInterval">Interval in hours between retention executions</param>
+        /// <returns>The same service collection for method chaining</returns>
+        public static IServiceCollection AddSqlLogRetention(
+            this IServiceCollection services,
+            int retentionDays = 30,
+            int executionInterval = 24)
+        {
+            // Register the log retention options
+            services.Configure<LogRetentionOptions>(options =>
+            {
+                options.RetentionDays = retentionDays;
+                options.ExecutionInterval = executionInterval;
+            });
+            
+            // Register the log retention service
+            // Note: To use this, the host needs to support hosted services
+            // services.AddHostedService<SqlLogRetentionService>();
+            
+            return services;
+        }
+        
+        /// <summary>
+        /// Adds all SQL-related services to the service collection
         /// </summary>
         /// <param name="services">The IServiceCollection to add the services to</param>
         /// <param name="tenantColumnMappings">Dictionary of table names to tenant column names</param>
         /// <returns>The same service collection for method chaining</returns>
-        public static IServiceCollection AddAllSqlServices(this IServiceCollection services, Dictionary<string, string>? tenantColumnMappings = null)
+        public static IServiceCollection AddAllSqlServices(
+            this IServiceCollection services, 
+            Dictionary<string, string>? tenantColumnMappings = null)
         {
-            return services
-                .AddSqlParameterValidation()
-                .AddSqlInjectionPrevention()
-                .AddSqlValidationRulesEngine()
-                .AddQueryOptimization()
-                .AddTenantScoping(tenantColumnMappings);
+            services.AddSqlParameterValidation()
+                   .AddSqlInjectionPrevention()
+                   .AddSqlValidationRulesEngine()
+                   .AddQueryOptimization()
+                   .AddSqlLogging()
+                   .AddSqlLogRetention()
+                   .AddTenantScoping(tenantColumnMappings);
+            
+            return services;
         }
     }
 } 
