@@ -324,13 +324,8 @@ namespace SmartInsight.AI.Intent
             return removedFromCache || removedFromStorage;
         }
         
-        /// <summary>
-        /// Gets an existing conversation context
-        /// </summary>
-        /// <param name="conversationId">The conversation ID</param>
-        /// <returns>The conversation context</returns>
-        /// <exception cref="InvalidOperationException">Thrown when the context does not exist</exception>
-        private async Task<ConversationContext> GetContextAsync(string conversationId)
+        /// <inheritdoc />
+        public async Task<ConversationContext> GetContextAsync(string conversationId)
         {
             // Check in-memory cache first
             if (_contextCache.TryGetValue(conversationId, out var cachedContext))
