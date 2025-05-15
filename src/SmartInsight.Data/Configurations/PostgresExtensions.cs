@@ -32,7 +32,7 @@ public static class PostgresExtensions
     /// <returns>Index builder for further configuration</returns>
     public static IndexBuilder HasCaseInsensitiveIndex<T>(
         this EntityTypeBuilder<T> builder, 
-        Expression<Func<T, string>> propertyExpression) 
+        Expression<Func<T, string?>> propertyExpression) 
         where T : class
     {
         string propertyName = GetPropertyName(propertyExpression);
@@ -63,8 +63,8 @@ public static class PostgresExtensions
     /// </summary>
     /// <param name="builder">The property builder</param>
     /// <returns>The property builder for chaining</returns>
-    public static PropertyBuilder<string> UseJsonbColumn<T>(
-        this PropertyBuilder<string> builder) 
+    public static PropertyBuilder<string?> UseJsonbColumn<T>(
+        this PropertyBuilder<string?> builder) 
         where T : class
     {
         return builder
