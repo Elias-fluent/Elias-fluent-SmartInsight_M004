@@ -1,25 +1,10 @@
-/*
- * This implementation has been moved to the SmartInsight.API project
- * in the Security folder (HttpContextTenantAccessor.cs).
- * 
- * This is because the implementation requires ASP.NET Core HTTP dependencies
- * which should not be included in the Core project.
- * 
- * Use DefaultTenantAccessor instead for non-HTTP contexts.
- */
-
-/*
- * NOTE: This file must be moved to a web project that has ASP.NET Core HTTP dependencies.
- * It is kept here as documentation of the implementation.
- * Use DefaultTenantAccessor instead for non-HTTP contexts.
- *
 using Microsoft.AspNetCore.Http;
 using SmartInsight.Core.Interfaces;
+using SmartInsight.Core.Security;
 using System;
-using System.Linq;
 using System.Security.Claims;
 
-namespace SmartInsight.Core.Security;
+namespace SmartInsight.API.Security;
 
 /// <summary>
 /// Implementation of ITenantAccessor that retrieves tenant information from the HTTP context and claims
@@ -90,5 +75,4 @@ public class HttpContextTenantAccessor : ITenantAccessor
         // Check if the user has the Admin role as a fallback
         return _httpContextAccessor.HttpContext?.User?.IsInRole("Admin") == true;
     }
-}
-*/ 
+} 
