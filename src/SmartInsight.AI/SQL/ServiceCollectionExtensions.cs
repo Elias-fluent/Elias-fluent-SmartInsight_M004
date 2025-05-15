@@ -64,6 +64,24 @@ namespace SmartInsight.AI.SQL
         }
         
         /// <summary>
+        /// Adds SQL validation rules engine to the service collection
+        /// </summary>
+        /// <param name="services">The IServiceCollection to add the services to</param>
+        /// <returns>The same service collection for method chaining</returns>
+        public static IServiceCollection AddSqlValidationRulesEngine(this IServiceCollection services)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            // Register SQL validation rules engine
+            services.AddSingleton<ISqlValidationRulesEngine, SqlValidationRulesEngine>();
+            
+            return services;
+        }
+        
+        /// <summary>
         /// Adds tenant scoping services to the service collection
         /// </summary>
         /// <param name="services">The IServiceCollection to add the services to</param>
@@ -97,6 +115,7 @@ namespace SmartInsight.AI.SQL
             return services
                 .AddSqlParameterValidation()
                 .AddSqlInjectionPrevention()
+                .AddSqlValidationRulesEngine()
                 .AddTenantScoping(tenantColumnMappings);
         }
     }
