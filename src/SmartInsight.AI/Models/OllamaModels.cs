@@ -12,79 +12,61 @@ namespace SmartInsight.AI.Models
     public abstract class OllamaRequestBase
     {
         /// <summary>
-        /// The model to use for the request
+        /// Additional parameters to control generation.
         /// </summary>
-        [JsonPropertyName("model")]
-        public string Model { get; set; } = null!;
+        [JsonPropertyName("options")]
+        public Dictionary<string, object>? Options { get; set; }
     }
 
     /// <summary>
-    /// Request to generate completions
+    /// Request to generate a completion from a prompt.
     /// </summary>
     public class OllamaCompletionRequest : OllamaRequestBase
     {
         /// <summary>
-        /// The prompt to generate a completion for
+        /// The model to use for the request.
+        /// </summary>
+        [JsonPropertyName("model")]
+        public string Model { get; set; } = null!;
+
+        /// <summary>
+        /// The prompt to generate a completion for.
         /// </summary>
         [JsonPropertyName("prompt")]
         public string Prompt { get; set; } = null!;
-
-        /// <summary>
-        /// Whether to stream the response
-        /// </summary>
-        [JsonPropertyName("stream")]
-        public bool Stream { get; set; } = false;
-
-        /// <summary>
-        /// Additional parameters for the request
-        /// </summary>
-        /// <remarks>
-        /// This can include parameters like temperature, top_p, top_k, etc.
-        /// </remarks>
-        [JsonExtensionData]
-        public Dictionary<string, object>? Options { get; set; }
     }
 
     /// <summary>
-    /// Request for chat completions
+    /// Request to generate a completion from a chat history.
     /// </summary>
     public class OllamaChatRequest : OllamaRequestBase
     {
         /// <summary>
-        /// The chat messages to generate a completion for
+        /// The model to use for the request.
+        /// </summary>
+        [JsonPropertyName("model")]
+        public string Model { get; set; } = null!;
+
+        /// <summary>
+        /// The messages to generate a completion from.
         /// </summary>
         [JsonPropertyName("messages")]
-        public List<OllamaChatMessage> Messages { get; set; } = new();
-
-        /// <summary>
-        /// Whether to stream the response
-        /// </summary>
-        [JsonPropertyName("stream")]
-        public bool Stream { get; set; } = false;
-
-        /// <summary>
-        /// Additional parameters for the request
-        /// </summary>
-        /// <remarks>
-        /// This can include parameters like temperature, top_p, top_k, etc.
-        /// </remarks>
-        [JsonExtensionData]
-        public Dictionary<string, object>? Options { get; set; }
+        public List<OllamaChatMessage> Messages { get; set; } = null!;
     }
 
     /// <summary>
-    /// A chat message in a chat completion request
+    /// A message in a chat conversation.
     /// </summary>
     public class OllamaChatMessage
     {
         /// <summary>
-        /// The role of the message sender (system, user, assistant)
+        /// The role of the message sender (system, user, assistant).
         /// </summary>
         [JsonPropertyName("role")]
         public string Role { get; set; } = null!;
 
         /// <summary>
-        /// The content of the message
+        /// The content of the message.
         /// </summary>
         [JsonPropertyName("content")]
         public string Content { get; set; } = null!;
@@ -144,6 +126,24 @@ namespace SmartInsight.AI.Models
         public string Name { get; set; } = null!;
     }
 
+    /// <summary>
+    /// Request to generate an embedding from text.
+    /// </summary>
+    public class OllamaEmbeddingRequest : OllamaRequestBase
+    {
+        /// <summary>
+        /// The model to use for the request.
+        /// </summary>
+        [JsonPropertyName("model")]
+        public string Model { get; set; } = null!;
+
+        /// <summary>
+        /// The text to generate an embedding for.
+        /// </summary>
+        [JsonPropertyName("prompt")]
+        public string Prompt { get; set; } = null!;
+    }
+
     #endregion
 
     #region Response Models
@@ -167,156 +167,204 @@ namespace SmartInsight.AI.Models
     }
 
     /// <summary>
-    /// Response from completion endpoint
+    /// Response from a completion request.
     /// </summary>
     public class OllamaCompletionResponse : OllamaResponseBase
     {
         /// <summary>
-        /// The generated completion
+        /// The generated completion text.
         /// </summary>
         [JsonPropertyName("response")]
         public string Response { get; set; } = null!;
 
         /// <summary>
-        /// Whether this is a final response in a stream
+        /// Whether the completion is complete or more tokens will be generated.
         /// </summary>
         [JsonPropertyName("done")]
         public bool Done { get; set; }
 
         /// <summary>
-        /// The prompt that was provided
+        /// The number of context tokens used.
         /// </summary>
-        [JsonPropertyName("prompt")]
-        public string? Prompt { get; set; }
+        [JsonPropertyName("context")]
+        public List<int>? Context { get; set; }
 
         /// <summary>
-        /// Total processing time in nanoseconds
+        /// The number of tokens in the prompt.
         /// </summary>
-        [JsonPropertyName("total_duration")]
-        public long? TotalDuration { get; set; }
+        [JsonPropertyName("prompt_eval_count")]
+        public int PromptEvalCount { get; set; }
 
         /// <summary>
-        /// Duration for loading the model in nanoseconds
-        /// </summary>
-        [JsonPropertyName("load_duration")]
-        public long? LoadDuration { get; set; }
-
-        /// <summary>
-        /// Duration for prompt evaluation in nanoseconds
-        /// </summary>
-        [JsonPropertyName("prompt_eval_duration")]
-        public long? PromptEvalDuration { get; set; }
-
-        /// <summary>
-        /// Tokens processed per second
+        /// The number of tokens in the completion.
         /// </summary>
         [JsonPropertyName("eval_count")]
-        public int? EvalCount { get; set; }
+        public int EvalCount { get; set; }
 
         /// <summary>
-        /// Tokens per second
+        /// The time spent evaluating the prompt in nanoseconds.
+        /// </summary>
+        [JsonPropertyName("prompt_eval_duration")]
+        public long PromptEvalDuration { get; set; }
+
+        /// <summary>
+        /// The time spent generating the completion in nanoseconds.
         /// </summary>
         [JsonPropertyName("eval_duration")]
-        public long? EvalDuration { get; set; }
+        public long EvalDuration { get; set; }
+
+        /// <summary>
+        /// The total duration of the completion in nanoseconds.
+        /// </summary>
+        [JsonPropertyName("total_duration")]
+        public long TotalDuration { get; set; }
     }
 
     /// <summary>
-    /// Response from chat completion endpoint
+    /// Response from a chat completion request.
     /// </summary>
     public class OllamaChatResponse : OllamaResponseBase
     {
         /// <summary>
-        /// The message containing the generated response
+        /// The message containing the assistant's response.
         /// </summary>
         [JsonPropertyName("message")]
         public OllamaChatMessage Message { get; set; } = null!;
 
         /// <summary>
-        /// Whether this is a final response in a stream
+        /// Whether the completion is complete or more tokens will be generated.
         /// </summary>
         [JsonPropertyName("done")]
         public bool Done { get; set; }
 
         /// <summary>
-        /// Total processing time in nanoseconds
+        /// The number of tokens in the prompt.
         /// </summary>
-        [JsonPropertyName("total_duration")]
-        public long? TotalDuration { get; set; }
+        [JsonPropertyName("prompt_eval_count")]
+        public int PromptEvalCount { get; set; }
 
         /// <summary>
-        /// Duration for loading the model in nanoseconds
-        /// </summary>
-        [JsonPropertyName("load_duration")]
-        public long? LoadDuration { get; set; }
-
-        /// <summary>
-        /// Duration for prompt evaluation in nanoseconds
-        /// </summary>
-        [JsonPropertyName("prompt_eval_duration")]
-        public long? PromptEvalDuration { get; set; }
-
-        /// <summary>
-        /// Tokens processed per second
+        /// The number of tokens in the completion.
         /// </summary>
         [JsonPropertyName("eval_count")]
-        public int? EvalCount { get; set; }
+        public int EvalCount { get; set; }
 
         /// <summary>
-        /// Tokens per second
+        /// The time spent evaluating the prompt in nanoseconds.
+        /// </summary>
+        [JsonPropertyName("prompt_eval_duration")]
+        public long PromptEvalDuration { get; set; }
+
+        /// <summary>
+        /// The time spent generating the completion in nanoseconds.
         /// </summary>
         [JsonPropertyName("eval_duration")]
-        public long? EvalDuration { get; set; }
+        public long EvalDuration { get; set; }
+
+        /// <summary>
+        /// The total duration of the completion in nanoseconds.
+        /// </summary>
+        [JsonPropertyName("total_duration")]
+        public long TotalDuration { get; set; }
     }
 
     /// <summary>
-    /// Response from model list endpoint
+    /// Response from a request to list models.
     /// </summary>
     public class OllamaModelListResponse
     {
         /// <summary>
-        /// The list of models
+        /// The list of available models.
         /// </summary>
         [JsonPropertyName("models")]
-        public List<OllamaModelInfo> Models { get; set; } = new();
+        public List<OllamaModelInfo>? Models { get; set; }
     }
 
     /// <summary>
-    /// Information about a model
+    /// Information about a model.
     /// </summary>
     public class OllamaModelInfo
     {
         /// <summary>
-        /// The name of the model
+        /// The name of the model.
         /// </summary>
         [JsonPropertyName("name")]
         public string Name { get; set; } = null!;
 
         /// <summary>
-        /// The model's size in bytes
+        /// The size of the model in bytes.
         /// </summary>
         [JsonPropertyName("size")]
         public long Size { get; set; }
 
         /// <summary>
-        /// When the model was modified
+        /// The model family.
         /// </summary>
-        [JsonPropertyName("modified_at")]
-        public string ModifiedAt { get; set; } = null!;
+        [JsonPropertyName("family")]
+        public string? Family { get; set; }
 
         /// <summary>
-        /// Digest of the model
-        /// </summary>
-        [JsonPropertyName("digest")]
-        public string? Digest { get; set; }
-
-        /// <summary>
-        /// Parameter count
+        /// The parameter count of the model.
         /// </summary>
         [JsonPropertyName("parameter_size")]
         public string? ParameterSize { get; set; }
 
         /// <summary>
-        /// Quantization level
+        /// The quantization level of the model.
+        /// </summary>
+        [JsonPropertyName("quantization_level")]
+        public string? QuantizationLevel { get; set; }
+
+        /// <summary>
+        /// When the model was last modified.
+        /// </summary>
+        [JsonPropertyName("modified_at")]
+        public string? ModifiedAt { get; set; }
+
+        /// <summary>
+        /// The format of the model (e.g., gguf).
+        /// </summary>
+        [JsonPropertyName("format")]
+        public string? Format { get; set; }
+
+        /// <summary>
+        /// The specifics of a model.
+        /// </summary>
+        [JsonPropertyName("details")]
+        public OllamaModelDetails? Details { get; set; }
+    }
+
+    /// <summary>
+    /// Details about a model.
+    /// </summary>
+    public class OllamaModelDetails
+    {
+        /// <summary>
+        /// The name of the model's parent.
+        /// </summary>
+        [JsonPropertyName("parent_model")]
+        public string? ParentModel { get; set; }
+
+        /// <summary>
+        /// The format of the model.
+        /// </summary>
+        [JsonPropertyName("format")]
+        public string? Format { get; set; }
+
+        /// <summary>
+        /// The family of the model.
+        /// </summary>
+        [JsonPropertyName("family")]
+        public string? Family { get; set; }
+
+        /// <summary>
+        /// The number of parameters in the model.
+        /// </summary>
+        [JsonPropertyName("parameter_size")]
+        public string? ParameterSize { get; set; }
+
+        /// <summary>
+        /// The quantization level of the model.
         /// </summary>
         [JsonPropertyName("quantization_level")]
         public string? QuantizationLevel { get; set; }
@@ -328,22 +376,64 @@ namespace SmartInsight.AI.Models
     public class OllamaModelStatusResponse
     {
         /// <summary>
-        /// Status message
+        /// The status of the operation.
         /// </summary>
         [JsonPropertyName("status")]
-        public string Status { get; set; } = null!;
+        public string? Status { get; set; }
 
         /// <summary>
-        /// Progress as a percentage (0-100)
+        /// The current progress in bytes.
         /// </summary>
-        [JsonPropertyName("progress")]
-        public double? Progress { get; set; }
+        [JsonPropertyName("digest")]
+        public string? Digest { get; set; }
 
         /// <summary>
-        /// Whether the operation is complete
+        /// The total size in bytes.
+        /// </summary>
+        [JsonPropertyName("total")]
+        public long Total { get; set; }
+
+        /// <summary>
+        /// The current download or build progress.
         /// </summary>
         [JsonPropertyName("completed")]
-        public bool? Completed { get; set; }
+        public long Completed { get; set; }
+    }
+
+    /// <summary>
+    /// Response from an embedding request.
+    /// </summary>
+    public class OllamaEmbeddingResponse
+    {
+        /// <summary>
+        /// The model used for the embedding.
+        /// </summary>
+        [JsonPropertyName("model")]
+        public string Model { get; set; } = null!;
+
+        /// <summary>
+        /// The embedding vector.
+        /// </summary>
+        [JsonPropertyName("embedding")]
+        public List<float> Embedding { get; set; } = null!;
+        
+        /// <summary>
+        /// The number of tokens in the prompt.
+        /// </summary>
+        [JsonPropertyName("prompt_eval_count")]
+        public int PromptEvalCount { get; set; }
+        
+        /// <summary>
+        /// The time spent evaluating the prompt in nanoseconds.
+        /// </summary>
+        [JsonPropertyName("eval_duration")]
+        public long EvalDuration { get; set; }
+        
+        /// <summary>
+        /// The total duration of generating the embedding in nanoseconds.
+        /// </summary>
+        [JsonPropertyName("total_duration")]
+        public long TotalDuration { get; set; }
     }
 
     #endregion

@@ -109,4 +109,61 @@ The CI/CD pipeline is continuously improved through:
 1. Regular review of build times and optimization where necessary
 2. Updates to security scanning tools and libraries
 3. Expansion of test coverage
-4. Automation of manual processes 
+4. Automation of manual processes
+
+# CI/CD Pipeline Configuration
+
+This document provides instructions for configuring the CI/CD pipeline for the SmartInsight project.
+
+## Required Secrets
+
+The following secrets need to be configured in your GitHub repository:
+
+### GitHub Secrets
+
+1. **SONAR_TOKEN**
+   - Go to [SonarCloud](https://sonarcloud.io/)
+   - Log in with your GitHub account
+   - Navigate to My Account > Security
+   - Generate a new token with the necessary permissions
+   - Add this token as a repository secret named `SONAR_TOKEN`
+
+2. **CODECOV_TOKEN**
+   - Go to [Codecov](https://codecov.io/)
+   - Log in with your GitHub account
+   - Find your project and navigate to Settings
+   - Copy the upload token
+   - Add this token as a repository secret named `CODECOV_TOKEN`
+
+3. **Deployment Secrets** (for production/development environments)
+   - `DEV_SSH_PRIVATE_KEY` - SSH private key for development server
+   - `DEV_SERVER_USER` - Username for development server
+   - `DEV_SERVER_HOST` - Hostname for development server
+   - `PROD_SSH_PRIVATE_KEY` - SSH private key for production server
+   - `PROD_SERVER_USER` - Username for production server
+   - `PROD_SERVER_HOST` - Hostname for production server
+
+## SonarCloud Configuration
+
+1. Create a new project in SonarCloud
+2. Set the organization to `elias-fluent`
+3. Set the project key to `SmartInsight`
+4. The GitHub Actions workflow is configured to automatically run SonarCloud scans
+
+## Pipeline Overview
+
+The CI/CD pipeline includes the following jobs:
+
+1. **Build and Test** - Builds the solution and runs tests
+2. **Code Analysis** - Runs SonarCloud code analysis
+3. **Security Scan** - Performs dependency scanning for vulnerabilities
+4. **Docker Build** - Builds and pushes Docker images
+5. **Deploy to Development** - Deploys to the development environment
+6. **Deploy to Production** - Deploys to the production environment (requires manual approval)
+
+## Troubleshooting
+
+If the SonarCloud scan fails with "Failed to query JRE metadata", ensure that:
+1. The SONAR_TOKEN secret is correctly configured in your GitHub repository
+2. The organization and project key in the workflow file match your SonarCloud configuration
+3. The SonarCloud project is properly set up with the correct visibility settings 

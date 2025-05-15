@@ -1,6 +1,6 @@
 # Task ID: 4
 # Title: Set Up PostgreSQL Docker Container
-# Status: pending
+# Status: done
 # Dependencies: 1
 # Priority: high
 # Description: Configure PostgreSQL Docker container with Row-Level Security (RLS) enabled.
