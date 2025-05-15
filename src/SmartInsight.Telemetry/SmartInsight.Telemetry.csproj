@@ -1,7 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\SmartInsight.Core\SmartInsight.Core.csproj" />
+    <ProjectReference Include="..\SmartInsight.AI\SmartInsight.AI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.5" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.5" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -10,4 +18,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-</Project>
+</Project> 
