@@ -1,6 +1,6 @@
 # Task ID: 9
 # Title: Implement Entity Framework Core DbContext
-# Status: pending
+# Status: done
 # Dependencies: 3, 4
 # Priority: high
 # Description: Create the main DbContext for the application with entity configurations.
@@ -20,49 +20,49 @@ Use Entity Framework Core 8 with PostgreSQL provider.
 Create unit tests with in-memory database. Test entity configurations and relationships. Verify tenant filtering works correctly.
 
 # Subtasks:
-## 1. Create DbContext class with entity sets [pending]
+## 1. Create DbContext class with entity sets [done]
 ### Dependencies: None
 ### Description: Create the main DbContext class that inherits from EF Core's DbContext and define all required DbSet properties for entities
 ### Details:
 Implement a class that inherits from DbContext, add DbSet<T> properties for each entity in the domain model, and implement a constructor that accepts DbContextOptions. Include any required using statements and namespace declarations.
 
-## 2. Implement OnModelCreating method [pending]
+## 2. Implement OnModelCreating method [done]
 ### Dependencies: 9.1
 ### Description: Override the OnModelCreating method to apply entity configurations
 ### Details:
 Override the OnModelCreating method in the DbContext class to apply entity configurations. Set up the initial structure for applying entity type configurations and global query filters.
 
-## 3. Create entity configuration classes [pending]
+## 3. Create entity configuration classes [done]
 ### Dependencies: 9.2
 ### Description: Implement IEntityTypeConfiguration<T> classes for each entity to configure their properties and relationships
 ### Details:
 Create separate configuration classes for each entity that implement IEntityTypeConfiguration<T>. Configure primary keys, foreign keys, indexes, and relationships using Fluent API. Organize these in a dedicated 'Configurations' folder.
 
-## 4. Configure PostgreSQL-specific features [pending]
+## 4. Configure PostgreSQL-specific features [done]
 ### Dependencies: 9.3
 ### Description: Add PostgreSQL-specific configurations like column types, indexes, and extensions
 ### Details:
 Configure PostgreSQL-specific features such as UUID generation, JSON column types, full-text search capabilities, and any required extensions. Use the HasPostgresExtension method where needed.
 
-## 5. Implement tenant filtering for multi-tenancy [pending]
+## 5. Implement tenant filtering for multi-tenancy [done]
 ### Dependencies: 9.2
 ### Description: Add global query filters for tenant-based data segregation
 ### Details:
 Implement global query filters in OnModelCreating to filter entities by tenant ID. Create a mechanism to access the current tenant ID from the context, possibly using a service or ambient context pattern.
 
-## 6. Implement Row-Level Security [pending]
+## 6. Implement Row-Level Security [done]
 ### Dependencies: 9.4, 9.5
 ### Description: Configure PostgreSQL Row-Level Security policies for tenant isolation at the database level
 ### Details:
 Implement methods to create and apply Row-Level Security policies in PostgreSQL. This may include creating migration methods or raw SQL execution to set up RLS policies that enforce tenant isolation at the database level.
 
-## 7. Create DbContextFactory [pending]
+## 7. Create DbContextFactory [done]
 ### Dependencies: 9.1
 ### Description: Implement a factory class for creating DbContext instances with the correct connection string
 ### Details:
 Create an implementation of IDesignTimeDbContextFactory<T> for design-time tools and a runtime factory for creating properly configured DbContext instances. Handle connection string resolution from configuration.
 
-## 8. Set up connection string handling [pending]
+## 8. Set up connection string handling [done]
 ### Dependencies: 9.7
 ### Description: Implement secure connection string management with tenant-specific connections if needed
 ### Details:

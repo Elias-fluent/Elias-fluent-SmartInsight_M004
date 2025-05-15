@@ -1,6 +1,6 @@
 # Task ID: 11
 # Title: Implement ASP.NET Identity with TenantId Extensions
-# Status: pending
+# Status: done
 # Dependencies: 9, 10
 # Priority: high
 # Description: Extend ASP.NET Identity to support multi-tenancy with TenantId extensions.
@@ -18,49 +18,49 @@ Ensure all identity operations respect tenant boundaries.
 Create unit tests for tenant-specific user operations. Test cross-tenant access attempts. Verify tenant isolation in user management.
 
 # Subtasks:
-## 1. Create Custom IdentityUser with TenantId [pending]
+## 1. Create Custom IdentityUser with TenantId [done]
 ### Dependencies: None
 ### Description: Extend the base IdentityUser class to include a TenantId property for multi-tenant support
 ### Details:
 Create a new ApplicationUser class that inherits from IdentityUser and adds a TenantId property. Update the DbContext to use this custom user class. Ensure the TenantId is properly mapped in the database schema.
 
-## 2. Implement Custom UserStore with Tenant Filtering [pending]
+## 2. Implement Custom UserStore with Tenant Filtering [done]
 ### Dependencies: 11.1
 ### Description: Create a tenant-aware UserStore that filters user operations by TenantId
 ### Details:
 Extend the UserStore<ApplicationUser> class to override key methods like FindByIdAsync, FindByNameAsync, etc. to include TenantId in queries. Ensure all CRUD operations respect tenant boundaries by adding TenantId filters.
 
-## 3. Extend UserManager for Tenant Operations [pending]
+## 3. Extend UserManager for Tenant Operations [done]
 ### Dependencies: 11.1, 11.2
 ### Description: Customize UserManager to handle tenant-specific user management operations
 ### Details:
 Create a custom ApplicationUserManager that extends UserManager<ApplicationUser> with methods for tenant-specific operations. Add validation to ensure users can only be created, updated, or deleted within their tenant context.
 
-## 4. Extend SignInManager for Tenant Validation [pending]
+## 4. Extend SignInManager for Tenant Validation [done]
 ### Dependencies: 11.1, 11.3
 ### Description: Modify SignInManager to validate tenant context during authentication
 ### Details:
 Create a custom ApplicationSignInManager that extends SignInManager<ApplicationUser> to validate tenant context during sign-in. Implement logic to prevent users from accessing resources outside their tenant.
 
-## 5. Implement Tenant-Aware Role Management [pending]
+## 5. Implement Tenant-Aware Role Management [done]
 ### Dependencies: 11.1, 11.3
 ### Description: Extend role management to support tenant-specific roles
 ### Details:
 Create a custom ApplicationRole class with TenantId property. Implement a tenant-aware RoleStore and RoleManager to ensure roles are scoped to tenants. Update role assignment logic to respect tenant boundaries.
 
-## 6. Create Tenant-Specific Claim Types [pending]
+## 6. Create Tenant-Specific Claim Types [done]
 ### Dependencies: 11.3, 11.5
 ### Description: Define and implement tenant-specific claim types for RBAC
 ### Details:
 Define a set of tenant-specific claim types for RBAC. Implement helpers to generate and validate these claims. Ensure claims include tenant context to prevent cross-tenant authorization issues.
 
-## 7. Implement Tenant Context Middleware [pending]
+## 7. Implement Tenant Context Middleware [done]
 ### Dependencies: 11.3, 11.4
 ### Description: Create middleware to establish tenant context for each request
 ### Details:
 Implement middleware that determines the current tenant context from the request (e.g., subdomain, header, or claim) and makes it available throughout the request pipeline. Ensure this context is used by the identity components.
 
-## 8. Create Integration Tests for Tenant-Aware Identity [pending]
+## 8. Create Integration Tests for Tenant-Aware Identity [done]
 ### Dependencies: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7
 ### Description: Develop comprehensive tests for the tenant-aware identity system
 ### Details:
