@@ -27,6 +27,19 @@ namespace SmartInsight.AI.SQL
         }
         
         /// <summary>
+        /// Adds SQL parameter extraction services to the service collection
+        /// </summary>
+        /// <param name="services">The IServiceCollection to add the services to</param>
+        /// <returns>The same service collection for method chaining</returns>
+        public static IServiceCollection AddSqlParameterExtraction(this IServiceCollection services)
+        {
+            // Register the parameter extractor
+            services.AddSingleton<IParameterExtractor, ParameterExtractor>();
+            
+            return services;
+        }
+        
+        /// <summary>
         /// Adds all SQL template system services to the service collection
         /// </summary>
         /// <param name="services">The IServiceCollection to add the services to</param>
@@ -35,6 +48,9 @@ namespace SmartInsight.AI.SQL
         {
             // Add parameter validation
             services.AddSqlParameterValidation();
+            
+            // Add parameter extraction
+            services.AddSqlParameterExtraction();
             
             // Add other SQL template system services here as they are implemented
             // For example: template repository, template selector, SQL generator, etc.
