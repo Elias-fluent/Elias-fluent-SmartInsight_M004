@@ -26,7 +26,7 @@ Create unit tests with sample queries. Verify intent detection accuracy. Test re
 ### Details:
 Design and implement the IntentDetector class with methods for intent recognition, hierarchical classification structure, and integration with the OllamaClient. Include support for intent confidence thresholds and hierarchical intent relationships.
 
-## 2. Design Intent Classification Model with Vector Embedding Support [pending]
+## 2. Design Intent Classification Model with Vector Embedding Support [done]
 ### Dependencies: 26.1
 ### Description: Develop the intent classification model that leverages vector embeddings for semantic understanding of user queries.
 ### Details:
@@ -65,7 +65,7 @@ The remaining implementation work will focus on:
 This context management system will provide the foundation for maintaining conversation state across multiple turns, which is essential for the chain-of-thought reasoning pipeline that was previously completed. It will also support the upcoming confidence scoring system for ambiguity handling by providing rich contextual information.
 </info added on 2025-05-15T02:05:29.023Z>
 
-## 5. Create Confidence Scoring System for Ambiguity Handling [pending]
+## 5. Create Confidence Scoring System for Ambiguity Handling [done]
 ### Dependencies: 26.2
 ### Description: Develop a confidence scoring mechanism to quantify certainty in intent classifications and handle ambiguous queries.
 ### Details:
