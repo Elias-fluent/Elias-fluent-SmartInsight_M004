@@ -38,13 +38,13 @@ Create parsers to identify parameters in natural language. Implement type infere
 ### Details:
 Implement type checking, range validation, format validation, and sanitization. Create custom validators for different parameter types. Design validation error reporting system.
 
-## 4. Develop Tenant Scoping Enforcement [pending]
+## 4. Develop Tenant Scoping Enforcement [done]
 ### Dependencies: 27.1
 ### Description: Implement mechanisms to enforce tenant isolation in all generated SQL queries.
 ### Details:
 Create tenant context management. Implement automatic tenant filtering for all queries. Design override protection mechanisms. Test multi-tenant query isolation. Document tenant scoping patterns.
 
-## 5. Implement SQL Injection Prevention [pending]
+## 5. Implement SQL Injection Prevention [in-progress]
 ### Dependencies: 27.2, 27.3
 ### Description: Create robust defenses against SQL injection in the generated queries.
 ### Details:
