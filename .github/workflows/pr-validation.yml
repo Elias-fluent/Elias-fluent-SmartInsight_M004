@@ -62,34 +62,11 @@ jobs:
         run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore
       
       - name: Test
-        run: dotnet test ${{ env.SOLUTION_FILE }} --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
-      
-      # Temporarily comment out for efficiency
-      # - name: Upload coverage reports to Codecov
-      #   uses: codecov/codecov-action@v4
-      #   with:
-      #     directory: ./coverage
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     fail_ci_if_error: false
-      #     verbose: true
-      # 
-      # - name: Check test coverage
-      #   uses: danielpalme/ReportGenerator-GitHub-Action@5.1.12
-      #   with:
-      #     reports: './coverage/**/coverage.cobertura.xml'
-      #     targetdir: 'coveragereport'
-      #     reporttypes: 'HtmlInline;Cobertura'
-      #     verbosity: 'Info'
-      #     tag: '${{ github.run_number }}_${{ github.run_id }}'
-      #     customSettings: 'settings.minimumcoverage=80'
-      # 
-      # - name: Upload coverage reports
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: coverage-report
-      #     path: coveragereport
-      
-  # Temporarily comment out for efficiency
+        run: dotnet test ${{ env.SOLUTION_FILE }} --no-build --verbosity normal
+
+  # check-code-quality job is temporarily commented out
+  # Will be restored when needed
+  
   # check-code-quality:
   #   name: Check Code Quality
   #   runs-on: ubuntu-latest

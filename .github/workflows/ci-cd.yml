@@ -38,18 +38,11 @@ jobs:
         run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
       
       - name: Test
-        run: dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
-      
-      # Temporarily comment out for efficiency
-      # - name: Upload coverage reports to Codecov
-      #   uses: codecov/codecov-action@v4
-      #   with:
-      #     directory: ./coverage
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     fail_ci_if_error: false
-      #     verbose: true
+        run: dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration Release --verbosity normal
 
-  # Temporarily comment out for efficiency
+  # All other jobs are temporarily commented out
+  # Will be restored when needed
+
   # code-analysis:
   #   name: Code Analysis
   #   runs-on: ubuntu-latest
