@@ -113,7 +113,7 @@
         3,
         4
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -121,7 +121,7 @@
           "description": "Create the main DbContext class that inherits from EF Core's DbContext and define all required DbSet properties for entities",
           "dependencies": [],
           "details": "Implement a class that inherits from DbContext, add DbSet<T> properties for each entity in the domain model, and implement a constructor that accepts DbContextOptions. Include any required using statements and namespace declarations.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -131,7 +131,7 @@
             1
           ],
           "details": "Override the OnModelCreating method in the DbContext class to apply entity configurations. Set up the initial structure for applying entity type configurations and global query filters.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -141,7 +141,7 @@
             2
           ],
           "details": "Create separate configuration classes for each entity that implement IEntityTypeConfiguration<T>. Configure primary keys, foreign keys, indexes, and relationships using Fluent API. Organize these in a dedicated 'Configurations' folder.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -151,7 +151,7 @@
             3
           ],
           "details": "Configure PostgreSQL-specific features such as UUID generation, JSON column types, full-text search capabilities, and any required extensions. Use the HasPostgresExtension method where needed.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -161,7 +161,7 @@
             2
           ],
           "details": "Implement global query filters in OnModelCreating to filter entities by tenant ID. Create a mechanism to access the current tenant ID from the context, possibly using a service or ambient context pattern.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -172,7 +172,7 @@
             5
           ],
           "details": "Implement methods to create and apply Row-Level Security policies in PostgreSQL. This may include creating migration methods or raw SQL execution to set up RLS policies that enforce tenant isolation at the database level.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 7,
@@ -182,7 +182,7 @@
             1
           ],
           "details": "Create an implementation of IDesignTimeDbContextFactory<T> for design-time tools and a runtime factory for creating properly configured DbContext instances. Handle connection string resolution from configuration.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 8,
@@ -192,7 +192,7 @@
             7
           ],
           "details": "Create a mechanism to securely store and retrieve connection strings, possibly with different connections per tenant. Implement connection string building that includes any required parameters like Application Name or connection pooling settings.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -220,7 +220,7 @@
         9,
         10
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -228,7 +228,7 @@
           "description": "Extend the base IdentityUser class to include a TenantId property for multi-tenant support",
           "dependencies": [],
           "details": "Create a new ApplicationUser class that inherits from IdentityUser and adds a TenantId property. Update the DbContext to use this custom user class. Ensure the TenantId is properly mapped in the database schema.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -238,7 +238,7 @@
             1
           ],
           "details": "Extend the UserStore<ApplicationUser> class to override key methods like FindByIdAsync, FindByNameAsync, etc. to include TenantId in queries. Ensure all CRUD operations respect tenant boundaries by adding TenantId filters.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -249,7 +249,7 @@
             2
           ],
           "details": "Create a custom ApplicationUserManager that extends UserManager<ApplicationUser> with methods for tenant-specific operations. Add validation to ensure users can only be created, updated, or deleted within their tenant context.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -260,7 +260,7 @@
             3
           ],
           "details": "Create a custom ApplicationSignInManager that extends SignInManager<ApplicationUser> to validate tenant context during sign-in. Implement logic to prevent users from accessing resources outside their tenant.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -271,7 +271,7 @@
             3
           ],
           "details": "Create a custom ApplicationRole class with TenantId property. Implement a tenant-aware RoleStore and RoleManager to ensure roles are scoped to tenants. Update role assignment logic to respect tenant boundaries.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -282,7 +282,7 @@
             5
           ],
           "details": "Define a set of tenant-specific claim types for RBAC. Implement helpers to generate and validate these claims. Ensure claims include tenant context to prevent cross-tenant authorization issues.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 7,
@@ -293,7 +293,7 @@
             4
           ],
           "details": "Implement middleware that determines the current tenant context from the request (e.g., subdomain, header, or claim) and makes it available throughout the request pipeline. Ensure this context is used by the identity components.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 8,
@@ -309,7 +309,7 @@
             7
           ],
           "details": "Create integration tests that verify tenant isolation in the identity system. Test scenarios like cross-tenant access attempts, tenant-specific role assignments, and proper tenant filtering in user queries. Ensure security boundaries are maintained.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -1595,7 +1595,7 @@
       "dependencies": [
         60
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -1976,7 +1976,7 @@
       "dependencies": [
         1
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {

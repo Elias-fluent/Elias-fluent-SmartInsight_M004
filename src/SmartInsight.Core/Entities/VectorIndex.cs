@@ -57,7 +57,7 @@ public class VectorIndex : BaseMultiTenantEntity
     /// <summary>
     /// When the index was created
     /// </summary>
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public new DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// When the index was last updated or rebuilt
