@@ -324,7 +324,7 @@
         9,
         10
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -353,7 +353,7 @@
         3,
         10
       ],
-      "status": "pending",
+      "status": "in-progress",
       "subtasks": [
         {
           "id": 1,
@@ -361,7 +361,7 @@
           "description": "Create the core interface definition with essential methods for data source connectivity",
           "dependencies": [],
           "details": "Define the IDataSourceConnector interface with methods for connection, validation, data extraction, and transformation. Include method signatures for Connect(), Validate(), Extract(), and Transform() with appropriate parameters and return types.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -371,7 +371,7 @@
             1
           ],
           "details": "Create configuration classes that will be used by connectors to store connection parameters, credentials, and other settings. Implement serialization/deserialization support and secure credential storage mechanisms.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -381,7 +381,7 @@
             1
           ],
           "details": "Define lifecycle events such as OnInitialize, OnConnect, OnExecute, OnDisconnect, and OnError. Create an event subscription mechanism allowing the system to monitor connector state changes and respond appropriately.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -392,7 +392,7 @@
             3
           ],
           "details": "Implement a connector registry that allows dynamic registration and discovery of connector implementations. Include methods for registering, unregistering, and querying available connectors.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -403,7 +403,7 @@
             4
           ],
           "details": "Design and implement a factory class that can create instances of specific connector implementations based on type or identifier. Include dependency injection support and configuration parameter handling.",
-          "status": "pending"
+          "status": "in-progress"
         },
         {
           "id": 6,

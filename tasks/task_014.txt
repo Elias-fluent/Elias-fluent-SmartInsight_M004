@@ -1,6 +1,6 @@
 # Task ID: 14
 # Title: Implement Data Source Connector Interface
-# Status: pending
+# Status: in-progress
 # Dependencies: 3, 10
 # Priority: high
 # Description: Create the base interface for all data source connectors.
@@ -22,31 +22,31 @@ Ensure interface supports all required connector types.
 Create unit tests with mock implementations. Verify factory correctly instantiates connectors. Test lifecycle events.
 
 # Subtasks:
-## 1. Define IDataSourceConnector Interface [pending]
+## 1. Define IDataSourceConnector Interface [done]
 ### Dependencies: None
 ### Description: Create the core interface definition with essential methods for data source connectivity
 ### Details:
 Define the IDataSourceConnector interface with methods for connection, validation, data extraction, and transformation. Include method signatures for Connect(), Validate(), Extract(), and Transform() with appropriate parameters and return types.
 
-## 2. Implement Connection Configuration Model [pending]
+## 2. Implement Connection Configuration Model [done]
 ### Dependencies: 14.1
 ### Description: Design data structures for connector configuration and credentials management
 ### Details:
 Create configuration classes that will be used by connectors to store connection parameters, credentials, and other settings. Implement serialization/deserialization support and secure credential storage mechanisms.
 
-## 3. Design Connector Lifecycle Events [pending]
+## 3. Design Connector Lifecycle Events [done]
 ### Dependencies: 14.1
 ### Description: Implement event system for connector initialization, execution, and termination
 ### Details:
 Define lifecycle events such as OnInitialize, OnConnect, OnExecute, OnDisconnect, and OnError. Create an event subscription mechanism allowing the system to monitor connector state changes and respond appropriately.
 
-## 4. Create Connector Registration System [pending]
+## 4. Create Connector Registration System [done]
 ### Dependencies: 14.1, 14.3
 ### Description: Build a registry for managing available connector implementations
 ### Details:
 Implement a connector registry that allows dynamic registration and discovery of connector implementations. Include methods for registering, unregistering, and querying available connectors.
 
-## 5. Implement Connector Factory [pending]
+## 5. Implement Connector Factory [in-progress]
 ### Dependencies: 14.1, 14.4
 ### Description: Create factory pattern implementation for instantiating connectors
 ### Details:
