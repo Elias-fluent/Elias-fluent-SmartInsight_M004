@@ -1,6 +1,6 @@
 # Task ID: 25
 # Title: Implement Ollama Client for LLM Integration
-# Status: pending
+# Status: done
 # Dependencies: 6
 # Priority: high
 # Description: Create client for Ollama to perform LLM inference.

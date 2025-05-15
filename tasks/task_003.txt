@@ -1,6 +1,6 @@
 # Task ID: 3
 # Title: Implement Core Project Base Types
-# Status: pending
+# Status: done
 # Dependencies: 1
 # Priority: high
 # Description: Create shared enums, constants, DTO definitions, and validation utilities in the Core project.
