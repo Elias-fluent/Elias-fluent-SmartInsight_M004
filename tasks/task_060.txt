@@ -1,6 +1,6 @@
 # Task ID: 60
 # Title: Set Up Unit Test Framework
-# Status: pending
+# Status: done
 # Dependencies: 1
 # Priority: high
 # Description: Configure unit test framework and create initial tests.
