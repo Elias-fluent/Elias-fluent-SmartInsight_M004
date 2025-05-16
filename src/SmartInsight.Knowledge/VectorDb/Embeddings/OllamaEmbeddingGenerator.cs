@@ -5,8 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SmartInsight.AI.Interfaces;
-using SmartInsight.AI.Models;
+using SmartInsight.Core.Interfaces;
+using SmartInsight.Core.Models;
 
 namespace SmartInsight.Knowledge.VectorDb.Embeddings
 {
@@ -250,14 +250,14 @@ namespace SmartInsight.Knowledge.VectorDb.Embeddings
                 return vector;
             }
             
-            // Normalize each component
-            var normalized = new float[vector.Length];
+            // Normalize
+            var normalizedVector = new float[vector.Length];
             for (int i = 0; i < vector.Length; i++)
             {
-                normalized[i] = vector[i] / magnitude;
+                normalizedVector[i] = vector[i] / magnitude;
             }
             
-            return normalized;
+            return normalizedVector;
         }
     }
 } 

@@ -136,16 +136,18 @@ namespace SmartInsight.Knowledge.VectorDb.Embeddings
                 _logger.LogInformation("Storing {EmbeddingCount} embeddings in collection {CollectionName}", 
                     embeddings.Count, collectionName);
                 
-                var vectorMap = new Dictionary<string, float[]>();
-                var payloadMap = new Dictionary<string, Dictionary<string, object>>();
+                var pointIds = new List<string>();
+                var vectors = new List<float[]>();
+                var payloads = new List<Dictionary<string, object>>();
                 
                 for (int i = 0; i < chunks.Count; i++)
                 {
                     // Create unique ID for each chunk
                     var pointId = $"{documentId}_{i}";
+                    pointIds.Add(pointId);
                     
                     // Add embedding vector
-                    vectorMap[pointId] = embeddings[i];
+                    vectors.Add(embeddings[i]);
                     
                     // Create payload with chunk text and metadata
                     var payload = new Dictionary<string, object>(chunks[i].Metadata)
@@ -160,24 +162,24 @@ namespace SmartInsight.Knowledge.VectorDb.Embeddings
                         payload["tenant_id"] = tenantId;
                     }
                     
-                    payloadMap[pointId] = payload;
+                    payloads.Add(payload);
                 }
                 
                 // Store in vector database
-                var insertedCount = await _qdrantClient.UpsertVectorsAsync(
+                var success = await _qdrantClient.UpsertPointsAsync(
                     collectionName, 
-                    vectorMap, 
-                    payloadMap, 
-                    tenantId, 
+                    pointIds, 
+                    vectors, 
+                    payloads, 
                     cancellationToken);
                 
-                if (insertedCount <= 0)
+                if (!success)
                 {
                     throw new InvalidOperationException($"Failed to store document chunks in vector database for document {documentId}");
                 }
                 
                 _logger.LogInformation("Successfully stored {ChunkCount} document chunks in vector database", 
-                    insertedCount);
+                    chunks.Count);
                 
                 return chunks.Count;
             }
@@ -200,6 +202,14 @@ namespace SmartInsight.Knowledge.VectorDb.Embeddings
         {
             try
             {
+                // Check if collection exists
+                var exists = await _qdrantClient.CollectionExistsAsync(collectionName, cancellationToken);
+                if (exists)
+                {
+                    _logger.LogDebug("Collection {CollectionName} already exists", collectionName);
+                    return;
+                }
+                
                 // Determine vector size from the model
                 var vectorSize = await _embeddingGenerator.GetEmbeddingDimensionAsync(modelName);
                 if (vectorSize <= 0)
@@ -207,20 +217,14 @@ namespace SmartInsight.Knowledge.VectorDb.Embeddings
                     throw new InvalidOperationException($"Invalid vector dimension {vectorSize} for model {modelName ?? _options.DefaultModel}");
                 }
                 
-                // Ensure the collection exists
-                var collectionCreated = await _qdrantClient.EnsureCollectionExistsAsync(
-                    collectionName, 
-                    vectorSize, 
-                    cancellationToken);
-                
-                if (collectionCreated)
+                _logger.LogInformation("Creating collection {CollectionName} with vector size {VectorSize}", 
+                    collectionName, vectorSize);
+                    
+                // Create the collection
+                var success = await _qdrantClient.CreateCollectionAsync(collectionName, vectorSize, cancellationToken);
+                if (!success)
                 {
-                    _logger.LogInformation("Created collection {CollectionName} with vector size {VectorSize}", 
-                        collectionName, vectorSize);
-                }
-                else
-                {
-                    _logger.LogDebug("Collection {CollectionName} already exists", collectionName);
+                    throw new InvalidOperationException($"Failed to create vector database collection {collectionName}");
                 }
             }
             catch (Exception ex)
@@ -256,32 +260,37 @@ namespace SmartInsight.Knowledge.VectorDb.Embeddings
                 var queryVector = await _embeddingGenerator.GenerateEmbeddingAsync(
                     queryText, modelName, tenantId, cancellationToken);
                 
-                // Perform vector search
+                // Perform vector search with default similarity threshold
                 var searchResults = await _qdrantClient.SearchAsync(
                     collectionName,
                     queryVector,
-                    limit,
                     tenantId,
-                    null,
-                    cancellationToken);
+                    limit,
+                    0.7f, // Default similarity threshold 
+                    cancellationToken: cancellationToken);
                 
-                // Map to document search results
-                return searchResults.Select(r => new DocumentSearchResult
-                {
-                    Id = r.Id,
-                    Score = r.Score,
-                    Text = r.Payload.TryGetValue("text", out var text) ? text?.ToString() : null,
-                    DocumentId = r.Payload.TryGetValue("document_id", out var docId) ? docId?.ToString() : null,
-                    DocumentTitle = r.Payload.TryGetValue("document_title", out var title) ? title?.ToString() : null,
-                    Section = r.Payload.TryGetValue("section", out var section) ? section?.ToString() : null,
-                    ChunkIndex = r.Payload.TryGetValue("chunk_index", out var index) && index is int idx ? idx : 
-                               (r.Payload.TryGetValue("chunk_index", out var strIdx) && int.TryParse(strIdx?.ToString(), out var parsedIdx) ? parsedIdx : 0),
-                    Payload = r.Payload
-                }).ToList();
+                // Map to document results
+                var results = searchResults
+                    .Select(r => new DocumentSearchResult
+                    {
+                        Id = r.Id,
+                        Score = r.Score,
+                        Text = r.Payload.ContainsKey("text") ? r.Payload["text"]?.ToString() : null,
+                        DocumentId = r.Payload.ContainsKey("document_id") ? r.Payload["document_id"]?.ToString() : null,
+                        DocumentTitle = r.Payload.ContainsKey("document_title") ? r.Payload["document_title"]?.ToString() : null,
+                        Section = r.Payload.ContainsKey("section") ? r.Payload["section"]?.ToString() : null,
+                        ChunkIndex = r.Payload.ContainsKey("chunk_index") && 
+                                     int.TryParse(r.Payload["chunk_index"]?.ToString(), out var chunkIndex) ? 
+                                     chunkIndex : 0,
+                        Payload = r.Payload
+                    })
+                    .ToList();
+                    
+                return results;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error searching for similar documents: {ErrorMessage}", ex.Message);
+                _logger.LogError(ex, "Error searching similar documents for query");
                 throw;
             }
         }
@@ -300,32 +309,29 @@ namespace SmartInsight.Knowledge.VectorDb.Embeddings
             string collectionName = null,
             CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(documentId))
-                throw new ArgumentException("Document ID must be provided", nameof(documentId));
-                
             collectionName ??= _options.DocumentCollection;
             
             try
             {
-                // Create filter for document deletion
-                var filterDocIds = new[] { documentId };
-                
-                // Delete all points for this document
-                var deletedCount = await _qdrantClient.DeletePointsAsync(
-                    collectionName,
-                    filterDocIds, 
+                _logger.LogInformation("Deleting document {DocumentId} from collection {CollectionName}", 
+                    documentId, collectionName);
+                    
+                // Delete all chunks for this document
+                var deleted = await _qdrantClient.DeleteDocumentAsync(
+                    collectionName, 
+                    documentId, 
                     tenantId, 
                     cancellationToken);
-                
-                _logger.LogInformation("Deleted {DeletedCount} document chunks for document {DocumentId}", 
-                    deletedCount, documentId);
-                
-                return deletedCount;
+                    
+                _logger.LogInformation("Deleted {ChunkCount} chunks for document {DocumentId}", 
+                    deleted, documentId);
+                    
+                return deleted;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting document {DocumentId}: {ErrorMessage}", 
-                    documentId, ex.Message);
+                _logger.LogError(ex, "Error deleting document {DocumentId} from collection {CollectionName}", 
+                    documentId, collectionName);
                 throw;
             }
         }

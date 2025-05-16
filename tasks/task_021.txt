@@ -1,6 +1,6 @@
 # Task ID: 21
 # Title: Implement Knowledge Graph Creation Pipeline
-# Status: in-progress
+# Status: done
 # Dependencies: 14, 15, 18
 # Priority: high
 # Description: Create pipeline for building knowledge graph from ingested data.
@@ -80,13 +80,13 @@ Define versioning strategy, temporal data model, and change tracking mechanisms.
 ### Details:
 Develop version control mechanisms, temporal indexing, and query interfaces for accessing historical knowledge states.
 
-## 11. Design Provenance Tracking Framework [pending]
+## 11. Design Provenance Tracking Framework [done]
 ### Dependencies: 21.6
 ### Description: Design the framework for tracking the provenance of knowledge graph elements.
 ### Details:
 Define provenance metadata schema, source document linking strategy, and confidence scoring approach.
 
-## 12. Implement Provenance Integration and Querying [pending]
+## 12. Implement Provenance Integration and Querying [done]
 ### Dependencies: 21.11, 21.10, 21.8
 ### Description: Implement the provenance tracking system and integrate with the knowledge graph pipeline.
 ### Details:

@@ -646,7 +646,7 @@
         15,
         18
       ],
-      "status": "in-progress",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -755,7 +755,7 @@
             6
           ],
           "details": "Define provenance metadata schema, source document linking strategy, and confidence scoring approach.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 12,
@@ -767,7 +767,7 @@
             8
           ],
           "details": "Develop provenance capture mechanisms, source document indexing, and provenance-aware query interfaces. Create visualization tools for provenance exploration.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -782,7 +782,7 @@
         6,
         21
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -796,7 +796,7 @@
         5,
         22
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
