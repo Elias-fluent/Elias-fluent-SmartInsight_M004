@@ -1,6 +1,6 @@
 # Task ID: 40
 # Title: Implement Authentication and Authorization in UI
-# Status: pending
+# Status: done
 # Dependencies: 34, 39
 # Priority: high
 # Description: Create authentication and authorization system in the UI.
