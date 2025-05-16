@@ -646,7 +646,7 @@
         15,
         18
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -654,7 +654,7 @@
           "description": "Define the overall architecture for entity extraction including NLP components, processing flow, and integration points.",
           "dependencies": [],
           "details": "Create architectural diagrams showing data flow, component interactions, and system boundaries. Include specifications for input/output formats, error handling, and scalability considerations.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -664,7 +664,7 @@
             1
           ],
           "details": "Select and implement appropriate NLP libraries/models for entity extraction. Include custom entity types relevant to the domain. Ensure proper text preprocessing and post-processing for accuracy.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -674,7 +674,7 @@
             2
           ],
           "details": "Implement algorithms for entity resolution, coreference resolution, and contextual disambiguation. Create a confidence scoring mechanism for entity matches.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -684,7 +684,7 @@
             3
           ],
           "details": "Define relation types, extraction methods, and validation rules. Include both explicit and implicit relation detection strategies.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -694,7 +694,7 @@
             1
           ],
           "details": "Select appropriate triple-store technology, design schema, and implement CRUD operations. Configure for performance, considering query patterns and data volume.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -705,7 +705,7 @@
             5
           ],
           "details": "Create transformers to convert extracted relations to RDF triples. Implement validation rules and consistency checks for relation mapping.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 7,
@@ -715,7 +715,7 @@
             5
           ],
           "details": "Define class hierarchies, inheritance rules, and ontological relationships. Create visualization tools for taxonomy exploration.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 8,
@@ -725,7 +725,7 @@
             7
           ],
           "details": "Develop APIs for taxonomy creation, modification, and querying. Implement inheritance resolution algorithms and consistency validation.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 9,
@@ -735,7 +735,7 @@
             6
           ],
           "details": "Define versioning strategy, temporal data model, and change tracking mechanisms. Include specifications for querying historical states.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 10,
@@ -745,7 +745,7 @@
             9
           ],
           "details": "Develop version control mechanisms, temporal indexing, and query interfaces for accessing historical knowledge states.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 11,
@@ -755,7 +755,7 @@
             6
           ],
           "details": "Define provenance metadata schema, source document linking strategy, and confidence scoring approach.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 12,
@@ -767,7 +767,7 @@
             8
           ],
           "details": "Develop provenance capture mechanisms, source document indexing, and provenance-aware query interfaces. Create visualization tools for provenance exploration.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -782,7 +782,7 @@
         6,
         21
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -796,7 +796,7 @@
         5,
         22
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -1811,7 +1811,7 @@
         60,
         61
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {

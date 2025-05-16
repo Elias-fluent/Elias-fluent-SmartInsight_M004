@@ -128,8 +128,3 @@ bld/
 # except build/, which is used as an MSBuild target.
 !**/[Pp]ackages/build/
 
-# Added by Claude Task Master
-*.sln
-# Task files
-tasks.json
-tasks/ 

@@ -2,19 +2,19 @@
   "models": {
     "main": {
       "provider": "openrouter",
-      "modelId": "deepseek/deepseek-r1:free",
+      "modelId": "google/gemma-3-27b-it:free",
       "maxTokens": 120000,
       "temperature": 0.2
     },
     "research": {
       "provider": "openrouter",
-      "modelId": "mistralai/mistral-small-3.1-24b-instruct:free",
+      "modelId": "deepseek/deepseek-r1:free",
       "maxTokens": 8700,
       "temperature": 0.1
     },
     "fallback": {
       "provider": "openrouter",
-      "modelId": "openai/o1-mini",
+      "modelId": "thudm/glm-4-32b:free",
       "maxTokens": 120000,
       "temperature": 0.1
     }
