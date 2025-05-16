@@ -1,41 +1,62 @@
+using System;
 using System.Collections.Generic;
 
 namespace SmartInsight.Knowledge.KnowledgeGraph.TripleStore.Models
 {
     /// <summary>
-    /// Represents a query for triples in the triple store
+    /// Represents a query for the triple store with various filter criteria
     /// </summary>
     public class TripleQuery
     {
         /// <summary>
-        /// The tenant ID to filter by
+        /// The tenant ID for multi-tenant isolation
         /// </summary>
         public string TenantId { get; set; }
         
         /// <summary>
-        /// Subject ID to filter by (optional)
+        /// Filter by subject ID
         /// </summary>
         public string SubjectId { get; set; }
         
         /// <summary>
-        /// Predicate URI to filter by (optional)
+        /// Filter by predicate URI
         /// </summary>
         public string PredicateUri { get; set; }
         
         /// <summary>
-        /// Object ID to filter by (optional)
+        /// Filter by object ID
         /// </summary>
         public string ObjectId { get; set; }
         
         /// <summary>
-        /// Graph URI to filter by (optional)
+        /// Filter by named graph URI
         /// </summary>
         public string GraphUri { get; set; }
         
         /// <summary>
-        /// The minimum confidence score for returned triples (0.0 to 1.0)
+        /// Filter triples created after this date
         /// </summary>
-        public double MinConfidence { get; set; } = 0.0;
+        public DateTime? CreatedAfter { get; set; }
+        
+        /// <summary>
+        /// Filter triples created before this date
+        /// </summary>
+        public DateTime? CreatedBefore { get; set; }
+        
+        /// <summary>
+        /// Filter by minimum confidence score
+        /// </summary>
+        public double? MinConfidenceScore { get; set; }
+        
+        /// <summary>
+        /// Filter by verification status
+        /// </summary>
+        public bool? IsVerified { get; set; }
+        
+        /// <summary>
+        /// Filter by source document ID
+        /// </summary>
+        public string SourceDocumentId { get; set; }
         
         /// <summary>
         /// Maximum number of results to return
@@ -48,17 +69,17 @@ namespace SmartInsight.Knowledge.KnowledgeGraph.TripleStore.Models
         public int Offset { get; set; } = 0;
         
         /// <summary>
-        /// Raw SPARQL query to execute (if provided, other filter parameters are ignored)
+        /// Sort results by this property
         /// </summary>
-        public string SparqlQuery { get; set; }
+        public string SortBy { get; set; } = "CreatedAt";
         
         /// <summary>
-        /// Whether to include verified triples only
+        /// Sort direction (ascending/descending)
         /// </summary>
-        public bool VerifiedOnly { get; set; } = false;
+        public bool SortAscending { get; set; } = false;
         
         /// <summary>
-        /// Custom filters to apply to the query
+        /// Additional custom filter properties
         /// </summary>
         public Dictionary<string, object> CustomFilters { get; set; } = new Dictionary<string, object>();
     }

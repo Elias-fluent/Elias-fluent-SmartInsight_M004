@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace SmartInsight.Knowledge.KnowledgeGraph.TripleStore.Models
 {
@@ -81,5 +82,10 @@ namespace SmartInsight.Knowledge.KnowledgeGraph.TripleStore.Models
         /// Version of this triple for tracking changes
         /// </summary>
         public int Version { get; set; } = 1;
+        
+        /// <summary>
+        /// Additional provenance information about this triple
+        /// </summary>
+        public Dictionary<string, object> ProvenanceInfo { get; set; } = new Dictionary<string, object>();
     }
 } 
