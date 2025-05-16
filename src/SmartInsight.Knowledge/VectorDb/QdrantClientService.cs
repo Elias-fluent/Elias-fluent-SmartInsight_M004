@@ -1,49 +1,110 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Qdrant.Client;
-using Qdrant.Client.Grpc;
-using Qdrant.Client.Grpc.Collections;
-using Qdrant.Client.Grpc.Points;
 using SmartInsight.Knowledge.VectorDb.Embeddings;
 
 namespace SmartInsight.Knowledge.VectorDb
 {
+    /// <summary>
+    /// Configuration options for Qdrant client
+    /// </summary>
+    public class QdrantOptions
+    {
+        /// <summary>
+        /// Qdrant server host
+        /// </summary>
+        public string Host { get; set; } = "localhost";
+        
+        /// <summary>
+        /// Qdrant HTTP port
+        /// </summary>
+        public int Port { get; set; } = 6333;
+        
+        /// <summary>
+        /// Whether to use HTTPS
+        /// </summary>
+        public bool UseHttps { get; set; } = false;
+        
+        /// <summary>
+        /// API key for Qdrant server (if enabled)
+        /// </summary>
+        public string ApiKey { get; set; }
+        
+        /// <summary>
+        /// Default collection name
+        /// </summary>
+        public string DefaultCollection { get; set; } = "documents";
+        
+        /// <summary>
+        /// Maximum number of retries for operations
+        /// </summary>
+        public int MaxRetries { get; set; } = 3;
+        
+        /// <summary>
+        /// Maximum retry delay in milliseconds
+        /// </summary>
+        public int MaxRetryDelayMs { get; set; } = 5000;
+        
+        /// <summary>
+        /// Batch size for bulk operations
+        /// </summary>
+        public int BatchSize { get; set; } = 100;
+    }
+
     /// <summary>
     /// Qdrant vector database client service with tenant isolation
     /// </summary>
     public class QdrantClientService : IDisposable
     {
         private readonly ILogger<QdrantClientService> _logger;
-        private readonly QdrantClient _client;
+        private readonly HttpClient _httpClient;
         private readonly QdrantOptions _options;
         private readonly SemaphoreSlim _collectionCreationLock = new SemaphoreSlim(1, 1);
         private readonly HashSet<string> _existingCollections = new HashSet<string>();
-        
-        public QdrantClientService(
-            IOptions<QdrantOptions> options,
-            ILogger<QdrantClientService> logger)
+        private readonly JsonSerializerOptions _jsonOptions;
+        private bool _disposed;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="QdrantClientService"/> class.
+        /// </summary>
+        /// <param name="options">Qdrant options</param>
+        /// <param name="logger">Logger</param>
+        public QdrantClientService(IOptions<QdrantOptions> options, ILogger<QdrantClientService> logger)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            // Create HTTP client
+            _httpClient = new HttpClient();
             
-            // Create client with proper constructor
-            var uri = new Uri($"http://{_options.Host}:{_options.GrpcPort}");
-            if (_options.UseHttps)
+            // Configure base address
+            var protocol = _options.UseHttps ? "https" : "http";
+            _httpClient.BaseAddress = new Uri($"{protocol}://{_options.Host}:{_options.Port}");
+            
+            // Add API key if provided
+            if (!string.IsNullOrEmpty(_options.ApiKey))
             {
-                uri = new Uri($"https://{_options.Host}:{_options.GrpcPort}");
+                _httpClient.DefaultRequestHeaders.Add("api-key", _options.ApiKey);
             }
             
-            _client = new QdrantClient(uri, _options.ApiKey);
-            
-            _logger.LogInformation("Initialized Qdrant client for {Host}:{Port}", _options.Host, _options.GrpcPort);
+            // Configure JSON options
+            _jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+
+            _logger.LogInformation("Initialized Qdrant client with host {Host}:{Port}", 
+                _options.Host, _options.Port);
         }
 
         /// <summary>
@@ -62,8 +123,8 @@ namespace SmartInsight.Knowledge.VectorDb
                     return true;
                 }
                 
-                var collections = await _client.ListCollectionsAsync(cancellationToken);
-                var exists = collections.Contains(collectionName);
+                var response = await _httpClient.GetAsync($"/collections/{collectionName}", cancellationToken);
+                var exists = response.IsSuccessStatusCode;
                 
                 // Add to cache if it exists
                 if (exists)
@@ -81,413 +142,354 @@ namespace SmartInsight.Knowledge.VectorDb
         }
 
         /// <summary>
-        /// Creates a new collection with tenant isolation support
+        /// Ensure collection exists with proper configuration
         /// </summary>
         /// <param name="collectionName">Collection name</param>
-        /// <param name="vectorSize">Vector dimension size</param>
+        /// <param name="vectorSize">Vector size</param>
         /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>True if successful</returns>
-        public async Task<bool> CreateCollectionAsync(
+        /// <returns>True if collection was created, false if it already existed</returns>
+        public async Task<bool> EnsureCollectionExistsAsync(
             string collectionName, 
-            int vectorSize, 
+            int vectorSize,
             CancellationToken cancellationToken = default)
         {
             try
             {
                 await _collectionCreationLock.WaitAsync(cancellationToken);
+
+                // Check if collection already exists
+                if (await CollectionExistsAsync(collectionName, cancellationToken))
+                {
+                    _logger.LogDebug("Collection {CollectionName} already exists", collectionName);
+                    return false;
+                }
                 
-                try
+                // Collection doesn't exist, create it
+                _logger.LogInformation("Creating collection {CollectionName} with vector size {VectorSize}", 
+                    collectionName, vectorSize);
+
+                // Build collection creation payload
+                var payload = new
                 {
-                    // Check if collection already exists
-                    if (await CollectionExistsAsync(collectionName, cancellationToken))
+                    vectors = new
                     {
-                        _logger.LogInformation("Collection {CollectionName} already exists", collectionName);
-                        return true;
+                        size = vectorSize,
+                        distance = "Cosine"
+                    },
+                    optimizers_config = new
+                    {
+                        indexing_threshold = 0 // Index immediately
                     }
-                    
-                    // Create the collection with correct parameters
-                    var createParams = new CreateCollectionParams
-                    {
-                        VectorsConfig = new VectorsConfig
-                        {
-                            Params = new VectorParams
-                            {
-                                Size = (ulong)vectorSize,
-                                Distance = Distance.Cosine
-                            }
-                        }
-                    };
-                    
-                    await _client.CreateCollectionAsync(collectionName, createParams, cancellationToken);
-                    
-                    // Add payload index for tenant_id to support efficient filtering
-                    var tenantIdIndexParams = new PayloadIndexParams
-                    {
-                        FieldName = "tenant_id",
-                        SchemaType = PayloadSchemaType.Keyword
-                    };
-                    await _client.CreatePayloadIndexAsync(collectionName, tenantIdIndexParams, cancellationToken);
-                    
-                    // Add payload index for document_id
-                    var documentIdIndexParams = new PayloadIndexParams
-                    {
-                        FieldName = "document_id",
-                        SchemaType = PayloadSchemaType.Keyword
-                    };
-                    await _client.CreatePayloadIndexAsync(collectionName, documentIdIndexParams, cancellationToken);
-                    
-                    // Add to cache
-                    _existingCollections.Add(collectionName);
-                    
-                    _logger.LogInformation("Created collection {CollectionName} with vector size {VectorSize}", 
-                        collectionName, vectorSize);
-                    
-                    return true;
-                }
-                finally
+                };
+                
+                var content = new StringContent(
+                    JsonSerializer.Serialize(payload, _jsonOptions),
+                    Encoding.UTF8,
+                    "application/json");
+                
+                // Create collection
+                var response = await _httpClient.PutAsync(
+                    $"/collections/{collectionName}", 
+                    content, 
+                    cancellationToken);
+                
+                if (!response.IsSuccessStatusCode)
                 {
-                    _collectionCreationLock.Release();
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Failed to create collection {CollectionName}. Status: {Status}, Error: {Error}",
+                        collectionName, response.StatusCode, errorContent);
+                    return false;
                 }
+                
+                // Create payload index for tenant_id
+                var tenantIndexPayload = new
+                {
+                    field_name = "tenant_id",
+                    field_schema = "keyword"
+                };
+                
+                var tenantIndexContent = new StringContent(
+                    JsonSerializer.Serialize(tenantIndexPayload, _jsonOptions),
+                    Encoding.UTF8,
+                    "application/json");
+                
+                await _httpClient.PostAsync(
+                    $"/collections/{collectionName}/index", 
+                    tenantIndexContent, 
+                    cancellationToken);
+                
+                // Create payload index for document_id
+                var docIndexPayload = new
+                {
+                    field_name = "document_id",
+                    field_schema = "keyword"
+                };
+                
+                var docIndexContent = new StringContent(
+                    JsonSerializer.Serialize(docIndexPayload, _jsonOptions),
+                    Encoding.UTF8,
+                    "application/json");
+                
+                await _httpClient.PostAsync(
+                    $"/collections/{collectionName}/index", 
+                    docIndexContent, 
+                    cancellationToken);
+
+                // Add to cache
+                _existingCollections.Add(collectionName);
+                
+                _logger.LogInformation("Collection {CollectionName} created successfully", collectionName);
+                return true;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating collection {CollectionName}", collectionName);
                 return false;
             }
+            finally
+            {
+                _collectionCreationLock.Release();
+            }
         }
 
         /// <summary>
-        /// Search for vectors in a collection with tenant isolation
+        /// Store vectors with payload in Qdrant with tenant isolation
         /// </summary>
         /// <param name="collectionName">Collection name</param>
-        /// <param name="queryVector">Query vector</param>
+        /// <param name="vectors">List of vectors to store</param>
+        /// <param name="payloads">Dictionary mapping point ID to payload</param>
         /// <param name="tenantId">Tenant ID for isolation</param>
-        /// <param name="limit">Maximum number of results</param>
-        /// <param name="scoreThreshold">Minimum similarity score</param>
-        /// <param name="filter">Additional filter conditions</param>
         /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>List of search results with similarity scores</returns>
-        public async Task<List<SearchResult>> SearchAsync(
+        /// <returns>Number of points upserted</returns>
+        public async Task<int> UpsertVectorsAsync(
             string collectionName,
-            float[] queryVector,
-            string tenantId,
-            int limit = 10,
-            float scoreThreshold = 0.7f,
-            Dictionary<string, object> filter = null,
+            Dictionary<string, float[]> vectors,
+            Dictionary<string, Dictionary<string, object>> payloads,
+            string tenantId = null,
             CancellationToken cancellationToken = default)
         {
+            if (vectors == null || vectors.Count == 0)
+            {
+                return 0;
+            }
+
             try
             {
-                // Build the filter
-                var filterBuilder = new Filter();
-                
-                // Add tenant filter for isolation
-                if (!string.IsNullOrWhiteSpace(tenantId))
-                {
-                    var tenantCondition = new Condition
-                    {
-                        Field = new FieldCondition
-                        {
-                            Key = "tenant_id",
-                            Match = new Match
-                            {
-                                Keyword = tenantId
-                            }
-                        }
-                    };
-                    filter.Must.Add(tenantCondition);
-                }
-                
-                // Add additional filter conditions if provided
-                if (filter != null && filter.Count > 0)
-                {
-                    foreach (var item in filter)
-                    {
-                        Condition condition;
-                        
-                        // Handle different types of values
-                        if (item.Value is string stringValue)
-                        {
-                            condition = new Condition
-                            {
-                                Field = new FieldCondition
-                                {
-                                    Key = item.Key,
-                                    Match = new Match
-                                    {
-                                        Keyword = stringValue
-                                    }
-                                }
-                            };
-                        }
-                        else if (item.Value is int intValue)
-                        {
-                            condition = new Condition
-                            {
-                                Field = new FieldCondition
-                                {
-                                    Key = item.Key,
-                                    Match = new Match
-                                    {
-                                        Integer = intValue
-                                    }
-                                }
-                            };
-                        }
-                        else
-                        {
-                            // Convert other types to string
-                            condition = new Condition
-                            {
-                                Field = new FieldCondition
-                                {
-                                    Key = item.Key,
-                                    Match = new Match
-                                    {
-                                        Keyword = item.Value.ToString()
-                                    }
-                                }
-                            };
-                        }
-                        
-                        filterBuilder.Must.Add(condition);
-                    }
-                }
-                
-                // Prepare search request
-                var searchRequest = new SearchPointsRequest
-                {
-                    CollectionName = collectionName,
-                    Vector = queryVector,
-                    Filter = filterBuilder,
-                    Limit = (uint)limit,
-                    WithPayload = true,
-                    ScoreThreshold = scoreThreshold
-                };
-                
-                // Perform search with retry
-                var result = await ExecuteWithRetryAsync(() => 
-                    _client.SearchPointsAsync(searchRequest, cancellationToken));
-                
-                // Process results
-                return result.Result.Select(r => new SearchResult
-                {
-                    Id = r.Id.Uuid,
-                    Score = r.Score,
-                    Payload = ConvertQdrantPayloadToDictionary(r.Payload)
-                }).ToList();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error searching vectors in Qdrant collection {CollectionName} for tenant {TenantId}", 
-                    collectionName, tenantId);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Convert Qdrant payload to a simpler Dictionary format
-        /// </summary>
-        private Dictionary<string, object> ConvertQdrantPayloadToDictionary(Dictionary<string, Value> payload)
-        {
-            var result = new Dictionary<string, object>();
-            
-            foreach (var pair in payload)
-            {
-                object value;
-                
-                if (pair.Value.NullValue != null)
-                    value = null;
-                else if (pair.Value.StringValue != null)
-                    value = pair.Value.StringValue;
-                else if (pair.Value.IntegerValue != 0)
-                    value = pair.Value.IntegerValue;
-                else if (pair.Value.DoubleValue != 0)
-                    value = pair.Value.DoubleValue;
-                else if (pair.Value.BoolValue)
-                    value = pair.Value.BoolValue;
-                else if (pair.Value.ListValue != null)
-                    value = pair.Value.ListValue;
-                else if (pair.Value.StructValue != null)
-                    value = pair.Value.StructValue;
-                else
-                    value = pair.Value.ToString();
-                
-                result[pair.Key] = value;
-            }
-            
-            return result;
-        }
-
-        /// <summary>
-        /// Perform similarity search based on raw text (generates embedding automatically)
-        /// </summary>
-        /// <param name="collectionName">Collection name</param>
-        /// <param name="queryText">Text to search for</param>
-        /// <param name="embeddingGenerator">Embedding generator to convert text to vector</param>
-        /// <param name="tenantId">Tenant ID for isolation</param>
-        /// <param name="limit">Maximum number of results</param>
-        /// <param name="scoreThreshold">Minimum similarity score</param>
-        /// <param name="filter">Additional filter conditions</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>Search results</returns>
-        public async Task<List<SearchResult>> SearchByTextAsync(
-            string collectionName,
-            string queryText,
-            IEmbeddingGenerator embeddingGenerator,
-            string tenantId,
-            int limit = 10,
-            float scoreThreshold = 0.7f,
-            Dictionary<string, object> filter = null,
-            CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                // Generate embedding vector for the query text
-                var queryVector = await embeddingGenerator.GenerateEmbeddingAsync(
-                    queryText, tenantId: tenantId, cancellationToken: cancellationToken);
-                
-                // Perform vector search
-                return await SearchAsync(
+                // Ensure collection exists
+                await EnsureCollectionExistsAsync(
                     collectionName,
-                    queryVector,
-                    tenantId,
-                    limit,
-                    scoreThreshold,
-                    filter,
+                    vectors.First().Value.Length,
                     cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error performing text-based search in collection {CollectionName}", collectionName);
-                throw;
-            }
-        }
-        
-        /// <summary>
-        /// Insert or update points in a collection with explicit IDs
-        /// </summary>
-        /// <param name="collectionName">Collection name</param>
-        /// <param name="pointIds">Point IDs</param>
-        /// <param name="vectors">Vector values</param>
-        /// <param name="payloads">Optional payload data for each point</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>True if successful</returns>
-        public async Task<bool> UpsertPointsAsync(
-            string collectionName,
-            List<string> pointIds,
-            List<float[]> vectors,
-            List<Dictionary<string, object>> payloads = null,
-            CancellationToken cancellationToken = default)
-        {
-            if (pointIds == null || vectors == null || pointIds.Count != vectors.Count)
-            {
-                throw new ArgumentException("Point IDs and vectors must have the same count");
-            }
-            
-            if (payloads != null && payloads.Count != pointIds.Count)
-            {
-                throw new ArgumentException("Payloads count must match point IDs count");
-            }
-            
-            try
-            {
-                var points = new List<PointStruct>();
-                
-                for (int i = 0; i < pointIds.Count; i++)
+
+                // Create points for upsert
+                var points = new List<object>();
+                foreach (var (id, vector) in vectors)
                 {
-                    var point = new PointStruct
-                    {
-                        Id = new PointId { Uuid = pointIds[i] },
-                        Vectors = new Vectors { Vector = new Vector { Data = { vectors[i] } } }
-                    };
+                    var pointPayload = new Dictionary<string, object>();
                     
-                    if (payloads != null && payloads[i] != null)
+                    // Add payload data if provided
+                    if (payloads != null && payloads.TryGetValue(id, out var payload))
                     {
-                        foreach (var kvp in payloads[i])
+                        foreach (var (key, value) in payload)
                         {
-                            var valueToAdd = ConvertToQdrantValue(kvp.Value);
-                            point.Payload[kvp.Key] = valueToAdd;
+                            pointPayload[key] = value;
                         }
                     }
                     
-                    points.Add(point);
+                    // Add tenant_id for isolation if provided
+                    if (!string.IsNullOrWhiteSpace(tenantId))
+                    {
+                        pointPayload["tenant_id"] = tenantId;
+                    }
+                    
+                    // Create point
+                    points.Add(new
+                    {
+                        id = id,
+                        vector = vector,
+                        payload = pointPayload
+                    });
                 }
                 
                 // Process in batches to avoid overwhelming the API
                 var batchSize = _options.BatchSize;
+                int totalUpserted = 0;
+                
                 for (int i = 0; i < points.Count; i += batchSize)
                 {
                     var batch = points.Skip(i).Take(batchSize).ToList();
                     
-                    // Create upsert request
-                    var upsertRequest = new UpsertPointsRequest
+                    // Create upsert payload
+                    var payload = new
                     {
-                        CollectionName = collectionName,
-                        Points = { batch }
+                        points = batch
                     };
                     
-                    // Use retry logic
-                    await ExecuteWithRetryAsync(() => 
-                        _client.UpsertPointsAsync(upsertRequest, cancellationToken));
+                    var content = new StringContent(
+                        JsonSerializer.Serialize(payload, _jsonOptions),
+                        Encoding.UTF8,
+                        "application/json");
+                    
+                    // Perform upsert with retry
+                    var response = await ExecuteWithRetryAsync(() => 
+                        _httpClient.PutAsync($"/collections/{collectionName}/points", content, cancellationToken));
+                    
+                    if (response.IsSuccessStatusCode)
+                    {
+                        totalUpserted += batch.Count;
+                    }
+                    else
+                    {
+                        var errorContent = await response.Content.ReadAsStringAsync();
+                        _logger.LogError("Failed to upsert batch. Status: {Status}, Error: {Error}",
+                            response.StatusCode, errorContent);
+                    }
                 }
                 
-                return true;
+                _logger.LogInformation("Upserted {PointCount} points to collection {CollectionName}",
+                    totalUpserted, collectionName);
+                
+                return totalUpserted;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error upserting points to collection {CollectionName}", collectionName);
-                return false;
+                _logger.LogError(ex, "Error upserting vectors to collection {CollectionName}", collectionName);
+                throw;
             }
         }
 
         /// <summary>
-        /// Convert a C# object to a Qdrant payload Value
+        /// Search for similar vectors in a collection with tenant isolation
         /// </summary>
-        private Value ConvertToQdrantValue(object value)
+        /// <param name="collectionName">Collection name</param>
+        /// <param name="queryVector">Query vector</param>
+        /// <param name="limit">Max number of results</param>
+        /// <param name="tenantId">Tenant ID for isolation</param>
+        /// <param name="filterDocumentIds">Optional list of document IDs to filter</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Search results with scores and payload</returns>
+        public async Task<List<SearchResult>> SearchAsync(
+            string collectionName,
+            float[] queryVector,
+            int limit = 10,
+            string tenantId = null,
+            IEnumerable<string> filterDocumentIds = null,
+            CancellationToken cancellationToken = default)
         {
-            var qdrantValue = new Value();
-            
-            if (value == null)
+            try
             {
-                qdrantValue.NullValue = NullValue.NullValue;
+                // Build filter for tenant isolation
+                object filter = null;
+                
+                if (!string.IsNullOrWhiteSpace(tenantId) || (filterDocumentIds != null && filterDocumentIds.Any()))
+                {
+                    var mustConditions = new List<object>();
+                    
+                    // Add tenant filter
+                    if (!string.IsNullOrWhiteSpace(tenantId))
+                    {
+                        mustConditions.Add(new
+                        {
+                            key = "tenant_id",
+                            match = new { value = tenantId }
+                        });
+                    }
+                    
+                    // Add document ID filter
+                    if (filterDocumentIds != null && filterDocumentIds.Any())
+                    {
+                        var docIds = filterDocumentIds.ToArray();
+                        if (docIds.Length == 1)
+                        {
+                            mustConditions.Add(new
+                            {
+                                key = "document_id",
+                                match = new { value = docIds[0] }
+                            });
+                        }
+                        else
+                        {
+                            var shouldConditions = new List<object>();
+                            foreach (var docId in docIds)
+                            {
+                                shouldConditions.Add(new
+                                {
+                                    key = "document_id",
+                                    match = new { value = docId }
+                                });
+                            }
+                            
+                            if (shouldConditions.Count > 0)
+                            {
+                                mustConditions.Add(new
+                                {
+                                    should = shouldConditions
+                                });
+                            }
+                        }
+                    }
+                    
+                    if (mustConditions.Count > 0)
+                    {
+                        filter = new
+                        {
+                            must = mustConditions
+                        };
+                    }
+                }
+                
+                // Create search payload
+                var payload = new
+                {
+                    vector = queryVector,
+                    limit = limit,
+                    filter = filter,
+                    with_payload = true
+                };
+                
+                var content = new StringContent(
+                    JsonSerializer.Serialize(payload, _jsonOptions),
+                    Encoding.UTF8,
+                    "application/json");
+                
+                // Perform search
+                var response = await _httpClient.PostAsync(
+                    $"/collections/{collectionName}/points/search", 
+                    content, 
+                    cancellationToken);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Search failed. Status: {Status}, Error: {Error}",
+                        response.StatusCode, errorContent);
+                    return new List<SearchResult>();
+                }
+                
+                // Parse results
+                var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
+                var searchResults = JsonSerializer.Deserialize<QdrantSearchResponse>(responseJson, _jsonOptions);
+                
+                if (searchResults?.Result == null)
+                {
+                    return new List<SearchResult>();
+                }
+                
+                // Convert to SearchResult model
+                return searchResults.Result.Select(r => new SearchResult
+                {
+                    Id = r.Id.ToString(),
+                    Score = r.Score,
+                    Payload = r.Payload
+                }).ToList();
             }
-            else if (value is string stringValue)
+            catch (Exception ex)
             {
-                qdrantValue.StringValue = stringValue;
+                _logger.LogError(ex, "Error searching vectors in collection {CollectionName}", collectionName);
+                throw;
             }
-            else if (value is int intValue)
-            {
-                qdrantValue.IntegerValue = intValue;
-            }
-            else if (value is long longValue)
-            {
-                qdrantValue.IntegerValue = longValue;
-            }
-            else if (value is float floatValue)
-            {
-                qdrantValue.DoubleValue = floatValue;
-            }
-            else if (value is double doubleValue)
-            {
-                qdrantValue.DoubleValue = doubleValue;
-            }
-            else if (value is bool boolValue)
-            {
-                qdrantValue.BoolValue = boolValue;
-            }
-            else if (value is DateTime dateTime)
-            {
-                qdrantValue.StringValue = dateTime.ToString("o");
-            }
-            else
-            {
-                qdrantValue.StringValue = value.ToString();
-            }
-            
-            return qdrantValue;
         }
-        
+
         /// <summary>
         /// Delete points from a collection by IDs with tenant isolation
         /// </summary>
@@ -504,250 +506,96 @@ namespace SmartInsight.Knowledge.VectorDb
         {
             try
             {
-                var filter = new Filter();
+                // Build filter for tenant isolation
+                object filter = null;
                 
-                // Add tenant filter for isolation if provided
                 if (!string.IsNullOrWhiteSpace(tenantId))
                 {
-                    var tenantCondition = new Condition
+                    filter = new
                     {
-                        Field = new FieldCondition
+                        must = new[]
                         {
-                            Key = "tenant_id",
-                            Match = new Match
+                            new
                             {
-                                Keyword = tenantId
+                                key = "tenant_id",
+                                match = new { value = tenantId }
                             }
                         }
                     };
-                    filter.Must.Add(tenantCondition);
                 }
                 
-                // Convert string IDs to PointId objects
-                var ids = pointIds.Select(id => new PointId { Uuid = id }).ToList();
-                
-                // Create delete points request
-                var deleteRequest = new DeletePointsRequest
+                // Create delete payload
+                var payload = new
                 {
-                    CollectionName = collectionName,
-                    Points = new PointsSelector
-                    {
-                        Points = new PointsIdsList { Ids = { ids } }
-                    }
+                    points = pointIds.ToArray(),
+                    filter = filter
                 };
                 
-                // Add filter if tenant ID is specified
-                if (!string.IsNullOrWhiteSpace(tenantId))
+                var content = new StringContent(
+                    JsonSerializer.Serialize(payload, _jsonOptions),
+                    Encoding.UTF8,
+                    "application/json");
+                
+                // Perform delete
+                var response = await _httpClient.PostAsync(
+                    $"/collections/{collectionName}/points/delete", 
+                    content, 
+                    cancellationToken);
+                
+                if (!response.IsSuccessStatusCode)
                 {
-                    deleteRequest.Points.Filter = filter;
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Delete failed. Status: {Status}, Error: {Error}",
+                        response.StatusCode, errorContent);
+                    return 0;
                 }
                 
-                // Perform deletion with retry
-                var result = await ExecuteWithRetryAsync(() => 
-                    _client.DeletePointsAsync(deleteRequest, cancellationToken));
-                
-                return (int)result.Status.OperationResult;
+                return pointIds.Count();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting points from collection {CollectionName}", collectionName);
-                return 0;
+                throw;
             }
         }
-        
+
         /// <summary>
-        /// Delete points from a collection by filter
+        /// Delete collection
         /// </summary>
         /// <param name="collectionName">Collection name</param>
-        /// <param name="filter">Filter to select points to delete</param>
         /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>Number of points deleted</returns>
-        public async Task<int> DeletePointsByFilterAsync(
+        /// <returns>True if collection was deleted</returns>
+        public async Task<bool> DeleteCollectionAsync(
             string collectionName,
-            Filter filter,
             CancellationToken cancellationToken = default)
         {
             try
             {
-                // Create delete points request
-                var deleteRequest = new DeletePointsRequest
+                var response = await _httpClient.DeleteAsync(
+                    $"/collections/{collectionName}",
+                    cancellationToken);
+                
+                if (!response.IsSuccessStatusCode)
                 {
-                    CollectionName = collectionName,
-                    Points = new PointsSelector
-                    {
-                        Filter = filter
-                    }
-                };
-                
-                // Perform deletion with retry
-                var result = await ExecuteWithRetryAsync(() => 
-                    _client.DeletePointsAsync(deleteRequest, cancellationToken));
-                
-                return (int)result.Status.OperationResult;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting points by filter from collection {CollectionName}", collectionName);
-                return 0;
-            }
-        }
-        
-        /// <summary>
-        /// Delete all points that belong to a specific document
-        /// </summary>
-        /// <param name="collectionName">Collection name</param>
-        /// <param name="documentId">Document ID</param>
-        /// <param name="tenantId">Tenant ID for isolation</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>Number of points deleted</returns>
-        public async Task<int> DeleteDocumentAsync(
-            string collectionName,
-            string documentId,
-            string tenantId = null,
-            CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                var filter = new Filter();
-                
-                // Filter by document ID
-                var docCondition = new Condition
-                {
-                    Field = new FieldCondition
-                    {
-                        Key = "document_id",
-                        Match = new Match
-                        {
-                            Keyword = documentId
-                        }
-                    }
-                };
-                filter.Must.Add(docCondition);
-                
-                // Add tenant filter for isolation if provided
-                if (!string.IsNullOrWhiteSpace(tenantId))
-                {
-                    var tenantCondition = new Condition
-                    {
-                        Field = new FieldCondition
-                        {
-                            Key = "tenant_id",
-                            Match = new Match
-                            {
-                                Keyword = tenantId
-                            }
-                        }
-                    };
-                    filter.Must.Add(tenantCondition);
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Failed to delete collection {CollectionName}. Status: {Status}, Error: {Error}",
+                        collectionName, response.StatusCode, errorContent);
+                    return false;
                 }
                 
-                // Create delete points request
-                var deleteRequest = new DeletePointsRequest
-                {
-                    CollectionName = collectionName,
-                    Points = new PointsSelector
-                    {
-                        Filter = filter
-                    }
-                };
+                // Remove from cache
+                _existingCollections.Remove(collectionName);
                 
-                // Perform deletion with retry
-                var result = await ExecuteWithRetryAsync(() => 
-                    _client.DeletePointsAsync(deleteRequest, cancellationToken));
-                
-                return (int)result.Status.OperationResult;
+                _logger.LogInformation("Deleted collection {CollectionName}", collectionName);
+                return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting document {DocumentId} from collection {CollectionName}", 
-                    documentId, collectionName);
-                return 0;
+                _logger.LogError(ex, "Error deleting collection {CollectionName}", collectionName);
+                throw;
             }
         }
-        
-        /// <summary>
-        /// Count points in a collection with optional filtering
-        /// </summary>
-        /// <param name="collectionName">Collection name</param>
-        /// <param name="filter">Optional filter to count specific points</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>Number of points</returns>
-        public async Task<long> CountPointsAsync(
-            string collectionName,
-            Filter filter = null,
-            CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                var countRequest = new CountPointsRequest
-                {
-                    CollectionName = collectionName,
-                    Filter = filter
-                };
-                
-                var result = await ExecuteWithRetryAsync(() => 
-                    _client.CountPointsAsync(countRequest, cancellationToken));
-                
-                return (long)result.Result.Count;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error counting points in collection {CollectionName}", collectionName);
-                return 0;
-            }
-        }
-        
-        /// <summary>
-        /// Get collections information
-        /// </summary>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>List of collection names</returns>
-        public async Task<List<string>> ListCollectionsAsync(CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                var request = new ListCollectionsRequest();
-                var response = await ExecuteWithRetryAsync(() => 
-                    _client.ListCollectionsAsync(request, cancellationToken));
-                
-                return response.Collections.Select(c => c.Name).ToList();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error listing collections");
-                return new List<string>();
-            }
-        }
-        
-        /// <summary>
-        /// Get collection info including vector count and configuration
-        /// </summary>
-        /// <param name="collectionName">Collection name</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>Collection info or null if not found</returns>
-        public async Task<CollectionInfo> GetCollectionInfoAsync(
-            string collectionName,
-            CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                var request = new GetCollectionInfoRequest
-                {
-                    CollectionName = collectionName
-                };
-                
-                var response = await ExecuteWithRetryAsync(() => 
-                    _client.GetCollectionInfoAsync(request, cancellationToken));
-                
-                return response.Result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting info for collection {CollectionName}", collectionName);
-                return null;
-            }
-        }
-        
+
         /// <summary>
         /// Execute a function with retry logic
         /// </summary>
@@ -790,60 +638,73 @@ namespace SmartInsight.Knowledge.VectorDb
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Dispose resources
+        /// </summary>
         public void Dispose()
         {
-            _client?.Dispose();
-            _collectionCreationLock?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Dispose resources
+        /// </summary>
+        /// <param name="disposing">Whether to dispose managed resources</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _collectionCreationLock?.Dispose();
+                _httpClient?.Dispose();
+            }
+
+            _disposed = true;
         }
     }
-    
+
     /// <summary>
-    /// Configuration options for Qdrant client
+    /// Qdrant search response model
     /// </summary>
-    public class QdrantOptions
+    public class QdrantSearchResponse
     {
         /// <summary>
-        /// Qdrant server host
+        /// Search results
         /// </summary>
-        public string Host { get; set; } = "localhost";
-        
-        /// <summary>
-        /// Qdrant HTTP port
-        /// </summary>
-        public int HttpPort { get; set; } = 6333;
-        
-        /// <summary>
-        /// Qdrant gRPC port
-        /// </summary>
-        public int GrpcPort { get; set; } = 6334;
-        
-        /// <summary>
-        /// Whether to use HTTPS
-        /// </summary>
-        public bool UseHttps { get; set; } = false;
-        
-        /// <summary>
-        /// API key for Qdrant server (if enabled)
-        /// </summary>
-        public string ApiKey { get; set; }
-        
-        /// <summary>
-        /// Maximum number of retries for operations
-        /// </summary>
-        public int MaxRetries { get; set; } = 3;
-        
-        /// <summary>
-        /// Maximum retry delay in milliseconds
-        /// </summary>
-        public double MaxRetryDelayMs { get; set; } = 5000;
-        
-        /// <summary>
-        /// Batch size for bulk operations
-        /// </summary>
-        public int BatchSize { get; set; } = 100;
+        [JsonPropertyName("result")]
+        public List<QdrantSearchResultItem> Result { get; set; }
     }
-    
+
+    /// <summary>
+    /// Qdrant search result item
+    /// </summary>
+    public class QdrantSearchResultItem
+    {
+        /// <summary>
+        /// Point ID
+        /// </summary>
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// Similarity score
+        /// </summary>
+        [JsonPropertyName("score")]
+        public float Score { get; set; }
+
+        /// <summary>
+        /// Payload
+        /// </summary>
+        [JsonPropertyName("payload")]
+        public Dictionary<string, object> Payload { get; set; }
+    }
+
     /// <summary>
     /// Search result from Qdrant
     /// </summary>
@@ -852,16 +713,16 @@ namespace SmartInsight.Knowledge.VectorDb
         /// <summary>
         /// Point ID
         /// </summary>
-        public string Id { get; set; } = null!;
-        
+        public string Id { get; set; }
+
         /// <summary>
         /// Similarity score
         /// </summary>
         public float Score { get; set; }
-        
+
         /// <summary>
-        /// Point payload data
+        /// Payload
         /// </summary>
-        public Dictionary<string, object>? Payload { get; set; }
+        public Dictionary<string, object> Payload { get; set; }
     }
 } 
