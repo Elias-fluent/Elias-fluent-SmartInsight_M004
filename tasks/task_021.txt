@@ -1,6 +1,6 @@
 # Task ID: 21
 # Title: Implement Knowledge Graph Creation Pipeline
-# Status: pending
+# Status: in-progress
 # Dependencies: 14, 15, 18
 # Priority: high
 # Description: Create pipeline for building knowledge graph from ingested data.
@@ -20,13 +20,13 @@ Ensure knowledge graph respects tenant boundaries.
 Create unit tests for entity extraction and relation mapping. Test knowledge graph building with sample data. Verify provenance tracking works correctly.
 
 # Subtasks:
-## 1. Design Entity Extraction Architecture [pending]
+## 1. Design Entity Extraction Architecture [done]
 ### Dependencies: None
 ### Description: Define the overall architecture for entity extraction including NLP components, processing flow, and integration points.
 ### Details:
 Create architectural diagrams showing data flow, component interactions, and system boundaries. Include specifications for input/output formats, error handling, and scalability considerations.
 
-## 2. Implement Named Entity Recognition (NER) Module [pending]
+## 2. Implement Named Entity Recognition (NER) Module [done]
 ### Dependencies: 21.1
 ### Description: Develop the core NER module to identify and extract entities from text documents.
 ### Details:
