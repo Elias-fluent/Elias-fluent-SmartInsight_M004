@@ -92,10 +92,12 @@ namespace SmartInsight.Knowledge.KnowledgeGraph.TripleStore.Interfaces
         /// Queries the triple store with various filter options
         /// </summary>
         /// <param name="query">The triple query parameters</param>
+        /// <param name="tenantId">The tenant ID for multi-tenant isolation</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>The query results</returns>
-        Task<TripleQueryResult> QueryTriplesAsync(
+        Task<TripleQueryResult> QueryAsync(
             TripleQuery query, 
+            string tenantId, 
             CancellationToken cancellationToken = default);
         
         /// <summary>

@@ -1,6 +1,6 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SmartInsight.Knowledge.KnowledgeGraph.Taxonomy.Interfaces;
+using System;
 
 namespace SmartInsight.Knowledge.KnowledgeGraph.Taxonomy
 {
@@ -10,21 +10,28 @@ namespace SmartInsight.Knowledge.KnowledgeGraph.Taxonomy
     public static class TaxonomyExtensions
     {
         /// <summary>
-        /// Adds the taxonomy services to the service collection
+        /// Adds taxonomy services to the dependency injection container
         /// </summary>
         /// <param name="services">The service collection</param>
-        /// <param name="configuration">The configuration</param>
         /// <returns>The service collection for chaining</returns>
-        public static IServiceCollection AddTaxonomyServices(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddTaxonomyServices(this IServiceCollection services)
         {
-            // Register the taxonomy service and repository
-            services.AddScoped<ITaxonomyService, TaxonomyService>();
-            services.AddScoped<ITaxonomyVisualizer, TaxonomyVisualizer>();
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            // Register the repository
+            services.AddSingleton<ITaxonomyRepository, InMemoryTaxonomyRepository>();
             
-            // Register the default in-memory repository implementation
-            // In a real-world scenario, you might register a database-backed implementation instead
-            services.AddScoped<ITaxonomyRepository, InMemoryTaxonomyRepository>();
+            // Register the core services
+            services.AddSingleton<ITaxonomyService, TaxonomyService>();
+            services.AddSingleton<ITaxonomyVisualizer, TaxonomyVisualizer>();
             
+            // Register the new inheritance and validation services
+            services.AddSingleton<TaxonomyInheritanceResolver>();
+            services.AddSingleton<TaxonomyValidationService>();
+
             return services;
         }
     }

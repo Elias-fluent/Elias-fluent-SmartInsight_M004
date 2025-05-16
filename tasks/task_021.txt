@@ -50,19 +50,19 @@ Define relation types, extraction methods, and validation rules. Include both ex
 ### Details:
 Select appropriate triple-store technology, design schema, and implement CRUD operations. Configure for performance, considering query patterns and data volume.
 
-## 6. Develop Relation Mapping Pipeline [pending]
+## 6. Develop Relation Mapping Pipeline [done]
 ### Dependencies: 21.4, 21.5
 ### Description: Build the pipeline to extract and map relationships into the triple-store format.
 ### Details:
 Create transformers to convert extracted relations to RDF triples. Implement validation rules and consistency checks for relation mapping.
 
-## 7. Design Hierarchical Taxonomy Structure [pending]
+## 7. Design Hierarchical Taxonomy Structure [done]
 ### Dependencies: 21.5
 ### Description: Design the hierarchical taxonomy structure with inheritance capabilities.
 ### Details:
 Define class hierarchies, inheritance rules, and ontological relationships. Create visualization tools for taxonomy exploration.
 
-## 8. Implement Taxonomy Management System [pending]
+## 8. Implement Taxonomy Management System [done]
 ### Dependencies: 21.7
 ### Description: Build the system to manage and maintain the hierarchical taxonomy.
 ### Details:

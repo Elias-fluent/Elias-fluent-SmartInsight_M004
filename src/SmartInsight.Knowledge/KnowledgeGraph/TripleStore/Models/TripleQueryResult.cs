@@ -3,38 +3,33 @@ using System.Collections.Generic;
 namespace SmartInsight.Knowledge.KnowledgeGraph.TripleStore.Models
 {
     /// <summary>
-    /// Represents the result of a triple store query
+    /// Represents the results of a query to the triple store
     /// </summary>
     public class TripleQueryResult
     {
         /// <summary>
-        /// The triples matching the query
+        /// The triples that match the query
         /// </summary>
         public List<Triple> Triples { get; set; } = new List<Triple>();
         
         /// <summary>
-        /// The total number of triples matching the query (may be more than returned if limited)
+        /// Total number of triples matching the query (before pagination)
         /// </summary>
         public int TotalCount { get; set; }
         
         /// <summary>
-        /// Whether the query was successful
+        /// Whether there are more results available
         /// </summary>
-        public bool Success { get; set; }
+        public bool HasMore { get; set; }
         
         /// <summary>
-        /// Error message if the query failed
+        /// The query that was executed
         /// </summary>
-        public string ErrorMessage { get; set; }
+        public TripleQuery Query { get; set; }
         
         /// <summary>
-        /// Time taken to execute the query in milliseconds
+        /// Additional metadata about the query execution
         /// </summary>
-        public long QueryTimeMs { get; set; }
-        
-        /// <summary>
-        /// The SPARQL query that was executed (if applicable)
-        /// </summary>
-        public string SparqlQuery { get; set; }
+        public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
     }
 } 

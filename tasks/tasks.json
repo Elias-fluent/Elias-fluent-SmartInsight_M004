@@ -705,7 +705,7 @@
             5
           ],
           "details": "Create transformers to convert extracted relations to RDF triples. Implement validation rules and consistency checks for relation mapping.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 7,
@@ -715,7 +715,7 @@
             5
           ],
           "details": "Define class hierarchies, inheritance rules, and ontological relationships. Create visualization tools for taxonomy exploration.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 8,
@@ -725,7 +725,7 @@
             7
           ],
           "details": "Develop APIs for taxonomy creation, modification, and querying. Implement inheritance resolution algorithms and consistency validation.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 9,
