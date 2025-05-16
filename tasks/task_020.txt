@@ -1,6 +1,6 @@
 # Task ID: 20
 # Title: Implement Ingestion Job Scheduler
-# Status: pending
+# Status: in-progress
 # Dependencies: 14, 19
 # Priority: high
 # Description: Create scheduling system for automated data source ingestion jobs.

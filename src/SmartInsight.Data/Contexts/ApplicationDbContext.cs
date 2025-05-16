@@ -75,6 +75,11 @@ public class ApplicationDbContext : IdentityDbContext<
     /// Secure credentials storage
     /// </summary>
     public DbSet<Credential> Credentials { get; set; }
+    
+    /// <summary>
+    /// Data ingestion job definitions
+    /// </summary>
+    public DbSet<IngestionJobEntity> IngestionJobs { get; set; }
 
     /// <summary>
     /// Constructor that accepts DbContextOptions
