@@ -33,6 +33,18 @@
     --ring: 221.2 83.2% 53.3%;
 
     --radius: 0.5rem;
+    
+    /* Text sizing variables */
+    --text-base-large: 1.125rem;
+    --text-base-xlarge: 1.25rem;
+    --text-sm-large: 0.95rem;
+    --text-sm-xlarge: 1.1rem;
+    --text-lg-large: 1.3rem;
+    --text-lg-xlarge: 1.5rem;
+    --text-xl-large: 1.5rem;
+    --text-xl-xlarge: 1.75rem;
+    --text-2xl-large: 1.75rem;
+    --text-2xl-xlarge: a2rem;
   }
 
   .dark {
@@ -64,6 +76,125 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
   }
+  
+  /* High Contrast Mode - Light */
+  .contrast-high:not(.dark) {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    
+    --card: 0 0% 95%;
+    --card-foreground: 0 0% 0%;
+    
+    --popover: 0 0% 95%;
+    --popover-foreground: 0 0% 0%;
+    
+    --primary: 230 100% 45%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 100%;
+    
+    --muted: 0 0% 85%;
+    --muted-foreground: 0 0% 0%;
+    
+    --accent: 230 100% 45%;
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 100% 45%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 0 0% 0%;
+    --input: 0 0% 85%;
+    --ring: 230 100% 45%;
+  }
+  
+  /* High Contrast Mode - Dark */
+  .dark.contrast-high {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 100%;
+    
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 100%;
+    
+    --primary: 210 100% 60%;
+    --primary-foreground: 0 0% 0%;
+    
+    --secondary: 0 0% 90%;
+    --secondary-foreground: 0 0% 0%;
+    
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 100%;
+    
+    --accent: 210 100% 60%;
+    --accent-foreground: 0 0% 0%;
+    
+    --destructive: 0 100% 60%;
+    --destructive-foreground: 0 0% 0%;
+    
+    --border: 0 0% 100%;
+    --input: 0 0% 20%;
+    --ring: 210 100% 60%;
+  }
+  
+  /* Deuteranopia (red-green color blindness) */
+  .colorblind-deuteranopia:not(.dark) {
+    --primary: 220 70% 50%;
+    --accent: 220 70% 50%;
+    --destructive: 25 100% 50%;
+  }
+  
+  .dark.colorblind-deuteranopia {
+    --primary: 220 70% 60%;
+    --accent: 220 70% 60%;
+    --destructive: 30 100% 60%;
+  }
+  
+  /* Protanopia (red-green color blindness, different type) */
+  .colorblind-protanopia:not(.dark) {
+    --primary: 240 70% 50%;
+    --accent: 240 70% 50%;
+    --destructive: 45 100% 50%;
+  }
+  
+  .dark.colorblind-protanopia {
+    --primary: 240 70% 60%;
+    --accent: 240 70% 60%;
+    --destructive: 45 100% 60%;
+  }
+  
+  /* Tritanopia (blue-yellow color blindness) */
+  .colorblind-tritanopia:not(.dark) {
+    --primary: 300 70% 50%;
+    --accent: 300 70% 50%;
+    --destructive: 0 100% 50%;
+  }
+  
+  .dark.colorblind-tritanopia {
+    --primary: 300 70% 60%;
+    --accent: 300 70% 60%;
+    --destructive: 0 100% 60%;
+  }
+  
+  /* Text Size - Large */
+  .text-large {
+    font-size: var(--text-base-large);
+  }
+  
+  /* Text Size - Extra Large */
+  .text-x-large {
+    font-size: var(--text-base-xlarge);
+  }
+  
+  /* Reduced Motion */
+  .reduced-motion * {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @layer base {
@@ -72,6 +203,73 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Text size adjustments for heading elements based on user preference */
+  .text-large h1 {
+    font-size: var(--text-2xl-large);
+  }
+  .text-large h2 {
+    font-size: var(--text-xl-large);
+  }
+  .text-large h3 {
+    font-size: var(--text-lg-large);
+  }
+  .text-large p, 
+  .text-large span,
+  .text-large button,
+  .text-large input,
+  .text-large select,
+  .text-large textarea {
+    font-size: var(--text-base-large);
+  }
+  .text-large small {
+    font-size: var(--text-sm-large);
+  }
+  
+  /* Extra large text */
+  .text-x-large h1 {
+    font-size: var(--text-2xl-xlarge);
+  }
+  .text-x-large h2 {
+    font-size: var(--text-xl-xlarge);
+  }
+  .text-x-large h3 {
+    font-size: var(--text-lg-xlarge);
+  }
+  .text-x-large p,
+  .text-x-large span,
+  .text-x-large button,
+  .text-x-large input,
+  .text-x-large select,
+  .text-x-large textarea {
+    font-size: var(--text-base-xlarge);
+  }
+  .text-x-large small {
+    font-size: var(--text-sm-xlarge);
+  }
+  
+  /* High contrast focus outline */
+  .contrast-high *:focus {
+    outline: 3px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+  
+  /* Increase clickable areas for interactive elements in larger text modes */
+  .text-large button,
+  .text-large a,
+  .text-large input[type="checkbox"],
+  .text-large input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .text-x-large button,
+  .text-x-large a,
+  .text-x-large input[type="checkbox"],
+  .text-x-large input[type="radio"] {
+    min-height: 48px;
+    min-width: 48px;
   }
 }
 

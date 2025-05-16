@@ -1554,7 +1554,7 @@
           "title": "Implement color and contrast accessibility",
           "description": "Create high contrast mode, colorblind-friendly palettes, and proper text scaling features.",
           "details": "Implement the following accessibility features:\n\n1. High Contrast Mode:\n   - Create a high contrast theme in useTheme.ts\n   - Modify Tailwind configuration to support high-contrast variants\n   - Add contrast toggle switch in the UI\n   - Ensure contrast mode works with dark mode\n\n2. Color Blind Friendly Palettes:\n   - Create alternative color schemes for different types of color blindness \n   - Update charts/visualization components to use safe color combinations\n   - Add deuteranopia, protanopia, and tritanopia safe color options\n   - Implement a color mode selector in settings\n\n3. Text Scaling:\n   - Add text size controls in settings\n   - Implement responsive typography (beyond media queries)\n   - Support browser zoom without layout breaking\n   - Ensure minimum text size of 16px by default\n\n4. Global Styles:\n   - Update global CSS to support these accessibility features\n   - Ensure focus states are visible in all modes\n   - Add simple UI for toggling these accessibility options",
-          "status": "pending",
+          "status": "done",
           "dependencies": [],
           "parentTaskId": 46
         },
