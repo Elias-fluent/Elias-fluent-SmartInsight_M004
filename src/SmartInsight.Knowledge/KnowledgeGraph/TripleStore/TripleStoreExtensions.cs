@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SmartInsight.Knowledge.KnowledgeGraph.TripleStore.Interfaces;
@@ -23,6 +24,9 @@ namespace SmartInsight.Knowledge.KnowledgeGraph.TripleStore
             
             // Register the triple store implementation
             services.AddSingleton<ITripleStore, InMemoryTripleStore>();
+            
+            // Register versioning manager
+            services.AddSingleton<IKnowledgeGraphVersioningManager, KnowledgeGraphVersioningManager>();
             
             return services;
         }
