@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using SmartInsight.Core.Interfaces;
-using SmartInsight.Core.Security;
 using Xunit;
 using Xunit.Abstractions;
 
