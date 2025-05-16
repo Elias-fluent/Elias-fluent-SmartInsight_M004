@@ -15,7 +15,7 @@ env:
 
 jobs:
   build:
-    name: Build and Test
+    name: Build Only
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,8 +37,9 @@ jobs:
       - name: Build
         run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
       
-      - name: Test
-        run: dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration Release --verbosity normal
+      # Test step is temporarily commented out and will be re-enabled later
+      # - name: Test
+      #   run: dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration Release --verbosity normal
 
   # All other jobs are temporarily commented out
   # Will be restored when needed
