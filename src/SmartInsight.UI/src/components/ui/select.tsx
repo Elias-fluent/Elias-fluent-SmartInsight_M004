@@ -3,6 +3,7 @@ import * as SelectPrimitive from "@radix-ui/react-select";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
 
 import { cn } from "../../lib/utils";
+import { useKeyboardNavigation } from "../../hooks/useKeyboardNavigation";
 
 const Select = SelectPrimitive.Root;
 
@@ -10,24 +11,44 @@ const SelectGroup = SelectPrimitive.Group;
 
 const SelectValue = SelectPrimitive.Value;
 
+interface SelectTriggerProps extends
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> {
+  /** Indicates that the select is required */
+  required?: boolean;
+  /** Custom error message */
+  error?: string;
+  /** Whether the input has an error state */
+  hasError?: boolean;
+}
+
 const SelectTrigger = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
-      className
-    )}
-    {...props}
-  >
-    {children}
-    <span className="absolute right-3 flex h-3.5 w-3.5 items-center justify-center">
-      <ChevronDown className="h-4 w-4 opacity-50" />
-    </span>
-  </SelectPrimitive.Trigger>
-));
+  SelectTriggerProps
+>(({ className, children, required, error, hasError, ...props }, ref) => {
+  const errorState = hasError || !!error;
+
+  return (
+    <SelectPrimitive.Trigger
+      ref={ref}
+      className={cn(
+        "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+        errorState && "border-destructive focus:ring-destructive",
+        className
+      )}
+      // Add required and error aria attributes
+      aria-required={required ? true : undefined}
+      aria-invalid={errorState ? true : undefined}
+      // Ensure good screen reader announcement
+      aria-haspopup="listbox"
+      {...props}
+    >
+      {children}
+      <span className="absolute right-3 flex h-3.5 w-3.5 items-center justify-center">
+        <ChevronDown className="h-4 w-4 opacity-50" />
+      </span>
+    </SelectPrimitive.Trigger>
+  );
+});
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
 const SelectScrollUpButton = React.forwardRef<
@@ -42,7 +63,7 @@ const SelectScrollUpButton = React.forwardRef<
     )}
     {...props}
   >
-    <ChevronUp className="h-4 w-4" />
+    <ChevronUp className="h-4 w-4" aria-hidden="true" />
   </SelectPrimitive.ScrollUpButton>
 ));
 SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName;
@@ -59,16 +80,22 @@ const SelectScrollDownButton = React.forwardRef<
     )}
     {...props}
   >
-    <ChevronDown className="h-4 w-4" />
+    <ChevronDown className="h-4 w-4" aria-hidden="true" />
   </SelectPrimitive.ScrollDownButton>
 ));
 SelectScrollDownButton.displayName =
   SelectPrimitive.ScrollDownButton.displayName;
 
+interface SelectContentProps extends
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content> {
+  /** ID of the label element for this select for accessibility */
+  labelledBy?: string;
+}
+
 const SelectContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ className, children, position = "popper", ...props }, ref) => (
+  SelectContentProps
+>(({ className, children, position = "popper", labelledBy, ...props }, ref) => (
   <SelectPrimitive.Portal>
     <SelectPrimitive.Content
       ref={ref}
@@ -79,6 +106,8 @@ const SelectContent = React.forwardRef<
         className
       )}
       position={position}
+      // Improve accessibility by linking to label
+      aria-labelledby={labelledBy}
       {...props}
     >
       <SelectScrollUpButton />
@@ -109,21 +138,29 @@ const SelectLabel = React.forwardRef<
 ));
 SelectLabel.displayName = SelectPrimitive.Label.displayName;
 
+interface SelectItemProps extends
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item> {
+  /** Custom description for screen readers if item text is insufficient */
+  description?: string;
+}
+
 const SelectItem = React.forwardRef<
   HTMLDivElement,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
->(({ className, children, ...props }, ref) => (
+  SelectItemProps
+>(({ className, children, description, ...props }, ref) => (
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
       "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
+    // Add accessible description if provided
+    aria-description={description}
     {...props}
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
-        <Check className="h-4 w-4" />
+        <Check className="h-4 w-4" aria-hidden="true" />
       </SelectPrimitive.ItemIndicator>
     </span>
 
@@ -139,6 +176,9 @@ const SelectSeparator = React.forwardRef<
   <SelectPrimitive.Separator
     ref={ref}
     className={cn("-mx-1 my-1 h-px bg-muted", className)}
+    // Explicitly mark as separator for screen readers
+    role="separator"
+    aria-orientation="horizontal"
     {...props}
   />
 ));
