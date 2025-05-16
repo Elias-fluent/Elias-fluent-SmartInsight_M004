@@ -113,7 +113,7 @@
         3,
         4
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -121,7 +121,7 @@
           "description": "Create the main DbContext class that inherits from EF Core's DbContext and define all required DbSet properties for entities",
           "dependencies": [],
           "details": "Implement a class that inherits from DbContext, add DbSet<T> properties for each entity in the domain model, and implement a constructor that accepts DbContextOptions. Include any required using statements and namespace declarations.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -131,7 +131,7 @@
             1
           ],
           "details": "Override the OnModelCreating method in the DbContext class to apply entity configurations. Set up the initial structure for applying entity type configurations and global query filters.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -141,7 +141,7 @@
             2
           ],
           "details": "Create separate configuration classes for each entity that implement IEntityTypeConfiguration<T>. Configure primary keys, foreign keys, indexes, and relationships using Fluent API. Organize these in a dedicated 'Configurations' folder.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -151,7 +151,7 @@
             3
           ],
           "details": "Configure PostgreSQL-specific features such as UUID generation, JSON column types, full-text search capabilities, and any required extensions. Use the HasPostgresExtension method where needed.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -161,7 +161,7 @@
             2
           ],
           "details": "Implement global query filters in OnModelCreating to filter entities by tenant ID. Create a mechanism to access the current tenant ID from the context, possibly using a service or ambient context pattern.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -172,7 +172,7 @@
             5
           ],
           "details": "Implement methods to create and apply Row-Level Security policies in PostgreSQL. This may include creating migration methods or raw SQL execution to set up RLS policies that enforce tenant isolation at the database level.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 7,
@@ -182,7 +182,7 @@
             1
           ],
           "details": "Create an implementation of IDesignTimeDbContextFactory<T> for design-time tools and a runtime factory for creating properly configured DbContext instances. Handle connection string resolution from configuration.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 8,
@@ -192,7 +192,7 @@
             7
           ],
           "details": "Create a mechanism to securely store and retrieve connection strings, possibly with different connections per tenant. Implement connection string building that includes any required parameters like Application Name or connection pooling settings.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -220,7 +220,7 @@
         9,
         10
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -228,7 +228,7 @@
           "description": "Extend the base IdentityUser class to include a TenantId property for multi-tenant support",
           "dependencies": [],
           "details": "Create a new ApplicationUser class that inherits from IdentityUser and adds a TenantId property. Update the DbContext to use this custom user class. Ensure the TenantId is properly mapped in the database schema.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -238,7 +238,7 @@
             1
           ],
           "details": "Extend the UserStore<ApplicationUser> class to override key methods like FindByIdAsync, FindByNameAsync, etc. to include TenantId in queries. Ensure all CRUD operations respect tenant boundaries by adding TenantId filters.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -249,7 +249,7 @@
             2
           ],
           "details": "Create a custom ApplicationUserManager that extends UserManager<ApplicationUser> with methods for tenant-specific operations. Add validation to ensure users can only be created, updated, or deleted within their tenant context.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -260,7 +260,7 @@
             3
           ],
           "details": "Create a custom ApplicationSignInManager that extends SignInManager<ApplicationUser> to validate tenant context during sign-in. Implement logic to prevent users from accessing resources outside their tenant.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -271,7 +271,7 @@
             3
           ],
           "details": "Create a custom ApplicationRole class with TenantId property. Implement a tenant-aware RoleStore and RoleManager to ensure roles are scoped to tenants. Update role assignment logic to respect tenant boundaries.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -282,7 +282,7 @@
             5
           ],
           "details": "Define a set of tenant-specific claim types for RBAC. Implement helpers to generate and validate these claims. Ensure claims include tenant context to prevent cross-tenant authorization issues.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 7,
@@ -293,7 +293,7 @@
             4
           ],
           "details": "Implement middleware that determines the current tenant context from the request (e.g., subdomain, header, or claim) and makes it available throughout the request pipeline. Ensure this context is used by the identity components.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 8,
@@ -309,7 +309,7 @@
             7
           ],
           "details": "Create integration tests that verify tenant isolation in the identity system. Test scenarios like cross-tenant access attempts, tenant-specific role assignments, and proper tenant filtering in user queries. Ensure security boundaries are maintained.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -324,7 +324,7 @@
         9,
         10
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -353,7 +353,7 @@
         3,
         10
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -361,7 +361,7 @@
           "description": "Create the core interface definition with essential methods for data source connectivity",
           "dependencies": [],
           "details": "Define the IDataSourceConnector interface with methods for connection, validation, data extraction, and transformation. Include method signatures for Connect(), Validate(), Extract(), and Transform() with appropriate parameters and return types.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -371,7 +371,7 @@
             1
           ],
           "details": "Create configuration classes that will be used by connectors to store connection parameters, credentials, and other settings. Implement serialization/deserialization support and secure credential storage mechanisms.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -381,7 +381,7 @@
             1
           ],
           "details": "Define lifecycle events such as OnInitialize, OnConnect, OnExecute, OnDisconnect, and OnError. Create an event subscription mechanism allowing the system to monitor connector state changes and respond appropriately.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -392,7 +392,7 @@
             3
           ],
           "details": "Implement a connector registry that allows dynamic registration and discovery of connector implementations. Include methods for registering, unregistering, and querying available connectors.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -403,7 +403,7 @@
             4
           ],
           "details": "Design and implement a factory class that can create instances of specific connector implementations based on type or identifier. Include dependency injection support and configuration parameter handling.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -413,7 +413,7 @@
             1
           ],
           "details": "Design attribute classes for annotating connector implementations with metadata such as name, description, version, supported data formats, and configuration requirements. Implement reflection-based discovery of these attributes.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 7,
@@ -423,7 +423,7 @@
             6
           ],
           "details": "Build a documentation generator that can extract connector metadata and produce human-readable documentation. Include support for generating markdown, HTML, or other documentation formats from connector attributes.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 8,
@@ -437,7 +437,7 @@
             6
           ],
           "details": "Implement a sample connector that demonstrates proper implementation of the interface, lifecycle events, configuration handling, and metadata attributes. This will serve as a reference for developers creating new connectors.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -451,7 +451,7 @@
       "dependencies": [
         14
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -459,7 +459,7 @@
           "description": "Create a connection interface that handles authentication, connection pooling, and security for PostgreSQL databases.",
           "dependencies": [],
           "details": "Define connection parameters (host, port, database, user, password), implement connection pooling for performance, add SSL support, and create connection validation methods.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -469,7 +469,7 @@
             1
           ],
           "details": "Create connection test utilities, implement timeout handling, develop connection health checks, and add detailed error reporting for connection issues.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -479,7 +479,7 @@
             1
           ],
           "details": "Query PostgreSQL system tables to extract schema information, handle various PostgreSQL data types, support views and materialized views, and implement schema caching for performance.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -490,7 +490,7 @@
             3
           ],
           "details": "Support standard CRUD operations, implement parameterized queries for security, handle PostgreSQL-specific query features, and optimize query performance.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -501,7 +501,7 @@
             4
           ],
           "details": "Map PostgreSQL types to appropriate application types, handle special types (JSON, arrays, etc.), implement custom type converters, and ensure proper handling of NULL values.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -512,7 +512,7 @@
             5
           ],
           "details": "Implement cursor-based extraction for large datasets, add batching capabilities, optimize memory usage during extraction, and add progress tracking.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 7,
@@ -522,7 +522,7 @@
             6
           ],
           "details": "Implement timestamp-based change detection, support WAL (Write-Ahead Log) based change tracking, add support for custom change tracking columns, and create checkpoint management.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 8,
@@ -535,7 +535,7 @@
             7
           ],
           "details": "Create custom exception types, implement retry mechanisms with backoff, add detailed logging, and develop recovery strategies for common failure scenarios.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 9,
@@ -545,7 +545,7 @@
             4
           ],
           "details": "Support explicit transaction control, implement savepoints, add transaction isolation level configuration, and ensure proper cleanup of transactions.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 10,
@@ -563,7 +563,7 @@
             9
           ],
           "details": "Create unit tests for each component, develop integration tests with actual PostgreSQL instances, implement performance benchmarks, and add test coverage reporting.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -603,7 +603,7 @@
       "dependencies": [
         14
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -617,7 +617,7 @@
         3,
         10
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -631,7 +631,7 @@
         14,
         19
       ],
-      "status": "pending",
+      "status": "in-progress",
       "subtasks": []
     },
     {
@@ -923,7 +923,7 @@
         25,
         26
       ],
-      "status": "in-progress",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -941,7 +941,7 @@
             1
           ],
           "details": "Create parsers to identify parameters in natural language. Implement type inference for parameters. Design parameter mapping to SQL placeholders. Include handling for optional parameters and defaults.",
-          "status": "in-progress"
+          "status": "done"
         },
         {
           "id": 3,
@@ -951,7 +951,7 @@
             2
           ],
           "details": "Implement type checking, range validation, format validation, and sanitization. Create custom validators for different parameter types. Design validation error reporting system.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -961,7 +961,7 @@
             1
           ],
           "details": "Create tenant context management. Implement automatic tenant filtering for all queries. Design override protection mechanisms. Test multi-tenant query isolation. Document tenant scoping patterns.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -972,7 +972,7 @@
             3
           ],
           "details": "Implement parameterized queries. Create whitelist-based input validation. Develop query structure verification. Design escape sequence handling. Test with common SQL injection patterns.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -983,7 +983,7 @@
             5
           ],
           "details": "Implement syntax validation. Create semantic validation rules. Design query complexity checks. Develop table access permission validation. Build validation reporting system.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 7,
@@ -993,7 +993,7 @@
             6
           ],
           "details": "Create query plan analysis. Implement index usage optimization. Design join optimization. Build query rewriting rules. Develop performance metrics collection.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 8,
@@ -1005,7 +1005,7 @@
             7
           ],
           "details": "Create structured logging format. Implement query origin tracking. Design performance metrics logging. Develop security event logging. Build log rotation and retention policies.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 9,
@@ -1019,7 +1019,7 @@
             7
           ],
           "details": "Implement unit tests for all components. Create integration tests for end-to-end flows. Design security penetration tests. Develop performance benchmarks. Build regression test suite.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 10,
@@ -1029,7 +1029,7 @@
             9
           ],
           "details": "Create architecture documentation. Write developer guides. Design security best practices. Develop troubleshooting guides. Build example templates and usage patterns.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -1332,7 +1332,7 @@
       "dependencies": [
         39
       ],
-      "status": "in-progress",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -1501,7 +1501,7 @@
       "dependencies": [
         1
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -1582,7 +1582,7 @@
       "dependencies": [
         1
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -1595,7 +1595,7 @@
       "dependencies": [
         60
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -1976,7 +1976,7 @@
       "dependencies": [
         1
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {

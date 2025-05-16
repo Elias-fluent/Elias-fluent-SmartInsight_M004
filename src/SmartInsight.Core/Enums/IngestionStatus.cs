@@ -1,42 +1,37 @@
 namespace SmartInsight.Core.Enums;
 
 /// <summary>
-/// Status of data ingestion jobs
+/// Status of a data ingestion job
 /// </summary>
 public enum IngestionStatus
 {
     /// <summary>
-    /// Job is scheduled but not started yet
+    /// The job is scheduled but has not run yet
     /// </summary>
     Scheduled,
     
     /// <summary>
-    /// Job is currently in the queue
-    /// </summary>
-    Queued,
-    
-    /// <summary>
-    /// Job is currently running
+    /// The job is currently running
     /// </summary>
     Running,
     
     /// <summary>
-    /// Job completed successfully
+    /// The job completed successfully
     /// </summary>
     Completed,
     
     /// <summary>
-    /// Job failed with errors
+    /// The job failed
     /// </summary>
     Failed,
     
     /// <summary>
-    /// Job was cancelled by user or system
+    /// The job is currently paused
     /// </summary>
-    Cancelled,
+    Paused,
     
     /// <summary>
-    /// Job is partially completed with some errors
+    /// The job was cancelled
     /// </summary>
-    PartialSuccess
+    Cancelled
 } 
