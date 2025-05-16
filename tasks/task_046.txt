@@ -1,6 +1,6 @@
 # Task ID: 46
 # Title: Implement Accessibility Features
-# Status: pending
+# Status: in-progress
 # Dependencies: 39, 41, 42
 # Priority: high
 # Description: Ensure UI components meet WCAG 2.1 AA compliance.
@@ -18,3 +18,112 @@ Ensure comprehensive accessibility compliance.
 
 # Test Strategy:
 Create accessibility tests using axe or similar tools. Test keyboard navigation. Verify screen reader compatibility. Validate color contrast ratios.
+
+# Subtasks:
+## 1. Create accessibility hooks for keyboard navigation and focus management [done]
+### Dependencies: None
+### Description: Implement custom React hooks for keyboard navigation, focus management, and screen reader compatibility.
+### Details:
+Create the following hooks in src/hooks directory:
+1. useFocusTrap.ts - For modal dialogs and dropdown menus
+2. useKeyboardNavigation.ts - For keyboard arrow key navigation
+3. useFocusVisible.ts - For focus ring visibility only during keyboard navigation
+4. useAnnounce.ts - For screen reader announcements
+
+Each hook should be well-documented and have appropriate TypeScript interfaces.
+
+## 2. Implement accessible base components [done]
+### Dependencies: None
+### Description: Enhance existing UI components with ARIA attributes, keyboard interaction, and proper semantic HTML.
+### Details:
+Update the following base components:
+1. button.tsx - Add proper aria-pressed, aria-disabled attributes
+2. input.tsx - Add aria-invalid, aria-errormessage attributes
+3. select.tsx - Implement keyboard navigation and proper ARIA roles
+4. card.tsx - Add proper heading hierarchy and semantic structure
+5. table.tsx - Add proper caption, headers, and ARIA roles for accessibility
+
+For each component:
+- Add proper keyboard event handling
+- Ensure correct semantic HTML elements are used
+- Add appropriate ARIA attributes and roles
+- Ensure focus visibility
+- Add descriptive labels and error messages
+
+## 3. Enhance conversation components for accessibility [done]
+### Dependencies: None
+### Description: Update chat and conversation UI components to ensure they are fully accessible to keyboard and screen reader users.
+### Details:
+Enhance the following conversation components:
+1. ConversationDetail.tsx - Add keyboard navigation, screen reader support
+2. ConversationList.tsx - Make items keyboard navigable, add proper ARIA roles
+3. MessageItem.tsx - Ensure proper semantic structure and ARIA roles
+4. MessageActions.tsx - Make actions keyboard accessible with proper labels
+5. MessageInput.tsx - Add accessible autocomplete support
+6. ChatContainer.tsx - Improve focus management and keyboard navigation
+
+Key improvements:
+- Mark loading states with aria-busy
+- Ensure announcements of new messages for screen readers
+- Add keyboard shortcuts for common actions
+- Implement proper focus management between input and message list
+- Add appropriate roles: log, listitem, etc.
+- Ensure proper heading hierarchy
+
+## 4. Implement color and contrast accessibility [pending]
+### Dependencies: None
+### Description: Create high contrast mode, colorblind-friendly palettes, and proper text scaling features.
+### Details:
+Implement the following accessibility features:
+
+1. High Contrast Mode:
+   - Create a high contrast theme in useTheme.ts
+   - Modify Tailwind configuration to support high-contrast variants
+   - Add contrast toggle switch in the UI
+   - Ensure contrast mode works with dark mode
+
+2. Color Blind Friendly Palettes:
+   - Create alternative color schemes for different types of color blindness 
+   - Update charts/visualization components to use safe color combinations
+   - Add deuteranopia, protanopia, and tritanopia safe color options
+   - Implement a color mode selector in settings
+
+3. Text Scaling:
+   - Add text size controls in settings
+   - Implement responsive typography (beyond media queries)
+   - Support browser zoom without layout breaking
+   - Ensure minimum text size of 16px by default
+
+4. Global Styles:
+   - Update global CSS to support these accessibility features
+   - Ensure focus states are visible in all modes
+   - Add simple UI for toggling these accessibility options
+
+## 5. Implement accessibility testing framework [pending]
+### Dependencies: None
+### Description: Set up automated and manual accessibility testing procedures to validate WCAG 2.1 AA compliance.
+### Details:
+Create a comprehensive accessibility testing framework:
+
+1. Automated Testing:
+   - Install and configure axe-core for automated accessibility testing
+   - Set up Jest/Vitest tests with axe-core to validate components
+   - Create CI pipeline step for accessibility testing
+   - Implement custom accessibility test assertions
+
+2. Manual Testing Procedures:
+   - Create a checklist for manual keyboard navigation testing
+   - Document screen reader testing procedures (NVDA, JAWS, VoiceOver)
+   - Set up browser extension tools for ad-hoc testing
+
+3. Component Test Cases:
+   - Write specific test cases for each major component
+   - Test focus management in modals and dialogs
+   - Validate color contrast ratios
+   - Test keyboard-only interaction flows
+
+4. Documentation:
+   - Create accessibility conformance documentation
+   - Add known issues and workarounds
+   - Document accessibility features for users
+
