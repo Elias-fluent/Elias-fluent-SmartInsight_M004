@@ -1,10 +1,9 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import type { KeyboardEvent } from 'react';
 import type { Conversation } from '../../store/slices/chatSlice';
 import { Download, File, FileJson, FileText, X } from 'lucide-react';
 import { useFocusVisible } from '../../hooks/useFocusVisible';
 import { useAnnounce } from '../../hooks/useAnnounce';
-import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 
 interface ExportConversationProps {
@@ -22,16 +21,75 @@ const ExportConversation: React.FC<ExportConversationProps> = ({
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const formatsContainerRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
   const { isFocusVisible } = useFocusVisible();
   const { announce } = useAnnounce();
   
-  // Trap focus within the modal when it's open
-  const { containerRef } = useFocusTrap(modalRef, {
-    active: isOpen,
-    onEscape: onClose,
-    initialFocusRef: closeButtonRef,
-    restoreFocus: true,
-  });
+  // Implement focus trap and restore focus when modal closes
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    // Store previously focused element to restore later
+    previousFocusRef.current = document.activeElement as HTMLElement;
+    
+    // Focus the close button when modal opens
+    if (closeButtonRef.current) {
+      closeButtonRef.current.focus();
+    }
+    
+    // Handle tab key to keep focus within modal
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab' || !modalRef.current) return;
+      
+      // Get all focusable elements within the modal
+      const focusableElements = Array.from(
+        modalRef.current.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+      ) as HTMLElement[];
+      
+      if (focusableElements.length === 0) return;
+      
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      
+      // Handle Tab and Shift+Tab to cycle within the modal
+      if (e.shiftKey && document.activeElement === firstElement) {
+        e.preventDefault();
+        lastElement.focus();
+      } else if (!e.shiftKey && document.activeElement === lastElement) {
+        e.preventDefault();
+        firstElement.focus();
+      }
+    };
+    
+    // Handle escape key to close modal
+    const handleEscapeKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    
+    // Combine key handlers
+    const handleKeyDown = (e: any) => {
+      handleTabKey(e);
+      handleEscapeKey(e);
+    };
+    
+    // Add event listener for keyboard navigation
+    document.addEventListener('keydown', handleKeyDown);
+    
+    // Cleanup function
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      
+      // Restore focus when modal closes
+      if (previousFocusRef.current && !isOpen) {
+        previousFocusRef.current.focus();
+      }
+    };
+  }, [isOpen, onClose]);
   
   // Setup keyboard navigation for format options
   const { focusedIndex, handleKeyDown } = useKeyboardNavigation({
@@ -119,7 +177,7 @@ const ExportConversation: React.FC<ExportConversationProps> = ({
       aria-labelledby="export-dialog-title"
     >
       <div 
-        ref={modalRef as React.Ref<HTMLDivElement>}
+        ref={modalRef}
         className="bg-background rounded-lg shadow-lg w-full max-w-md p-6 relative animate-in fade-in"
       >
         <button
