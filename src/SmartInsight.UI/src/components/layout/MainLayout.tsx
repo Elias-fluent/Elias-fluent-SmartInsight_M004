@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from '../../store/StoreContext';
 import authService from '../../services/authService';
 import TenantSelector from '../ui/TenantSelector';
 import { authActions } from '../../store/slices/authSlice';
+import { Home, MessageSquare, BarChart3, Settings } from 'lucide-react';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -12,6 +13,7 @@ interface MainLayoutProps {
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { state, dispatch } = useStore();
   const navigate = useNavigate();
+  const location = useLocation();
   
   // Get authentication state from our custom store
   const { isAuthenticated, user } = state.auth;
@@ -26,6 +28,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     authService.logout();
     dispatch(authActions.logout());
     navigate('/login');
+  };
+  
+  // Check if a path is active
+  const isActive = (path: string) => {
+    return location.pathname === path;
   };
   
   return (
@@ -66,6 +73,61 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </div>
         </div>
       </header>
+      
+      {isAuthenticated && (
+        <nav className="border-b border-border bg-muted/20">
+          <div className="container mx-auto px-4">
+            <ul className="flex space-x-2">
+              <li>
+                <Link
+                  to="/"
+                  className={`flex items-center space-x-1 px-4 py-3 text-sm font-medium ${
+                    isActive('/') ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Home size={18} />
+                  <span>Dashboard</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/chat"
+                  className={`flex items-center space-x-1 px-4 py-3 text-sm font-medium ${
+                    isActive('/chat') ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <MessageSquare size={18} />
+                  <span>Chat</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/analytics"
+                  className={`flex items-center space-x-1 px-4 py-3 text-sm font-medium ${
+                    isActive('/analytics') ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <BarChart3 size={18} />
+                  <span>Analytics</span>
+                </Link>
+              </li>
+              {user?.roles.includes('Admin') && (
+                <li>
+                  <Link
+                    to="/admin"
+                    className={`flex items-center space-x-1 px-4 py-3 text-sm font-medium ${
+                      isActive('/admin') ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <Settings size={18} />
+                    <span>Admin</span>
+                  </Link>
+                </li>
+              )}
+            </ul>
+          </div>
+        </nav>
+      )}
       
       <main className="flex-1 container mx-auto px-4 py-6">
         {children}

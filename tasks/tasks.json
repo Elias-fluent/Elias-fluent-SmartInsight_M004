@@ -1219,7 +1219,7 @@
         39,
         40
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -1227,7 +1227,7 @@
           "description": "Create the main chat container component with proper layout structure for messages list and input area",
           "dependencies": [],
           "details": "Implement a responsive container that will house all chat elements. Define the overall structure, spacing, and scrolling behavior. Include proper CSS for light/dark mode support and ensure the container adapts to different screen sizes.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -1237,7 +1237,7 @@
             1
           ],
           "details": "Build a component that renders the message history with proper spacing, alignment, and visual distinction between sent and received messages. Implement auto-scrolling to the latest message and handle large message lists with virtualization if needed.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -1247,7 +1247,7 @@
             1
           ],
           "details": "Implement a text input field with send button. Handle basic input validation, empty message prevention, and keyboard shortcuts (e.g., Enter to send). Include proper focus management and input state handling.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -1257,7 +1257,7 @@
             2
           ],
           "details": "Integrate a markdown parser library to convert markdown syntax in messages to formatted HTML. Support common markdown features like bold, italic, links, code blocks, and lists. Ensure proper sanitization to prevent XSS attacks.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -1267,7 +1267,7 @@
             2
           ],
           "details": "Develop an animated typing indicator that appears when other participants are typing. Handle the logic for showing/hiding the indicator based on typing events. Ensure the indicator is visually subtle but noticeable.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -1278,7 +1278,7 @@
             4
           ],
           "details": "Create a context menu or action buttons for each message allowing users to edit their own messages, delete them, or add reactions. Handle the UI state changes when these actions are performed and ensure proper permissions checking.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 7,
@@ -1292,7 +1292,7 @@
             6
           ],
           "details": "Add proper ARIA attributes, ensure keyboard navigation works throughout the interface, provide text alternatives for visual elements, and test with screen readers. Implement focus management for new messages and ensure color contrast meets WCAG standards.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 8,
@@ -1305,7 +1305,7 @@
             7
           ],
           "details": "Implement responsive breakpoints to adjust layout for mobile, tablet, and desktop views. Test on various devices and screen sizes. Optimize touch interactions for mobile users and ensure the input area doesn't get obscured by the virtual keyboard on mobile devices.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
