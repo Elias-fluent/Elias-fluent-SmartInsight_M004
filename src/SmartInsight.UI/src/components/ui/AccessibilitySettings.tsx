@@ -12,7 +12,6 @@ interface AccessibilitySettingsProps {
  */
 export function AccessibilitySettings({ className = '' }: AccessibilitySettingsProps) {
   const { 
-    isDark, 
     contrastMode, 
     colorBlindMode, 
     textSize,

@@ -221,4 +221,31 @@ export const apiMiddleware: Middleware = (api) => {
       }
     }
   };
-}; 
+};
+
+// Helper function to create API request actions
+export const apiRequestHelper = (
+  endpoint: string,
+  method: 'get' | 'post' | 'put' | 'delete' | 'patch',
+  data?: any,
+  onSuccess?: string,
+  onFailure?: string,
+  headers?: Record<string, string>
+): ApiRequestAction => ({
+  type: API_REQUEST,
+  payload: {
+    url: endpoint,
+    method,
+    data,
+    onSuccess,
+    onFailure,
+    config: {
+      headers: {
+        ...headers,
+      },
+    },
+  },
+});
+
+// Export the helper
+export { apiRequest as default } from './apiMiddlewareHelper'; 

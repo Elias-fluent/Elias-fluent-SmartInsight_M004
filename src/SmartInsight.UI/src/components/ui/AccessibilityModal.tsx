@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useUI } from '../../store/StoreContext';
 import { uiActions } from '../../store/slices/uiSlice';
 import AccessibilitySettings from './AccessibilitySettings';
