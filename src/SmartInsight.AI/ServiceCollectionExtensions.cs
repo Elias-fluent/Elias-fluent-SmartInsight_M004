@@ -109,22 +109,6 @@ namespace SmartInsight.AI
             return services;
         }
 
-        /// <summary>
-        /// Adds all AI services to the service collection.
-        /// </summary>
-        /// <param name="services">The service collection.</param>
-        /// <param name="configuration">Configuration containing AI settings.</param>
-        /// <returns>The service collection for chaining.</returns>
-        public static IServiceCollection AddAllAIServices(
-            this IServiceCollection services,
-            IConfiguration configuration)
-        {
-            services.AddOllamaClient(configuration);
-            services.AddIntentDetection(configuration);
-            services.AddContextManagement(configuration);
-            services.AddIntentClassification(configuration);
-            services.AddFallbackStrategies(configuration);
-            return services;
-        }
+                /// <summary>        /// Adds output verification services to the service collection.        /// </summary>        /// <param name="services">The service collection.</param>        /// <param name="configuration">Configuration containing output verification settings.</param>        /// <returns>The service collection for chaining.</returns>        public static IServiceCollection AddOutputVerification(            this IServiceCollection services,            IConfiguration configuration)        {            // Register options            services.Configure<OutputVerificationOptions>(configuration.GetSection("OutputVerification"));                        // Register output verifier            services.AddSingleton<IOutputVerifier, OutputVerifier>();                        return services;        }        /// <summary>        /// Adds all AI services to the service collection.        /// </summary>        /// <param name="services">The service collection.</param>        /// <param name="configuration">Configuration containing AI settings.</param>        /// <returns>The service collection for chaining.</returns>        public static IServiceCollection AddAllAIServices(            this IServiceCollection services,            IConfiguration configuration)        {            services.AddOllamaClient(configuration);            services.AddIntentDetection(configuration);            services.AddContextManagement(configuration);            services.AddIntentClassification(configuration);            services.AddFallbackStrategies(configuration);            services.AddOutputVerification(configuration);            return services;        }
     }
 } 
