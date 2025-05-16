@@ -36,4 +36,14 @@ public static class SmartInsightClaimTypes
     /// Claim type for permission to access all tenants (admin)
     /// </summary>
     public const string CanAccessAllTenants = ClaimTypeNamespace + "canAccessAllTenants";
+
+    /// <summary>
+    /// Claim type for user's username
+    /// </summary>
+    public const string Username = ClaimTypeNamespace + "username";
+
+    /// <summary>
+    /// Claim type for user's display name
+    /// </summary>
+    public const string DisplayName = ClaimTypeNamespace + "displayname";
 } 

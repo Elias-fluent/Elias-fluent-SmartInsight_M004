@@ -1,18 +1,34 @@
-using SmartInsight.Telemetry.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Serilog;
+using SmartInsight.API.Extensions;
+using SmartInsight.API.Security;
+using SmartInsight.Telemetry.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Serilog
 builder.Host.UseSerilogConfig();
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Add services to the container
+builder.Services.AddControllers();
+
+// Configure API versioning
+builder.Services.AddApiVersioningConfiguration();
+
+// Configure Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerWithJwtSupport();
+
+// Configure JWT authentication
+builder.Services.AddJwtAuthentication(builder.Configuration);
+
+// Configure rate limiting
+builder.Services.AddRateLimiting();
 
 // Add telemetry services
-builder.Services.AddTelemetryServices(builder.Configuration, builder.Environment.EnvironmentName);
+builder.Services.AddTelemetryServices(builder.Configuration);
 
 var app = builder.Build();
 
@@ -22,7 +38,7 @@ app.UseSerilogRequestLogging();
 // Configure Serilog with the application services
 app.UseSerilogConfiguration(app.Configuration, app.Environment);
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -30,30 +46,15 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseRouting();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+// Apply rate limiting middleware
+app.UseRateLimiter();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+// Authentication & Authorization
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
