@@ -573,10 +573,12 @@ namespace SmartInsight.Knowledge.KnowledgeGraph.TripleStore
         /// Queries the triple store with various filter options
         /// </summary>
         /// <param name="query">The triple query parameters</param>
+        /// <param name="tenantId">The tenant ID for multi-tenant isolation</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>The query results</returns>
-        public async Task<TripleQueryResult> QueryTriplesAsync(
-            TripleQuery query,
+        public async Task<TripleQueryResult> QueryAsync(
+            TripleQuery query, 
+            string tenantId,
             CancellationToken cancellationToken = default)
         {
             if (query == null)
@@ -588,37 +590,50 @@ namespace SmartInsight.Knowledge.KnowledgeGraph.TripleStore
                 
                 var result = new TripleQueryResult
                 {
-                    Success = true,
+                    Query = query
                 };
                 
                 // Filter triples based on the query parameters
                 var filteredTriples = _tripleCache.Values
                     .Where(t => 
-                        (string.IsNullOrEmpty(query.TenantId) || t.TenantId == query.TenantId) &&
+                        (string.IsNullOrEmpty(tenantId) || t.TenantId == tenantId) &&
                         (string.IsNullOrEmpty(query.SubjectId) || t.SubjectId == query.SubjectId) &&
                         (string.IsNullOrEmpty(query.PredicateUri) || t.PredicateUri == query.PredicateUri) &&
                         (string.IsNullOrEmpty(query.ObjectId) || t.ObjectId == query.ObjectId) &&
                         (string.IsNullOrEmpty(query.GraphUri) || t.GraphUri == query.GraphUri) &&
-                        (t.ConfidenceScore >= query.MinConfidence) &&
-                        (!query.VerifiedOnly || t.IsVerified));
+                        (!query.MinConfidenceScore.HasValue || t.ConfidenceScore >= query.MinConfidenceScore.Value) &&
+                        (!query.IsVerified.HasValue || t.IsVerified == query.IsVerified.Value) &&
+                        (string.IsNullOrEmpty(query.SourceDocumentId) || t.SourceDocumentId == query.SourceDocumentId) &&
+                        (!query.CreatedAfter.HasValue || t.CreatedAt >= query.CreatedAfter.Value) &&
+                        (!query.CreatedBefore.HasValue || t.CreatedAt <= query.CreatedBefore.Value));
                 
                 result.TotalCount = filteredTriples.Count();
                 
+                // Apply sorting
+                var orderedTriples = query.SortAscending
+                    ? OrderTriplesByProperty(filteredTriples, query.SortBy, true)
+                    : OrderTriplesByProperty(filteredTriples, query.SortBy, false);
+                
                 // Apply pagination
-                result.Triples = filteredTriples
+                result.Triples = orderedTriples
                     .Skip(query.Offset)
                     .Take(query.Limit)
                     .ToList();
                 
+                result.HasMore = result.TotalCount > (query.Offset + query.Limit);
+                
                 sw.Stop();
-                result.QueryTimeMs = sw.ElapsedMilliseconds;
+                
+                // Add metadata
+                result.Metadata["QueryTimeMs"] = sw.ElapsedMilliseconds;
+                result.Metadata["ExecutedAt"] = DateTime.UtcNow;
                 
                 _logger.LogDebug(
                     "Query returned {Count} of {Total} triples for tenant {TenantId} in {ElapsedMs}ms",
                     result.Triples.Count,
                     result.TotalCount,
-                    query.TenantId,
-                    result.QueryTimeMs);
+                    tenantId,
+                    sw.ElapsedMilliseconds);
                 
                 return result;
             }
@@ -627,14 +642,49 @@ namespace SmartInsight.Knowledge.KnowledgeGraph.TripleStore
                 _logger.LogError(
                     ex,
                     "Error querying triples for tenant {TenantId}: {ErrorMessage}",
-                    query.TenantId,
+                    tenantId,
                     ex.Message);
                 
                 return new TripleQueryResult
                 {
-                    Success = false,
-                    ErrorMessage = ex.Message
+                    Triples = new List<Models.Triple>(),
+                    TotalCount = 0,
+                    HasMore = false,
+                    Query = query,
+                    Metadata = new Dictionary<string, object>
+                    {
+                        ["Error"] = ex.Message,
+                        ["ExecutedAt"] = DateTime.UtcNow
+                    }
                 };
+            }
+        }
+        
+        /// <summary>
+        /// Orders triples by the specified property
+        /// </summary>
+        private IEnumerable<Models.Triple> OrderTriplesByProperty(IEnumerable<Models.Triple> triples, string propertyName, bool ascending)
+        {
+            switch (propertyName.ToLowerInvariant())
+            {
+                case "createdat":
+                    return ascending ? triples.OrderBy(t => t.CreatedAt) : triples.OrderByDescending(t => t.CreatedAt);
+                case "updatedat":
+                    return ascending ? triples.OrderBy(t => t.UpdatedAt) : triples.OrderByDescending(t => t.UpdatedAt);
+                case "confidencescore":
+                    return ascending ? triples.OrderBy(t => t.ConfidenceScore) : triples.OrderByDescending(t => t.ConfidenceScore);
+                case "subjectid":
+                    return ascending ? triples.OrderBy(t => t.SubjectId) : triples.OrderByDescending(t => t.SubjectId);
+                case "predicateuri":
+                    return ascending ? triples.OrderBy(t => t.PredicateUri) : triples.OrderByDescending(t => t.PredicateUri);
+                case "objectid":
+                    return ascending ? triples.OrderBy(t => t.ObjectId) : triples.OrderByDescending(t => t.ObjectId);
+                case "id":
+                    return ascending ? triples.OrderBy(t => t.Id) : triples.OrderByDescending(t => t.Id);
+                case "version":
+                    return ascending ? triples.OrderBy(t => t.Version) : triples.OrderByDescending(t => t.Version);
+                default:
+                    return ascending ? triples.OrderBy(t => t.CreatedAt) : triples.OrderByDescending(t => t.CreatedAt);
             }
         }
         
