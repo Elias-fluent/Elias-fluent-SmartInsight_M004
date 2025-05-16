@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useStore } from '../../store/StoreContext';
 import authService from '../../services/authService';
 import TenantSelector from '../ui/TenantSelector';
 import { authActions } from '../../store/slices/authSlice';
@@ -9,22 +9,12 @@ interface MainLayoutProps {
   children: React.ReactNode;
 }
 
-// Type for the state selector
-interface RootState {
-  auth: {
-    isAuthenticated: boolean;
-    user: {
-      username: string;
-    } | null;
-  };
-}
-
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
-  const dispatch = useDispatch();
+  const { state, dispatch } = useStore();
   const navigate = useNavigate();
   
-  // Get authentication state from Redux store
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  // Get authentication state from our custom store
+  const { isAuthenticated, user } = state.auth;
   
   // Setup auth interceptors
   useEffect(() => {

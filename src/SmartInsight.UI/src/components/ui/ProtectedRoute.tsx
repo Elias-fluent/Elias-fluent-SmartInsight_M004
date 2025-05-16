@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import authService from '../../services/authService';
+import useAuth from '../../hooks/useAuth';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -17,7 +17,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredRoles = [] 
 }) => {
   const location = useLocation();
-  const isAuthenticated = authService.isAuthenticated();
+  const { isAuthenticated, hasRole } = useAuth();
   
   // If user is not authenticated, redirect to login
   if (!isAuthenticated) {
@@ -26,9 +26,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   
   // If roles are required, check if user has at least one of them
   if (requiredRoles.length > 0) {
-    const hasRequiredRole = requiredRoles.some(role => 
-      authService.hasRole(role)
-    );
+    const hasRequiredRole = requiredRoles.some(role => hasRole(role));
     
     if (!hasRequiredRole) {
       // Redirect to unauthorized page or dashboard

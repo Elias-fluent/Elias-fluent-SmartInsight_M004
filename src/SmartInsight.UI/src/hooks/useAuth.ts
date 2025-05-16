@@ -1,34 +1,14 @@
-import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
 import { authActions } from '../store/slices/authSlice';
-
-// Type for the auth state in Redux
-interface AuthState {
-  isAuthenticated: boolean;
-  user: {
-    id: string;
-    username: string;
-    email: string;
-    roles: string[];
-  } | null;
-  token: string | null;
-  loading: boolean;
-  error: string | null;
-  tenantId: string | null;
-}
-
-// Type for the root state
-interface RootState {
-  auth: AuthState;
-}
+import { useStore } from '../store/StoreContext';
 
 /**
  * Custom hook that provides authentication-related functionality
  */
 export const useAuth = () => {
-  const auth = useSelector((state: RootState) => state.auth);
-  const dispatch = useDispatch();
+  const { state, dispatch } = useStore();
+  const auth = state.auth;
   const navigate = useNavigate();
   
   /**
@@ -60,7 +40,7 @@ export const useAuth = () => {
    * Check if the current user has a specific role
    */
   const hasRole = (role: string) => {
-    return auth.user?.roles.includes(role) || false;
+    return auth.user?.roles?.includes(role) || false;
   };
   
   /**
