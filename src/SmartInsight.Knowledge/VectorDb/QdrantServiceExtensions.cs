@@ -23,6 +23,32 @@ namespace SmartInsight.Knowledge.VectorDb
             // Register Qdrant client service
             services.AddSingleton<QdrantClientService>();
             
+            // Register embedding services
+            services.AddEmbeddingServices(configuration);
+            
+            return services;
+        }
+        
+        /// <summary>
+        /// Add embedding generation services to the DI container
+        /// </summary>
+        /// <param name="services">Service collection</param>
+        /// <param name="configuration">Configuration</param>
+        /// <returns>Service collection for chaining</returns>
+        public static IServiceCollection AddEmbeddingServices(this IServiceCollection services, IConfiguration configuration)
+        {
+            // Register embedding options
+            services.Configure<EmbeddingOptions>(configuration.GetSection("Embeddings"));
+            
+            // Register text chunker
+            services.AddSingleton<ITextChunker, TextChunker>();
+            
+            // Register embedding generator
+            services.AddSingleton<IEmbeddingGenerator, OllamaEmbeddingGenerator>();
+            
+            // Register document embedder
+            services.AddSingleton<DocumentEmbedder>();
+            
             return services;
         }
     }
