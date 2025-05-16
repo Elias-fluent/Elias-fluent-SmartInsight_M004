@@ -4,7 +4,7 @@ import { useStore } from '../../store/StoreContext';
 import authService from '../../services/authService';
 import TenantSelector from '../ui/TenantSelector';
 import { authActions } from '../../store/slices/authSlice';
-import { Home, MessageSquare, BarChart3, Settings } from 'lucide-react';
+import { Home, MessageSquare, BarChart3, Settings, History } from 'lucide-react';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -98,6 +98,17 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 >
                   <MessageSquare size={18} />
                   <span>Chat</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/history"
+                  className={`flex items-center space-x-1 px-4 py-3 text-sm font-medium ${
+                    isActive('/history') ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <History size={18} />
+                  <span>History</span>
                 </Link>
               </li>
               <li>

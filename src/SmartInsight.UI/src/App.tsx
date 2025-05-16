@@ -4,6 +4,7 @@ import { StoreProvider } from './store/StoreContext';
 import MainLayout from './components/layout/MainLayout';
 import Dashboard from './pages/Dashboard';
 import Chat from './pages/Chat';
+import History from './pages/History';
 import Login from './pages/Login';
 import Unauthorized from './pages/Unauthorized';
 import ProtectedRoute from './components/ui/ProtectedRoute';
@@ -39,6 +40,15 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <Chat />
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/history"
+              element={
+                <ProtectedRoute>
+                  <History />
                 </ProtectedRoute>
               }
             />

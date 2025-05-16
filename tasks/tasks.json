@@ -1346,8 +1346,72 @@
         34,
         39
       ],
-      "status": "pending",
-      "subtasks": []
+      "status": "done",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Base API Client with Axios",
+          "description": "Create the core API client using Axios with configuration for base URL, headers, and timeouts",
+          "details": "",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 44
+        },
+        {
+          "id": 2,
+          "title": "Create Authentication Request Interceptors",
+          "description": "Implement request interceptors to handle adding authentication tokens to requests",
+          "details": "",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 44
+        },
+        {
+          "id": 3,
+          "title": "Implement Response and Error Interceptors",
+          "description": "Create response interceptors for handling common response patterns and error handling",
+          "details": "",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 44
+        },
+        {
+          "id": 4,
+          "title": "Add Request Cancellation Support",
+          "description": "Implement support for cancelling in-flight requests using Axios cancellation tokens",
+          "details": "",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 44
+        },
+        {
+          "id": 5,
+          "title": "Create Retry Logic for Failed Requests",
+          "description": "Implement automatic retry for failed requests with exponential backoff",
+          "details": "",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 44
+        },
+        {
+          "id": 6,
+          "title": "Implement Request Queuing Mechanism",
+          "description": "Create a system for queuing requests to prevent overwhelming the server and manage dependencies between requests",
+          "details": "",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 44
+        },
+        {
+          "id": 7,
+          "title": "Add Request and Response Logging",
+          "description": "Implement logging for API requests and responses with appropriate levels and sanitization of sensitive data",
+          "details": "",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 44
+        }
+      ]
     },
     {
       "id": 45,
@@ -1361,8 +1425,88 @@
         43,
         44
       ],
-      "status": "pending",
-      "subtasks": []
+      "status": "done",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Conversation List Component",
+          "description": "Create a component to display a list of past conversations with previews",
+          "details": "Develop a component that renders a scrollable list of past conversations with the following features:\n- Display conversation title or auto-generated summary\n- Show date/time of the conversation\n- Display conversation preview (first few messages)\n- Implement sorting options (newest first, oldest first)\n- Add click/tap functionality to select a conversation\n- Style the list with proper spacing, dividers, and hover states\n- Ensure the component is responsive across different screen sizes",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 45
+        },
+        {
+          "id": 2,
+          "title": "Create Conversation Detail Component",
+          "description": "Implement a component to view the full history of a selected conversation",
+          "details": "Develop a component that displays the complete message history of a selected conversation with these features:\n- Render the full conversation thread with all messages\n- Show sender information (user or AI) for each message\n- Display timestamps for each message\n- Implement proper styling to distinguish between user and AI messages\n- Add visual indicators for system messages or special events\n- Ensure proper scrolling behavior (start at top or latest message)\n- Implement pagination for long conversations if needed\n- Style the component to match the existing chat interface while highlighting that it's in \"history view\" mode",
+          "status": "done",
+          "dependencies": [
+            1
+          ],
+          "parentTaskId": 45
+        },
+        {
+          "id": 3,
+          "title": "Implement Conversation Search Functionality",
+          "description": "Add search capabilities to find specific conversations or messages",
+          "details": "Implement search functionality with the following features:\n- Create a search input component with proper styling\n- Add search by keywords, phrases, or content\n- Implement search within current conversation or across all conversations\n- Highlight matches in the conversation list and detail view\n- Add instant search as user types (with debouncing)\n- Show count of matches when searching\n- Implement clear search button\n- Display \"no results\" state when appropriate\n- Implement search history (recent searches)\n- Ensure search is performant even with large conversation history",
+          "status": "done",
+          "dependencies": [
+            1,
+            2
+          ],
+          "parentTaskId": 45
+        },
+        {
+          "id": 4,
+          "title": "Create Conversation Filtering Options",
+          "description": "Implement filtering capabilities for the conversation list",
+          "details": "Develop filtering functionality with these features:\n- Add date range filters (today, this week, this month, custom)\n- Implement filters by topic or category (if available)\n- Add filters by conversation length or complexity\n- Create UI controls for applying and clearing filters\n- Show active filters with visual indicators\n- Implement filter combinations (multiple filters applied)\n- Ensure filter state is preserved during navigation\n- Add filter presets (most recent, longest, etc.)\n- Update the conversation list dynamically as filters change\n- Ensure filtering is performant with large datasets",
+          "status": "done",
+          "dependencies": [
+            1
+          ],
+          "parentTaskId": 45
+        },
+        {
+          "id": 5,
+          "title": "Implement Conversation Export Functionality",
+          "description": "Add ability to export conversations in various formats",
+          "details": "Create export functionality with these features:\n- Implement export to multiple formats (PDF, text, HTML, JSON)\n- Add export UI controls (dropdown menu or buttons)\n- Implement export of single conversation or multiple selected conversations\n- Create export progress indicator for larger conversations\n- Add options to customize export (include timestamps, metadata, etc.)\n- Implement proper file naming (based on conversation title/date)\n- Add success/error notifications for export operations\n- Include styling in exports where appropriate (PDF, HTML)\n- Ensure exports are accessible and properly formatted\n- Add option to export conversation history to email",
+          "status": "done",
+          "dependencies": [
+            2
+          ],
+          "parentTaskId": 45
+        },
+        {
+          "id": 6,
+          "title": "Add Conversation Management Features",
+          "description": "Implement features for deleting, archiving, and organizing conversations",
+          "details": "Develop conversation management functionality with these features:\n- Implement delete conversation with confirmation dialog\n- Add support for deleting single or multiple conversations\n- Create archive/unarchive functionality to hide conversations without deletion\n- Implement conversation renaming/title editing\n- Add tagging/categorization system for conversations\n- Create conversation pinning for important conversations\n- Implement bulk actions for multiple selected conversations\n- Add undo functionality for delete and archive operations\n- Ensure proper UI feedback for management actions\n- Implement proper error handling and recovery options\n- Add confirmation for destructive actions",
+          "status": "done",
+          "dependencies": [
+            1,
+            2
+          ],
+          "parentTaskId": 45
+        },
+        {
+          "id": 7,
+          "title": "Implement Conversation Sharing",
+          "description": "Add ability to share conversations with other users or via links",
+          "details": "Create conversation sharing functionality with these features:\n- Implement share dialog with permissions options\n- Add user/group selection for internal sharing\n- Create shareable link generation with expiration options\n- Implement read-only vs. editable sharing modes\n- Add email sharing functionality\n- Create UI to show sharing status on conversations\n- Implement notifications for new shared conversations\n- Add ability to revoke sharing or modify permissions\n- Create a \"shared with me\" section in the conversation list\n- Implement proper access control and permission checks\n- Ensure shared conversations maintain proper formatting and context\n- Add option to copy conversation content to clipboard",
+          "status": "done",
+          "dependencies": [
+            1,
+            2,
+            6
+          ],
+          "parentTaskId": 45
+        }
+      ]
     },
     {
       "id": 46,
