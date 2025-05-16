@@ -28,21 +28,26 @@ namespace SmartInsight.Knowledge.KnowledgeGraph.TripleStore
         private readonly VDS.RDF.TripleStore _store;
         private readonly Dictionary<string, IGraph> _graphCache = new Dictionary<string, IGraph>();
         private readonly Dictionary<string, Models.Triple> _tripleCache = new Dictionary<string, Models.Triple>();
+        private readonly IKnowledgeGraphVersioningManager _versioningManager;
         
         /// <summary>
         /// Initializes a new instance of the InMemoryTripleStore class
         /// </summary>
         /// <param name="logger">The logger instance</param>
         /// <param name="options">The triple store options</param>
+        /// <param name="versioningManager">The knowledge graph versioning manager</param>
         public InMemoryTripleStore(
             ILogger<InMemoryTripleStore> logger,
-            IOptions<TripleStoreOptions> options)
+            IOptions<TripleStoreOptions> options,
+            IKnowledgeGraphVersioningManager versioningManager = null)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+            _versioningManager = versioningManager; // Can be null if versioning is not required
             _store = new VDS.RDF.TripleStore();
             
-            _logger.LogInformation("Initialized in-memory triple store");
+            _logger.LogInformation("Initialized in-memory triple store {Versioning}", 
+                _versioningManager != null ? "with versioning support" : "without versioning support");
         }
         
         /// <summary>
@@ -120,6 +125,34 @@ namespace SmartInsight.Knowledge.KnowledgeGraph.TripleStore
                     triple.Id,
                     triple.GraphUri,
                     tenantId);
+                
+                // Record version if versioning manager is available
+                if (_versioningManager != null)
+                {
+                    try
+                    {
+                        await _versioningManager.RecordVersionAsync(
+                            triple, 
+                            ChangeType.Creation, 
+                            tenantId,
+                            triple.ProvenanceInfo.ContainsKey("ChangedByUserId") ? triple.ProvenanceInfo["ChangedByUserId"].ToString() : null,
+                            triple.ProvenanceInfo.ContainsKey("ChangeComment") ? triple.ProvenanceInfo["ChangeComment"].ToString() : null,
+                            cancellationToken);
+                            
+                        _logger.LogDebug(
+                            "Recorded version for triple {TripleId} with change type Creation",
+                            triple.Id);
+                    }
+                    catch (Exception versionEx)
+                    {
+                        _logger.LogWarning(
+                            versionEx,
+                            "Failed to record version for triple {TripleId}: {ErrorMessage}",
+                            triple.Id,
+                            versionEx.Message);
+                        // Continue despite versioning failure
+                    }
+                }
                     
                 return true;
             }
@@ -411,8 +444,8 @@ namespace SmartInsight.Knowledge.KnowledgeGraph.TripleStore
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>True if successful, false otherwise</returns>
         public async Task<bool> RemoveTripleAsync(
-            string tripleId,
-            string tenantId,
+            string tripleId, 
+            string tenantId, 
             CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(tripleId))
@@ -434,48 +467,80 @@ namespace SmartInsight.Knowledge.KnowledgeGraph.TripleStore
                 }
                 
                 // Get the graph
-                var graphUri = triple.GraphUri ?? _options.DefaultGraphUri;
-                var cacheKey = $"{tenantId}:{graphUri}";
-                
+                var cacheKey = $"{tenantId}:{triple.GraphUri}";
                 if (!_graphCache.TryGetValue(cacheKey, out var graph))
                 {
                     _logger.LogWarning(
                         "Graph {GraphUri} not found for tenant {TenantId}",
-                        graphUri,
+                        triple.GraphUri,
                         tenantId);
                     return false;
                 }
                 
-                // Create the triple in the RDF format
+                // Try to find the triple in the RDF graph
                 var subjectNode = CreateUriNode(graph, triple.SubjectId);
                 var predicateNode = CreateUriNode(graph, triple.PredicateUri);
-                INode objectNode;
                 
-                if (triple.IsLiteral)
+                // Find triples to remove
+                var triplesToRemove = graph.GetTriplesWithSubjectPredicate(subjectNode, predicateNode).ToList();
+                
+                if (!triplesToRemove.Any())
                 {
-                    if (!string.IsNullOrEmpty(triple.LiteralDataType))
-                    {
-                        var dataTypeUri = new Uri(triple.LiteralDataType);
-                        objectNode = graph.CreateLiteralNode(triple.ObjectId, dataTypeUri);
-                    }
-                    else if (!string.IsNullOrEmpty(triple.LanguageTag))
-                    {
-                        objectNode = graph.CreateLiteralNode(triple.ObjectId, triple.LanguageTag);
-                    }
-                    else
-                    {
-                        objectNode = graph.CreateLiteralNode(triple.ObjectId);
-                    }
-                }
-                else
-                {
-                    objectNode = CreateUriNode(graph, triple.ObjectId);
+                    _logger.LogWarning(
+                        "Triple {TripleId} not found in graph {GraphUri}",
+                        tripleId,
+                        triple.GraphUri);
+                    return false;
                 }
                 
-                var rdfTriple = new VDS.RDF.Triple(subjectNode, predicateNode, objectNode);
+                // Remove triples from the graph
+                foreach (var t in triplesToRemove)
+                {
+                    graph.Retract(t);
+                }
                 
-                // Remove the triple from the graph
-                graph.Retract(rdfTriple);
+                // Record version if versioning manager is available
+                if (_versioningManager != null)
+                {
+                    try
+                    {
+                        // Extract user ID and comment from provenance info if available
+                        string userId = null;
+                        string comment = null;
+                        
+                        if (triple.ProvenanceInfo.ContainsKey("ChangedByUserId"))
+                        {
+                            userId = triple.ProvenanceInfo["ChangedByUserId"].ToString();
+                        }
+                        
+                        if (triple.ProvenanceInfo.ContainsKey("ChangeComment"))
+                        {
+                            comment = triple.ProvenanceInfo["ChangeComment"].ToString();
+                        }
+                        
+                        // Record deletion in version history
+                        await _versioningManager.RecordVersionAsync(
+                            triple, 
+                            ChangeType.Deletion, 
+                            tenantId,
+                            userId,
+                            comment,
+                            cancellationToken);
+                            
+                        _logger.LogDebug(
+                            "Recorded version for triple {TripleId} with change type Deletion",
+                            tripleId);
+                    }
+                    catch (Exception versionEx)
+                    {
+                        _logger.LogWarning(
+                            versionEx,
+                            "Failed to record version for deleted triple {TripleId}: {ErrorMessage}",
+                            tripleId,
+                            versionEx.Message);
+                        // Continue despite versioning failure
+                    }
+                }
                 
                 // Remove from cache
                 _tripleCache.Remove(tripleId);
@@ -483,7 +548,7 @@ namespace SmartInsight.Knowledge.KnowledgeGraph.TripleStore
                 _logger.LogDebug(
                     "Removed triple {TripleId} from graph {GraphUri} for tenant {TenantId}",
                     tripleId,
-                    graphUri,
+                    triple.GraphUri,
                     tenantId);
                     
                 return true;
@@ -509,8 +574,8 @@ namespace SmartInsight.Knowledge.KnowledgeGraph.TripleStore
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>True if successful, false otherwise</returns>
         public async Task<bool> UpdateTripleAsync(
-            Models.Triple triple,
-            string tenantId,
+            Models.Triple triple, 
+            string tenantId, 
             CancellationToken cancellationToken = default)
         {
             if (triple == null)
@@ -531,6 +596,32 @@ namespace SmartInsight.Knowledge.KnowledgeGraph.TripleStore
                     return false;
                 }
                 
+                // Store a copy of the existing triple before removing it
+                var originalTriple = new Models.Triple
+                {
+                    Id = existingTriple.Id,
+                    TenantId = existingTriple.TenantId,
+                    SubjectId = existingTriple.SubjectId,
+                    PredicateUri = existingTriple.PredicateUri,
+                    ObjectId = existingTriple.ObjectId,
+                    IsLiteral = existingTriple.IsLiteral,
+                    LiteralDataType = existingTriple.LiteralDataType,
+                    LanguageTag = existingTriple.LanguageTag,
+                    GraphUri = existingTriple.GraphUri,
+                    ConfidenceScore = existingTriple.ConfidenceScore,
+                    CreatedAt = existingTriple.CreatedAt,
+                    UpdatedAt = existingTriple.UpdatedAt,
+                    SourceDocumentId = existingTriple.SourceDocumentId,
+                    IsVerified = existingTriple.IsVerified,
+                    Version = existingTriple.Version
+                };
+                
+                // Copy provenance info
+                foreach (var item in existingTriple.ProvenanceInfo)
+                {
+                    originalTriple.ProvenanceInfo[item.Key] = item.Value;
+                }
+                
                 // Remove the existing triple
                 bool removed = await RemoveTripleAsync(triple.Id, tenantId, cancellationToken);
                 if (!removed)
@@ -544,6 +635,48 @@ namespace SmartInsight.Knowledge.KnowledgeGraph.TripleStore
                 
                 // Add the updated triple
                 bool added = await AddTripleAsync(triple, tenantId, cancellationToken);
+                
+                if (added && _versioningManager != null)
+                {
+                    try
+                    {
+                        // Extract user ID and comment from provenance info if available
+                        string userId = null;
+                        string comment = null;
+                        
+                        if (triple.ProvenanceInfo.ContainsKey("ChangedByUserId"))
+                        {
+                            userId = triple.ProvenanceInfo["ChangedByUserId"].ToString();
+                        }
+                        
+                        if (triple.ProvenanceInfo.ContainsKey("ChangeComment"))
+                        {
+                            comment = triple.ProvenanceInfo["ChangeComment"].ToString();
+                        }
+                        
+                        // Record update in version history
+                        await _versioningManager.RecordVersionAsync(
+                            triple, 
+                            ChangeType.Update, 
+                            tenantId,
+                            userId,
+                            comment,
+                            cancellationToken);
+                            
+                        _logger.LogDebug(
+                            "Recorded version for triple {TripleId} with change type Update",
+                            triple.Id);
+                    }
+                    catch (Exception versionEx)
+                    {
+                        _logger.LogWarning(
+                            versionEx,
+                            "Failed to record version for updated triple {TripleId}: {ErrorMessage}",
+                            triple.Id,
+                            versionEx.Message);
+                        // Continue despite versioning failure
+                    }
+                }
                 
                 if (added)
                 {
