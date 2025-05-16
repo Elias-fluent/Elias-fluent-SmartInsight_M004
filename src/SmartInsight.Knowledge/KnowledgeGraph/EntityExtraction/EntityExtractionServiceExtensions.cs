@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using SmartInsight.Knowledge.KnowledgeGraph.EntityExtraction.Disambiguation;
 using SmartInsight.Knowledge.KnowledgeGraph.EntityExtraction.Extractors;
 using SmartInsight.Knowledge.KnowledgeGraph.EntityExtraction.Interfaces;
 
@@ -28,6 +29,9 @@ namespace SmartInsight.Knowledge.KnowledgeGraph.EntityExtraction
             
             // Register entity extractors initialization
             services.AddSingleton<EntityExtractionInitializer>();
+            
+            // Register disambiguation services
+            services.AddEntityDisambiguation();
             
             return services;
         }

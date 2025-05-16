@@ -674,7 +674,7 @@
             2
           ],
           "details": "Implement algorithms for entity resolution, coreference resolution, and contextual disambiguation. Create a confidence scoring mechanism for entity matches.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -684,7 +684,7 @@
             3
           ],
           "details": "Define relation types, extraction methods, and validation rules. Include both explicit and implicit relation detection strategies.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -694,7 +694,7 @@
             1
           ],
           "details": "Select appropriate triple-store technology, design schema, and implement CRUD operations. Configure for performance, considering query patterns and data volume.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
