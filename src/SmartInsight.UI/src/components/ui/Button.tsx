@@ -3,6 +3,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "../../lib/utils";
+import { useFocusVisible } from "../../hooks/useFocusVisible";
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
@@ -37,15 +38,37 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  /** 
+   * Controls the pressed state of the button
+   * useful for toggle buttons
+   */
+  pressed?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, pressed, disabled, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
+    const { isFocusVisible } = useFocusVisible();
+    
+    // Generate accessible props for buttons
+    const accessibilityProps: React.AriaAttributes & React.ButtonHTMLAttributes<HTMLButtonElement> = {
+      // Only apply aria-pressed if it's a toggle button
+      ...(pressed !== undefined && { 'aria-pressed': pressed }),
+      // Always set aria-disabled to match disabled state
+      'aria-disabled': disabled ? true : undefined,
+      // Ensure there's a type for buttons to prevent form submission by default
+      type: props.type || 'button',
+    };
+
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(
+          buttonVariants({ variant, size, className }),
+          isFocusVisible ? 'focus-visible' : ''
+        )}
         ref={ref}
+        disabled={disabled}
+        {...accessibilityProps}
         {...props}
       />
     );

@@ -1,6 +1,6 @@
 # Task ID: 46
 # Title: Implement Accessibility Features
-# Status: in-progress
+# Status: done
 # Dependencies: 39, 41, 42
 # Priority: high
 # Description: Ensure UI components meet WCAG 2.1 AA compliance.
@@ -99,7 +99,7 @@ Implement the following accessibility features:
    - Ensure focus states are visible in all modes
    - Add simple UI for toggling these accessibility options
 
-## 5. Implement accessibility testing framework [pending]
+## 5. Implement accessibility testing framework [done]
 ### Dependencies: None
 ### Description: Set up automated and manual accessibility testing procedures to validate WCAG 2.1 AA compliance.
 ### Details:

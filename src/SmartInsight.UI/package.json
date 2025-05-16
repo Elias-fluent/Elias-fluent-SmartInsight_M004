@@ -37,6 +37,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@axe-core/react": "^4.10.1",
     "@eslint/js": "^9.25.0",
     "@tailwindcss/postcss": "^4.1.6",
     "@testing-library/jest-dom": "^6.4.2",
@@ -49,6 +50,7 @@
     "@vitest/coverage-v8": "^1.4.0",
     "@vitest/ui": "^1.4.0",
     "autoprefixer": "^10.4.21",
+    "axe-core": "^4.10.3",
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
