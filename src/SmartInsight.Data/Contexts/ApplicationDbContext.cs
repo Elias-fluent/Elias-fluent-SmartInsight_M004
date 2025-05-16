@@ -70,6 +70,11 @@ public class ApplicationDbContext : IdentityDbContext<
     /// Metrics logs for system performance
     /// </summary>
     public DbSet<MetricsLog> MetricsLogs { get; set; }
+    
+    /// <summary>
+    /// Secure credentials storage
+    /// </summary>
+    public DbSet<Credential> Credentials { get; set; }
 
     /// <summary>
     /// Constructor that accepts DbContextOptions
