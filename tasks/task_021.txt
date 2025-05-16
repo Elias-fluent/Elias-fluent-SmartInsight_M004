@@ -32,19 +32,19 @@ Create architectural diagrams showing data flow, component interactions, and sys
 ### Details:
 Select and implement appropriate NLP libraries/models for entity extraction. Include custom entity types relevant to the domain. Ensure proper text preprocessing and post-processing for accuracy.
 
-## 3. Create Entity Disambiguation System [pending]
+## 3. Create Entity Disambiguation System [done]
 ### Dependencies: 21.2
 ### Description: Build a system to disambiguate entities and resolve coreferences across documents.
 ### Details:
 Implement algorithms for entity resolution, coreference resolution, and contextual disambiguation. Create a confidence scoring mechanism for entity matches.
 
-## 4. Design Relation Extraction Framework [pending]
+## 4. Design Relation Extraction Framework [done]
 ### Dependencies: 21.3
 ### Description: Design the framework for identifying and extracting relationships between entities.
 ### Details:
 Define relation types, extraction methods, and validation rules. Include both explicit and implicit relation detection strategies.
 
-## 5. Implement Triple-Store Database [pending]
+## 5. Implement Triple-Store Database [done]
 ### Dependencies: 21.1
 ### Description: Set up and configure the triple-store database for storing knowledge graph data.
 ### Details:
