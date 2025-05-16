@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SmartInsight.Core\SmartInsight.Core.csproj" />
+    <ProjectReference Include="..\SmartInsight.Data\SmartInsight.Data.csproj" />
   </ItemGroup>
 
   <ItemGroup>
