@@ -34,12 +34,14 @@ namespace SmartInsight.Knowledge.VectorDb
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             
-            _client = new QdrantClient(new()
+            // Create client with proper constructor
+            var uri = new Uri($"http://{_options.Host}:{_options.GrpcPort}");
+            if (_options.UseHttps)
             {
-                Host = _options.Host,
-                Port = _options.GrpcPort,
-                Secure = _options.UseHttps
-            });
+                uri = new Uri($"https://{_options.Host}:{_options.GrpcPort}");
+            }
+            
+            _client = new QdrantClient(uri, _options.ApiKey);
             
             _logger.LogInformation("Initialized Qdrant client for {Host}:{Port}", _options.Host, _options.GrpcPort);
         }
@@ -103,29 +105,36 @@ namespace SmartInsight.Knowledge.VectorDb
                         return true;
                     }
                     
-                    // Create the collection with correct parameter types
-                    await _client.CreateCollectionAsync(
-                        collectionName,
-                        new VectorParams
+                    // Create the collection with correct parameters
+                    var createParams = new CreateCollectionParams
+                    {
+                        VectorsConfig = new VectorsConfig
                         {
-                            Size = (ulong)vectorSize,
-                            Distance = Distance.Cosine
-                        },
-                        cancellationToken: cancellationToken);
+                            Params = new VectorParams
+                            {
+                                Size = (ulong)vectorSize,
+                                Distance = Distance.Cosine
+                            }
+                        }
+                    };
+                    
+                    await _client.CreateCollectionAsync(collectionName, createParams, cancellationToken);
                     
                     // Add payload index for tenant_id to support efficient filtering
-                    await _client.CreatePayloadIndexAsync(
-                        collectionName,
-                        "tenant_id",
-                        PayloadSchemaType.Keyword,
-                        cancellationToken: cancellationToken);
+                    var tenantIdIndexParams = new PayloadIndexParams
+                    {
+                        FieldName = "tenant_id",
+                        SchemaType = PayloadSchemaType.Keyword
+                    };
+                    await _client.CreatePayloadIndexAsync(collectionName, tenantIdIndexParams, cancellationToken);
                     
                     // Add payload index for document_id
-                    await _client.CreatePayloadIndexAsync(
-                        collectionName,
-                        "document_id",
-                        PayloadSchemaType.Keyword,
-                        cancellationToken: cancellationToken);
+                    var documentIdIndexParams = new PayloadIndexParams
+                    {
+                        FieldName = "document_id",
+                        SchemaType = PayloadSchemaType.Keyword
+                    };
+                    await _client.CreatePayloadIndexAsync(collectionName, documentIdIndexParams, cancellationToken);
                     
                     // Add to cache
                     _existingCollections.Add(collectionName);
@@ -175,14 +184,18 @@ namespace SmartInsight.Knowledge.VectorDb
                 // Add tenant filter for isolation
                 if (!string.IsNullOrWhiteSpace(tenantId))
                 {
-                    filterBuilder.Must.Add(new FieldCondition
+                    var tenantCondition = new Condition
                     {
-                        Key = "tenant_id",
-                        Match = new Match
+                        Field = new FieldCondition
                         {
-                            Keyword = tenantId
+                            Key = "tenant_id",
+                            Match = new Match
+                            {
+                                Keyword = tenantId
+                            }
                         }
-                    });
+                    };
+                    filter.Must.Add(tenantCondition);
                 }
                 
                 // Add additional filter conditions if provided
@@ -190,64 +203,78 @@ namespace SmartInsight.Knowledge.VectorDb
                 {
                     foreach (var item in filter)
                     {
+                        Condition condition;
+                        
                         // Handle different types of values
                         if (item.Value is string stringValue)
                         {
-                            filterBuilder.Must.Add(new FieldCondition
+                            condition = new Condition
                             {
-                                Key = item.Key,
-                                Match = new Match
+                                Field = new FieldCondition
                                 {
-                                    Keyword = stringValue
+                                    Key = item.Key,
+                                    Match = new Match
+                                    {
+                                        Keyword = stringValue
+                                    }
                                 }
-                            });
+                            };
                         }
                         else if (item.Value is int intValue)
                         {
-                            filterBuilder.Must.Add(new FieldCondition
+                            condition = new Condition
                             {
-                                Key = item.Key,
-                                Match = new Match
+                                Field = new FieldCondition
                                 {
-                                    Integer = intValue
+                                    Key = item.Key,
+                                    Match = new Match
+                                    {
+                                        Integer = intValue
+                                    }
                                 }
-                            });
+                            };
                         }
                         else
                         {
                             // Convert other types to string
-                            filterBuilder.Must.Add(new FieldCondition
+                            condition = new Condition
                             {
-                                Key = item.Key,
-                                Match = new Match
+                                Field = new FieldCondition
                                 {
-                                    Keyword = item.Value.ToString()
+                                    Key = item.Key,
+                                    Match = new Match
+                                    {
+                                        Keyword = item.Value.ToString()
+                                    }
                                 }
-                            });
+                            };
                         }
+                        
+                        filterBuilder.Must.Add(condition);
                     }
                 }
                 
-                // Perform search with retry
-                var searchParams = new SearchParams
+                // Prepare search request
+                var searchRequest = new SearchPointsRequest
                 {
-                    Limit = (uint)limit,
+                    CollectionName = collectionName,
+                    Vector = queryVector,
                     Filter = filterBuilder,
+                    Limit = (uint)limit,
+                    WithPayload = true,
                     ScoreThreshold = scoreThreshold
                 };
-
-                var result = await ExecuteWithRetryAsync(() => _client.SearchAsync(
-                    collectionName, 
-                    queryVector, 
-                    searchParams,
-                    cancellationToken: cancellationToken));
+                
+                // Perform search with retry
+                var result = await ExecuteWithRetryAsync(() => 
+                    _client.SearchPointsAsync(searchRequest, cancellationToken));
                 
                 // Process results
-                return result.Select(r => new SearchResult
+                return result.Result.Select(r => new SearchResult
                 {
-                    Id = r.Id.ToString(),
+                    Id = r.Id.Uuid,
                     Score = r.Score,
-                    Payload = ConvertPayloadToDictionary(r.Payload)
+                    Payload = ConvertQdrantPayloadToDictionary(r.Payload)
                 }).ToList();
             }
             catch (Exception ex)
@@ -261,23 +288,30 @@ namespace SmartInsight.Knowledge.VectorDb
         /// <summary>
         /// Convert Qdrant payload to a simpler Dictionary format
         /// </summary>
-        private Dictionary<string, object> ConvertPayloadToDictionary(Dictionary<string, Value> payload)
+        private Dictionary<string, object> ConvertQdrantPayloadToDictionary(Dictionary<string, Value> payload)
         {
             var result = new Dictionary<string, object>();
             
             foreach (var pair in payload)
             {
-                object value = pair.Value.ValueCase switch
-                {
-                    Value.ValueOneofCase.NullValue => null,
-                    Value.ValueOneofCase.IntegerValue => pair.Value.IntegerValue,
-                    Value.ValueOneofCase.DoubleValue => pair.Value.DoubleValue,
-                    Value.ValueOneofCase.StringValue => pair.Value.StringValue,
-                    Value.ValueOneofCase.BoolValue => pair.Value.BoolValue,
-                    Value.ValueOneofCase.ListValue => pair.Value.ListValue,
-                    Value.ValueOneofCase.StructValue => pair.Value.StructValue,
-                    _ => pair.Value.ToString()
-                };
+                object value;
+                
+                if (pair.Value.NullValue != null)
+                    value = null;
+                else if (pair.Value.StringValue != null)
+                    value = pair.Value.StringValue;
+                else if (pair.Value.IntegerValue != 0)
+                    value = pair.Value.IntegerValue;
+                else if (pair.Value.DoubleValue != 0)
+                    value = pair.Value.DoubleValue;
+                else if (pair.Value.BoolValue)
+                    value = pair.Value.BoolValue;
+                else if (pair.Value.ListValue != null)
+                    value = pair.Value.ListValue;
+                else if (pair.Value.StructValue != null)
+                    value = pair.Value.StructValue;
+                else
+                    value = pair.Value.ToString();
                 
                 result[pair.Key] = value;
             }
@@ -372,7 +406,7 @@ namespace SmartInsight.Knowledge.VectorDb
                     {
                         foreach (var kvp in payloads[i])
                         {
-                            var valueToAdd = ConvertToPayloadValue(kvp.Value);
+                            var valueToAdd = ConvertToQdrantValue(kvp.Value);
                             point.Payload[kvp.Key] = valueToAdd;
                         }
                     }
@@ -386,11 +420,16 @@ namespace SmartInsight.Knowledge.VectorDb
                 {
                     var batch = points.Skip(i).Take(batchSize).ToList();
                     
+                    // Create upsert request
+                    var upsertRequest = new UpsertPointsRequest
+                    {
+                        CollectionName = collectionName,
+                        Points = { batch }
+                    };
+                    
                     // Use retry logic
-                    await ExecuteWithRetryAsync(() => _client.UpsertAsync(
-                        collectionName,
-                        batch,
-                        cancellationToken: cancellationToken));
+                    await ExecuteWithRetryAsync(() => 
+                        _client.UpsertPointsAsync(upsertRequest, cancellationToken));
                 }
                 
                 return true;
@@ -405,20 +444,48 @@ namespace SmartInsight.Knowledge.VectorDb
         /// <summary>
         /// Convert a C# object to a Qdrant payload Value
         /// </summary>
-        private Value ConvertToPayloadValue(object value)
+        private Value ConvertToQdrantValue(object value)
         {
-            return value switch
+            var qdrantValue = new Value();
+            
+            if (value == null)
             {
-                null => new Value { NullValue = NullValue.NullValue },
-                string s => new Value { StringValue = s },
-                int i => new Value { IntegerValue = i },
-                long l => new Value { IntegerValue = l },
-                float f => new Value { DoubleValue = f },
-                double d => new Value { DoubleValue = d },
-                bool b => new Value { BoolValue = b },
-                DateTime dt => new Value { StringValue = dt.ToString("o") },
-                _ => new Value { StringValue = value.ToString() }
-            };
+                qdrantValue.NullValue = NullValue.NullValue;
+            }
+            else if (value is string stringValue)
+            {
+                qdrantValue.StringValue = stringValue;
+            }
+            else if (value is int intValue)
+            {
+                qdrantValue.IntegerValue = intValue;
+            }
+            else if (value is long longValue)
+            {
+                qdrantValue.IntegerValue = longValue;
+            }
+            else if (value is float floatValue)
+            {
+                qdrantValue.DoubleValue = floatValue;
+            }
+            else if (value is double doubleValue)
+            {
+                qdrantValue.DoubleValue = doubleValue;
+            }
+            else if (value is bool boolValue)
+            {
+                qdrantValue.BoolValue = boolValue;
+            }
+            else if (value is DateTime dateTime)
+            {
+                qdrantValue.StringValue = dateTime.ToString("o");
+            }
+            else
+            {
+                qdrantValue.StringValue = value.ToString();
+            }
+            
+            return qdrantValue;
         }
         
         /// <summary>
@@ -442,38 +509,44 @@ namespace SmartInsight.Knowledge.VectorDb
                 // Add tenant filter for isolation if provided
                 if (!string.IsNullOrWhiteSpace(tenantId))
                 {
-                    filter.Must.Add(new FieldCondition
+                    var tenantCondition = new Condition
                     {
-                        Key = "tenant_id",
-                        Match = new Match
+                        Field = new FieldCondition
                         {
-                            Keyword = tenantId
+                            Key = "tenant_id",
+                            Match = new Match
+                            {
+                                Keyword = tenantId
+                            }
                         }
-                    });
+                    };
+                    filter.Must.Add(tenantCondition);
                 }
                 
                 // Convert string IDs to PointId objects
                 var ids = pointIds.Select(id => new PointId { Uuid = id }).ToList();
                 
-                // Create points selector
-                var selector = new PointsSelector
+                // Create delete points request
+                var deleteRequest = new DeletePointsRequest
                 {
-                    Points = new PointsIdsList { Ids = { ids } }
+                    CollectionName = collectionName,
+                    Points = new PointsSelector
+                    {
+                        Points = new PointsIdsList { Ids = { ids } }
+                    }
                 };
                 
                 // Add filter if tenant ID is specified
                 if (!string.IsNullOrWhiteSpace(tenantId))
                 {
-                    selector.Filter = filter;
+                    deleteRequest.Points.Filter = filter;
                 }
                 
                 // Perform deletion with retry
-                var result = await ExecuteWithRetryAsync(() => _client.DeleteAsync(
-                    collectionName,
-                    selector,
-                    cancellationToken: cancellationToken));
+                var result = await ExecuteWithRetryAsync(() => 
+                    _client.DeletePointsAsync(deleteRequest, cancellationToken));
                 
-                return (int)result;
+                return (int)result.Status.OperationResult;
             }
             catch (Exception ex)
             {
@@ -496,19 +569,21 @@ namespace SmartInsight.Knowledge.VectorDb
         {
             try
             {
-                // Create selector with filter
-                var selector = new PointsSelector
+                // Create delete points request
+                var deleteRequest = new DeletePointsRequest
                 {
-                    Filter = filter
+                    CollectionName = collectionName,
+                    Points = new PointsSelector
+                    {
+                        Filter = filter
+                    }
                 };
                 
                 // Perform deletion with retry
-                var result = await ExecuteWithRetryAsync(() => _client.DeleteAsync(
-                    collectionName,
-                    selector,
-                    cancellationToken: cancellationToken));
+                var result = await ExecuteWithRetryAsync(() => 
+                    _client.DeletePointsAsync(deleteRequest, cancellationToken));
                 
-                return (int)result;
+                return (int)result.Status.OperationResult;
             }
             catch (Exception ex)
             {
@@ -536,41 +611,51 @@ namespace SmartInsight.Knowledge.VectorDb
                 var filter = new Filter();
                 
                 // Filter by document ID
-                filter.Must.Add(new FieldCondition
+                var docCondition = new Condition
                 {
-                    Key = "document_id",
-                    Match = new Match
+                    Field = new FieldCondition
                     {
-                        Keyword = documentId
+                        Key = "document_id",
+                        Match = new Match
+                        {
+                            Keyword = documentId
+                        }
                     }
-                });
+                };
+                filter.Must.Add(docCondition);
                 
                 // Add tenant filter for isolation if provided
                 if (!string.IsNullOrWhiteSpace(tenantId))
                 {
-                    filter.Must.Add(new FieldCondition
+                    var tenantCondition = new Condition
                     {
-                        Key = "tenant_id",
-                        Match = new Match
+                        Field = new FieldCondition
                         {
-                            Keyword = tenantId
+                            Key = "tenant_id",
+                            Match = new Match
+                            {
+                                Keyword = tenantId
+                            }
                         }
-                    });
+                    };
+                    filter.Must.Add(tenantCondition);
                 }
                 
-                // Create selector with filter
-                var selector = new PointsSelector
+                // Create delete points request
+                var deleteRequest = new DeletePointsRequest
                 {
-                    Filter = filter
+                    CollectionName = collectionName,
+                    Points = new PointsSelector
+                    {
+                        Filter = filter
+                    }
                 };
                 
                 // Perform deletion with retry
-                var result = await ExecuteWithRetryAsync(() => _client.DeleteAsync(
-                    collectionName,
-                    selector,
-                    cancellationToken: cancellationToken));
+                var result = await ExecuteWithRetryAsync(() => 
+                    _client.DeletePointsAsync(deleteRequest, cancellationToken));
                 
-                return (int)result;
+                return (int)result.Status.OperationResult;
             }
             catch (Exception ex)
             {
@@ -594,12 +679,16 @@ namespace SmartInsight.Knowledge.VectorDb
         {
             try
             {
-                var result = await ExecuteWithRetryAsync(() => _client.CountAsync(
-                    collectionName,
-                    filter: filter,
-                    cancellationToken: cancellationToken));
+                var countRequest = new CountPointsRequest
+                {
+                    CollectionName = collectionName,
+                    Filter = filter
+                };
                 
-                return (long)result;
+                var result = await ExecuteWithRetryAsync(() => 
+                    _client.CountPointsAsync(countRequest, cancellationToken));
+                
+                return (long)result.Result.Count;
             }
             catch (Exception ex)
             {
@@ -617,10 +706,11 @@ namespace SmartInsight.Knowledge.VectorDb
         {
             try
             {
-                var collections = await ExecuteWithRetryAsync(() => 
-                    _client.ListCollectionsAsync(cancellationToken));
+                var request = new ListCollectionsRequest();
+                var response = await ExecuteWithRetryAsync(() => 
+                    _client.ListCollectionsAsync(request, cancellationToken));
                 
-                return collections.ToList();
+                return response.Collections.Select(c => c.Name).ToList();
             }
             catch (Exception ex)
             {
@@ -641,10 +731,15 @@ namespace SmartInsight.Knowledge.VectorDb
         {
             try
             {
-                var info = await ExecuteWithRetryAsync(() => 
-                    _client.GetCollectionInfoAsync(collectionName, cancellationToken));
+                var request = new GetCollectionInfoRequest
+                {
+                    CollectionName = collectionName
+                };
                 
-                return info;
+                var response = await ExecuteWithRetryAsync(() => 
+                    _client.GetCollectionInfoAsync(request, cancellationToken));
+                
+                return response.Result;
             }
             catch (Exception ex)
             {
