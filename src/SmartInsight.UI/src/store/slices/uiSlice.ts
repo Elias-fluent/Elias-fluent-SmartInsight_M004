@@ -1,6 +1,9 @@
 // Define the UI state type
 export interface UIState {
   theme: 'light' | 'dark' | 'system';
+  contrastMode: 'normal' | 'high';
+  colorBlindMode: 'normal' | 'deuteranopia' | 'protanopia' | 'tritanopia';
+  textSize: 'normal' | 'large' | 'x-large';
   sidebarOpen: boolean;
   notifications: Notification[];
   isLoading: boolean;
@@ -20,6 +23,9 @@ export interface Notification {
 // Define action types
 export const UI_ACTIONS = {
   SET_THEME: 'ui/setTheme',
+  SET_CONTRAST_MODE: 'ui/setContrastMode',
+  SET_COLOR_BLIND_MODE: 'ui/setColorBlindMode',
+  SET_TEXT_SIZE: 'ui/setTextSize',
   TOGGLE_SIDEBAR: 'ui/toggleSidebar',
   SET_SIDEBAR: 'ui/setSidebar',
   ADD_NOTIFICATION: 'ui/addNotification',
@@ -34,6 +40,9 @@ export const UI_ACTIONS = {
 // Define action interfaces
 export type UIAction =
   | { type: typeof UI_ACTIONS.SET_THEME; payload: UIState['theme'] }
+  | { type: typeof UI_ACTIONS.SET_CONTRAST_MODE; payload: UIState['contrastMode'] }
+  | { type: typeof UI_ACTIONS.SET_COLOR_BLIND_MODE; payload: UIState['colorBlindMode'] }
+  | { type: typeof UI_ACTIONS.SET_TEXT_SIZE; payload: UIState['textSize'] }
   | { type: typeof UI_ACTIONS.TOGGLE_SIDEBAR }
   | { type: typeof UI_ACTIONS.SET_SIDEBAR; payload: boolean }
   | { type: typeof UI_ACTIONS.ADD_NOTIFICATION; payload: Omit<Notification, 'id' | 'timestamp' | 'read'> }
@@ -47,6 +56,9 @@ export type UIAction =
 // Initial state
 const initialState: UIState = {
   theme: 'system',
+  contrastMode: 'normal',
+  colorBlindMode: 'normal',
+  textSize: 'normal',
   sidebarOpen: true,
   notifications: [],
   isLoading: false,
@@ -61,6 +73,21 @@ export function uiReducer(state: UIState = initialState, action: UIAction): UISt
       return {
         ...state,
         theme: action.payload,
+      };
+    case UI_ACTIONS.SET_CONTRAST_MODE:
+      return {
+        ...state,
+        contrastMode: action.payload,
+      };
+    case UI_ACTIONS.SET_COLOR_BLIND_MODE:
+      return {
+        ...state,
+        colorBlindMode: action.payload,
+      };
+    case UI_ACTIONS.SET_TEXT_SIZE:
+      return {
+        ...state,
+        textSize: action.payload,
       };
     case UI_ACTIONS.TOGGLE_SIDEBAR:
       return {
@@ -131,6 +158,18 @@ export const uiActions = {
   setTheme: (theme: UIState['theme']): UIAction => ({
     type: UI_ACTIONS.SET_THEME,
     payload: theme,
+  }),
+  setContrastMode: (mode: UIState['contrastMode']): UIAction => ({
+    type: UI_ACTIONS.SET_CONTRAST_MODE,
+    payload: mode,
+  }),
+  setColorBlindMode: (mode: UIState['colorBlindMode']): UIAction => ({
+    type: UI_ACTIONS.SET_COLOR_BLIND_MODE,
+    payload: mode,
+  }),
+  setTextSize: (size: UIState['textSize']): UIAction => ({
+    type: UI_ACTIONS.SET_TEXT_SIZE,
+    payload: size,
   }),
   toggleSidebar: (): UIAction => ({
     type: UI_ACTIONS.TOGGLE_SIDEBAR,

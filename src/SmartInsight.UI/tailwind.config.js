@@ -48,8 +48,28 @@ module.exports = {
       },
       animation: {
         'spin-slow': 'spin 3s linear infinite',
+      },
+      fontSize: {
+        // Text size variants for accessibility
+        'base-large': 'var(--text-base-large)',
+        'base-xlarge': 'var(--text-base-xlarge)',
+        'sm-large': 'var(--text-sm-large)',
+        'sm-xlarge': 'var(--text-sm-xlarge)',
+        'lg-large': 'var(--text-lg-large)',
+        'lg-xlarge': 'var(--text-lg-xlarge)',
+        'xl-large': 'var(--text-xl-large)',
+        'xl-xlarge': 'var(--text-xl-xlarge)',
+        '2xl-large': 'var(--text-2xl-large)',
+        '2xl-xlarge': 'var(--text-2xl-xlarge)',
       }
     },
   },
   plugins: [],
+  // Add variant for high contrast and color blind modes
+  safelist: [
+    { pattern: /^contrast-/ },
+    { pattern: /^colorblind-/ },
+    { pattern: /^text-(normal|large|x-large)$/ },
+    { pattern: /^text-.*-(large|xlarge)$/ },
+  ],
 } 
