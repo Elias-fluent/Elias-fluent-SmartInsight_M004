@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
-import { MoreHorizontal, Copy, Download, Share, Trash } from 'lucide-react';
+import { MoreHorizontal, Copy, Download, Trash } from 'lucide-react';
 import type { Message } from '../../store/slices/chatSlice';
 import { useChat } from '../../store/StoreContext';
 import { chatActions } from '../../store/slices/chatSlice';

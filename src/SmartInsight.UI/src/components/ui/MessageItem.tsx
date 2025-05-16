@@ -16,7 +16,7 @@ interface MessageItemProps {
 }
 
 const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
-  const { dispatch, chat } = useChat();
+  const { chat } = useChat();
   const [copied, setCopied] = useState(false);
   const { isFocusVisible } = useFocusVisible();
   const { announce } = useAnnounce();

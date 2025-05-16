@@ -41,6 +41,9 @@ export const initialState: Partial<RootState> = {
     sidebarOpen: true,
     activeModal: null,
     currentView: 'dashboard',
+    contrastMode: 'normal',
+    colorBlindMode: 'normal',
+    textSize: 'normal',
   },
   data: {
     dataSources: [],
