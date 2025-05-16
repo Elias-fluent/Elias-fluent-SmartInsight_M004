@@ -35,29 +35,28 @@ export const initialState: Partial<RootState> = {
     tenantId: null,
   },
   ui: {
-    loading: false,
+    isLoading: false,
     notifications: [],
     theme: 'light',
-    sidebar: {
-      open: true,
-    },
+    sidebarOpen: true,
+    activeModal: null,
+    currentView: 'dashboard',
   },
   data: {
     dataSources: [],
     datasets: [],
-    loading: {
-      dataSources: false,
-      datasets: false,
-    },
-    error: {
-      dataSources: null,
-      datasets: null,
-    },
+    queries: [],
+    visualizations: [],
+    selectedDataSource: null,
+    selectedDataset: null,
+    isLoading: false,
+    error: null,
+    lastUpdated: null,
   },
   chat: {
     conversations: [],
-    activeConversation: null,
-    loading: false,
+    activeConversationId: null,
+    isLoading: false,
     error: null,
   },
 };
