@@ -74,7 +74,7 @@ Develop APIs for taxonomy creation, modification, and querying. Implement inheri
 ### Details:
 Define versioning strategy, temporal data model, and change tracking mechanisms. Include specifications for querying historical states.
 
-## 10. Implement Versioning and Temporal Query Support [pending]
+## 10. Implement Versioning and Temporal Query Support [done]
 ### Dependencies: 21.9
 ### Description: Implement the versioning system and temporal query capabilities.
 ### Details:
