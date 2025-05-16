@@ -1,82 +1,49 @@
+using System;
+using System.Collections.Generic;
 using SmartInsight.Core.Enums;
 using System.Text.Json.Serialization;
 
 namespace SmartInsight.Core.DTOs;
 
 /// <summary>
-/// DTO for user information
+/// Data transfer object for user information
 /// </summary>
-public record UserDto
+public class UserDto
 {
     /// <summary>
-    /// Unique identifier for the user
+    /// User ID
     /// </summary>
-    public string Id { get; init; } = string.Empty;
+    public string Id { get; set; } = string.Empty;
     
     /// <summary>
-    /// Username for authentication
+    /// Username
     /// </summary>
-    public string Username { get; init; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
     
     /// <summary>
     /// Email address
     /// </summary>
-    public string Email { get; init; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
     
     /// <summary>
-    /// First name
+    /// Display name or full name
     /// </summary>
-    public string FirstName { get; init; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
     
     /// <summary>
-    /// Last name
+    /// Whether the account is active
     /// </summary>
-    public string LastName { get; init; } = string.Empty;
+    public bool IsActive { get; set; }
     
     /// <summary>
-    /// User's role in the system
+    /// Tenant ID
     /// </summary>
-    public UserRole Role { get; init; } = UserRole.User;
+    public Guid? TenantId { get; set; }
     
     /// <summary>
-    /// Tenant ID the user belongs to
+    /// User roles
     /// </summary>
-    public string TenantId { get; init; } = string.Empty;
-    
-    /// <summary>
-    /// Whether the user is currently active
-    /// </summary>
-    public bool IsActive { get; init; } = true;
-    
-    /// <summary>
-    /// Whether the email has been verified
-    /// </summary>
-    public bool EmailVerified { get; init; } = false;
-    
-    /// <summary>
-    /// Whether the user account is locked
-    /// </summary>
-    public bool IsLocked { get; init; } = false;
-    
-    /// <summary>
-    /// When the lockout expires (if applicable)
-    /// </summary>
-    public DateTimeOffset? LockoutEnd { get; init; }
-    
-    /// <summary>
-    /// Last login timestamp
-    /// </summary>
-    public DateTimeOffset? LastLogin { get; init; }
-    
-    /// <summary>
-    /// Creation timestamp
-    /// </summary>
-    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
-    
-    /// <summary>
-    /// Last update timestamp
-    /// </summary>
-    public DateTimeOffset UpdatedAt { get; init; } = DateTimeOffset.UtcNow;
+    public List<string> Roles { get; set; } = new List<string>();
 }
 
 /// <summary>

@@ -1,6 +1,6 @@
 # Task ID: 34
 # Title: Implement REST API Layer with OAuth2 and JWT
-# Status: pending
+# Status: done
 # Dependencies: 11, 12
 # Priority: high
 # Description: Create REST API layer with authentication and authorization.
