@@ -2,36 +2,35 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MySql.Data.MySqlClient;
 using SmartInsight.Core.Interfaces;
 using SmartInsight.Knowledge.Connectors;
 using SmartInsight.Tests.SQL.Common.Utilities;
-using SmartInsight.Tests.SQL.Integration.Database;
+using Testcontainers.MySql;
 using Xunit;
 using Xunit.Abstractions;
-using Testcontainers.MsSql;
 
 namespace SmartInsight.Tests.SQL.Integration
 {
     /// <summary>
-    /// Integration tests for the MSSQLConnector class
-    /// These tests require a SQL Server Docker container to be running
+    /// Integration tests for the MySQLConnector class
+    /// These tests require a MySQL Docker container to be running
     /// </summary>
     [Trait("Category", "Integration")]
     [Trait("Category", "Database")]
-    [Trait("RequiresSetup", "MSSQL")]
-    public class MSSQLConnectorIntegrationTests : TestBase, IAsyncLifetime
+    [Trait("RequiresSetup", "MySQL")]
+    public class MySQLConnectorIntegrationTests : TestBase, IAsyncLifetime
     {
-        private readonly MSSQLConnector _connector;
+        private readonly MySQLConnector _connector;
         private readonly string _testDbName = "smartinsight_test_db";
-        private MsSqlContainer _msSqlContainer;
+        private MySqlContainer _mySqlContainer;
         private Dictionary<string, string> _validConnectionParams;
         private readonly ServiceProvider _serviceProvider;
-        private const int MSSQL_DEFAULT_PORT = 1433;
+        private const int MYSQL_DEFAULT_PORT = 3306;
 
-        public MSSQLConnectorIntegrationTests(ITestOutputHelper output) 
+        public MySQLConnectorIntegrationTests(ITestOutputHelper output) 
             : base(output)
         {
             // Create a service collection with needed services
@@ -46,42 +45,38 @@ namespace SmartInsight.Tests.SQL.Integration
 
             _serviceProvider = services.BuildServiceProvider();
             
-            _connector = new MSSQLConnector(
-                _serviceProvider.GetRequiredService<ILogger<MSSQLConnector>>());
+            _connector = new MySQLConnector(
+                _serviceProvider.GetRequiredService<ILogger<MySQLConnector>>());
 
-            // Setup SQL Server container
-            _msSqlContainer = new MsSqlBuilder()
-                .WithImage("mcr.microsoft.com/mssql/server:2019-latest")
-                .WithPassword("StrongP@ssw0rd!")
+            // Setup MySQL container
+            _mySqlContainer = new MySqlBuilder()
+                .WithImage("mysql:8.0")
+                .WithPassword("Password123!")
+                .WithUsername("root")
+                .WithDatabase(_testDbName)
                 .Build();
         }
 
         public async Task InitializeAsync()
         {
-            LogInfo("Starting SQL Server container for integration tests");
-            await _msSqlContainer.StartAsync();
+            LogInfo("Starting MySQL container for integration tests");
+            await _mySqlContainer.StartAsync();
             
             // Setup connection parameters
             _validConnectionParams = new Dictionary<string, string>
             {
-                { "server", _msSqlContainer.Hostname },
-                { "port", _msSqlContainer.GetMappedPublicPort(MSSQL_DEFAULT_PORT).ToString() },
-                { "database", "master" }, // Initially connect to master to create test database
-                { "username", "sa" },
-                { "password", "StrongP@ssw0rd!" },
-                { "encrypt", "false" }
+                { "server", _mySqlContainer.Hostname },
+                { "port", _mySqlContainer.GetMappedPublicPort(MYSQL_DEFAULT_PORT).ToString() },
+                { "database", _testDbName },
+                { "username", "root" },
+                { "password", "Password123!" },
+                { "sslMode", "none" }
             };
             
-            LogInfo($"SQL Server container started at {_validConnectionParams["server"]}:{_validConnectionParams["port"]}");
+            LogInfo($"MySQL container started at {_validConnectionParams["server"]}:{_validConnectionParams["port"]}");
             
             try
             {
-                // Create test database
-                await CreateTestDatabaseAsync();
-                
-                // Update connection parameters to use the test database
-                _validConnectionParams["database"] = _testDbName;
-                
                 // Create test schema and sample data
                 await CreateTestSchemaAsync();
                 
@@ -89,38 +84,18 @@ namespace SmartInsight.Tests.SQL.Integration
             }
             catch (Exception ex)
             {
-                LogError("Failed to set up test database and schema", ex);
+                LogError("Failed to set up test schema", ex);
                 throw;
             }
         }
 
         public async Task DisposeAsync()
         {
-            if (_msSqlContainer != null)
+            if (_mySqlContainer != null)
             {
-                LogInfo("Stopping SQL Server container");
-                await _msSqlContainer.DisposeAsync();
+                LogInfo("Stopping MySQL container");
+                await _mySqlContainer.DisposeAsync();
             }
-        }
-
-        /// <summary>
-        /// Creates the test database
-        /// </summary>
-        private async Task CreateTestDatabaseAsync()
-        {
-            LogInfo($"Creating test database '{_testDbName}'");
-            
-            var connectionString = $"Server={_validConnectionParams["server"]},{_validConnectionParams["port"]};Database=master;User Id={_validConnectionParams["username"]};Password={_validConnectionParams["password"]};TrustServerCertificate=True;";
-            await using var connection = new SqlConnection(connectionString);
-            await connection.OpenAsync();
-
-            string createDbCommand = $"IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = '{_testDbName}') CREATE DATABASE [{_testDbName}]";
-            await using (var cmd = new SqlCommand(createDbCommand, connection))
-            {
-                await cmd.ExecuteNonQueryAsync();
-            }
-            
-            LogInfo($"Test database '{_testDbName}' created successfully");
         }
 
         /// <summary>
@@ -130,23 +105,22 @@ namespace SmartInsight.Tests.SQL.Integration
         {
             LogInfo($"Connecting to test database '{_testDbName}'");
             
-            var connectionString = $"Server={_validConnectionParams["server"]},{_validConnectionParams["port"]};Database={_testDbName};User Id={_validConnectionParams["username"]};Password={_validConnectionParams["password"]};TrustServerCertificate=True;";
-            await using var connection = new SqlConnection(connectionString);
+            var connectionString = _mySqlContainer.GetConnectionString();
+            await using var connection = new MySqlConnection(connectionString);
             await connection.OpenAsync();
 
             // Create Customers table
             LogInfo("Creating Customers table");
             string createCustomersTable = @"
-                IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Customers')
-                CREATE TABLE Customers (
-                    CustomerId INT IDENTITY(1,1) PRIMARY KEY,
-                    FirstName NVARCHAR(50) NOT NULL,
-                    LastName NVARCHAR(50) NOT NULL,
-                    Email NVARCHAR(100) NOT NULL UNIQUE,
-                    CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
-                    IsActive BIT NOT NULL DEFAULT 1
+                CREATE TABLE IF NOT EXISTS Customers (
+                    CustomerId INT AUTO_INCREMENT PRIMARY KEY,
+                    FirstName VARCHAR(50) NOT NULL,
+                    LastName VARCHAR(50) NOT NULL,
+                    Email VARCHAR(100) NOT NULL UNIQUE,
+                    CreatedDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    IsActive BOOLEAN NOT NULL DEFAULT TRUE
                 )";
-            await using (var cmd = new SqlCommand(createCustomersTable, connection))
+            await using (var cmd = new MySqlCommand(createCustomersTable, connection))
             {
                 await cmd.ExecuteNonQueryAsync();
             }
@@ -154,16 +128,15 @@ namespace SmartInsight.Tests.SQL.Integration
             // Create Orders table
             LogInfo("Creating Orders table");
             string createOrdersTable = @"
-                IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Orders')
-                CREATE TABLE Orders (
-                    OrderId INT IDENTITY(1,1) PRIMARY KEY,
+                CREATE TABLE IF NOT EXISTS Orders (
+                    OrderId INT AUTO_INCREMENT PRIMARY KEY,
                     CustomerId INT NOT NULL,
-                    OrderDate DATETIME NOT NULL DEFAULT GETDATE(),
+                    OrderDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     TotalAmount DECIMAL(10, 2) NOT NULL,
-                    Status NVARCHAR(20) NOT NULL DEFAULT 'Pending',
+                    Status VARCHAR(20) NOT NULL DEFAULT 'Pending',
                     FOREIGN KEY (CustomerId) REFERENCES Customers(CustomerId)
                 )";
-            await using (var cmd = new SqlCommand(createOrdersTable, connection))
+            await using (var cmd = new MySqlCommand(createOrdersTable, connection))
             {
                 await cmd.ExecuteNonQueryAsync();
             }
@@ -171,70 +144,54 @@ namespace SmartInsight.Tests.SQL.Integration
             // Create OrderItems table
             LogInfo("Creating OrderItems table");
             string createOrderItemsTable = @"
-                IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'OrderItems')
-                CREATE TABLE OrderItems (
-                    OrderItemId INT IDENTITY(1,1) PRIMARY KEY,
+                CREATE TABLE IF NOT EXISTS OrderItems (
+                    OrderItemId INT AUTO_INCREMENT PRIMARY KEY,
                     OrderId INT NOT NULL,
-                    ProductName NVARCHAR(100) NOT NULL,
+                    ProductName VARCHAR(100) NOT NULL,
                     Quantity INT NOT NULL,
                     UnitPrice DECIMAL(10, 2) NOT NULL,
                     FOREIGN KEY (OrderId) REFERENCES Orders(OrderId)
                 )";
-            await using (var cmd = new SqlCommand(createOrderItemsTable, connection))
+            await using (var cmd = new MySqlCommand(createOrderItemsTable, connection))
             {
                 await cmd.ExecuteNonQueryAsync();
             }
 
-            // Check if tables already have data
-            string checkDataCommand = "SELECT COUNT(*) FROM Customers";
-            int customerCount = 0;
-            await using (var cmd = new SqlCommand(checkDataCommand, connection))
+            // Insert sample data into Customers
+            LogInfo("Inserting sample data into Customers table");
+            string insertCustomers = @"
+                INSERT INTO Customers (FirstName, LastName, Email, IsActive) VALUES
+                ('John', 'Doe', 'john.doe@example.com', TRUE),
+                ('Jane', 'Smith', 'jane.smith@example.com', TRUE),
+                ('Mike', 'Johnson', 'mike.johnson@example.com', FALSE)";
+            await using (var cmd = new MySqlCommand(insertCustomers, connection))
             {
-                customerCount = (int)await cmd.ExecuteScalarAsync();
+                await cmd.ExecuteNonQueryAsync();
             }
 
-            if (customerCount == 0)
+            // Insert sample data into Orders
+            LogInfo("Inserting sample data into Orders table");
+            string insertOrders = @"
+                INSERT INTO Orders (CustomerId, OrderDate, TotalAmount, Status) VALUES
+                (1, '2023-01-15', 125.50, 'Completed'),
+                (1, '2023-02-20', 75.25, 'Shipped'),
+                (2, '2023-03-10', 200.00, 'Pending')";
+            await using (var cmd = new MySqlCommand(insertOrders, connection))
             {
-                // Insert sample data into Customers
-                LogInfo("Inserting sample data into Customers table");
-                string insertCustomers = @"
-                    INSERT INTO Customers (FirstName, LastName, Email, IsActive) VALUES
-                    ('John', 'Doe', 'john.doe@example.com', 1),
-                    ('Jane', 'Smith', 'jane.smith@example.com', 1),
-                    ('Mike', 'Johnson', 'mike.johnson@example.com', 0)";
-                await using (var cmd = new SqlCommand(insertCustomers, connection))
-                {
-                    await cmd.ExecuteNonQueryAsync();
-                }
-
-                // Insert sample data into Orders
-                LogInfo("Inserting sample data into Orders table");
-                string insertOrders = @"
-                    INSERT INTO Orders (CustomerId, OrderDate, TotalAmount, Status) VALUES
-                    (1, '2023-01-15', 125.50, 'Completed'),
-                    (1, '2023-02-20', 75.25, 'Shipped'),
-                    (2, '2023-03-10', 200.00, 'Pending')";
-                await using (var cmd = new SqlCommand(insertOrders, connection))
-                {
-                    await cmd.ExecuteNonQueryAsync();
-                }
-
-                // Insert sample data into OrderItems
-                LogInfo("Inserting sample data into OrderItems table");
-                string insertOrderItems = @"
-                    INSERT INTO OrderItems (OrderId, ProductName, Quantity, UnitPrice) VALUES
-                    (1, 'Widget A', 2, 50.00),
-                    (1, 'Widget B', 1, 25.50),
-                    (2, 'Widget C', 3, 25.00),
-                    (3, 'Widget D', 4, 50.00)";
-                await using (var cmd = new SqlCommand(insertOrderItems, connection))
-                {
-                    await cmd.ExecuteNonQueryAsync();
-                }
+                await cmd.ExecuteNonQueryAsync();
             }
-            else
+
+            // Insert sample data into OrderItems
+            LogInfo("Inserting sample data into OrderItems table");
+            string insertOrderItems = @"
+                INSERT INTO OrderItems (OrderId, ProductName, Quantity, UnitPrice) VALUES
+                (1, 'Widget A', 2, 50.00),
+                (1, 'Widget B', 1, 25.50),
+                (2, 'Widget C', 3, 25.00),
+                (3, 'Widget D', 4, 50.00)";
+            await using (var cmd = new MySqlCommand(insertOrderItems, connection))
             {
-                LogInfo("Sample data already exists, skipping data insertion");
+                await cmd.ExecuteNonQueryAsync();
             }
         }
 
@@ -354,7 +311,7 @@ namespace SmartInsight.Tests.SQL.Integration
             await _connector.ConnectAsync(_validConnectionParams);
             var filter = new Dictionary<string, object>
             {
-                { "schema", "dbo" }
+                { "schema", _testDbName }
             };
 
             // Act
@@ -383,7 +340,7 @@ namespace SmartInsight.Tests.SQL.Integration
                 targetStructures: new[] { "Customers" },
                 filterCriteria: new Dictionary<string, object>
                 {
-                    { "SchemaName", "dbo" },
+                    { "SchemaName", _testDbName },
                     { "ObjectName", "Customers" }
                 }
             );
@@ -418,7 +375,7 @@ namespace SmartInsight.Tests.SQL.Integration
                 targetStructures: new[] { "Orders" },
                 filterCriteria: new Dictionary<string, object>
                 {
-                    { "SchemaName", "dbo" },
+                    { "SchemaName", _testDbName },
                     { "ObjectName", "Orders" },
                     { "CustomerId", 1 }
                 }
@@ -446,7 +403,7 @@ namespace SmartInsight.Tests.SQL.Integration
                 targetStructures: new[] { "OrderItems" },
                 filterCriteria: new Dictionary<string, object>
                 {
-                    { "SchemaName", "dbo" },
+                    { "SchemaName", _testDbName },
                     { "ObjectName", "OrderItems" }
                 },
                 maxRecords: 2,
@@ -481,7 +438,7 @@ namespace SmartInsight.Tests.SQL.Integration
                 targetStructures: new[] { "Customers" },
                 filterCriteria: new Dictionary<string, object>
                 {
-                    { "SchemaName", "dbo" },
+                    { "SchemaName", _testDbName },
                     { "ObjectName", "Customers" }
                 }
             );
@@ -542,7 +499,7 @@ namespace SmartInsight.Tests.SQL.Integration
                 targetStructures: new[] { "Customers" },
                 filterCriteria: new Dictionary<string, object>
                 {
-                    { "SchemaName", "dbo" },
+                    { "SchemaName", _testDbName },
                     { "ObjectName", "Customers" }
                 }
             );
@@ -555,10 +512,10 @@ namespace SmartInsight.Tests.SQL.Integration
                 type: "Filter",
                 sourceFields: new[] { "IsActive" },
                 targetFields: new string[0],
-                condition: "IsActive = 1",
+                condition: "IsActive = true",
                 parameters: new Dictionary<string, object>
                 {
-                    { "condition", "IsActive = 1" }
+                    { "condition", "IsActive = true" }
                 }
             );
             
@@ -573,13 +530,7 @@ namespace SmartInsight.Tests.SQL.Integration
             Assert.NotNull(result);
             Assert.NotNull(result.TransformedData);
             Assert.Equal(2, result.TransformedData.Count); // Only 2 customers are active
-            
-            // Check that IsActive is 1 (true) for all returned records
-            foreach (var customer in result.TransformedData)
-            {
-                bool isActive = Convert.ToBoolean(customer["IsActive"]);
-                Assert.True(isActive);
-            }
+            Assert.All(result.TransformedData, item => Assert.True(Convert.ToBoolean(item["IsActive"])));
 
             // Clean up
             await _connector.DisconnectAsync();

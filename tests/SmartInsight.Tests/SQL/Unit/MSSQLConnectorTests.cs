@@ -36,9 +36,9 @@ namespace SmartInsight.Tests.SQL.Unit
             // Register any additional services needed for these tests
             services.AddSingleton<IConnectorConfiguration>(provider => 
             {
-                return ConnectorConfigurationFactory.Create(
+                return SmartInsight.Tests.SQL.Common.Utilities.ConnectorConfigurationFactory.Create(
                     "mssql-connector",
-                    "Test SQL Server Connector",
+                    "Test MSSQL Connector",
                     Guid.Empty,
                     new Dictionary<string, string>
                     {
