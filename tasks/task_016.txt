@@ -1,6 +1,6 @@
 # Task ID: 16
 # Title: Implement MSSQL Connector
-# Status: pending
+# Status: in-progress
 # Dependencies: 14
 # Priority: medium
 # Description: Create connector implementation for Microsoft SQL Server data sources.
@@ -18,3 +18,59 @@ Ensure secure handling of connection credentials.
 
 # Test Strategy:
 Create integration tests with test MSSQL instance. Verify connection, extraction, and transformation. Test incremental updates with changed data.
+
+# Subtasks:
+## 1. Create MSSQLConnector class with base implementation [done]
+### Dependencies: None
+### Description: Implement the basic MSSQLConnector class structure with attributes, properties, and event handlers.
+### Details:
+
+
+## 2. Implement connection string building and validation [done]
+### Dependencies: 16.1
+### Description: Create methods for building and validating SQL Server connection strings with secure parameter handling.
+### Details:
+
+
+## 3. Implement Connect, TestConnection, and Disconnect methods [done]
+### Dependencies: 16.2
+### Description: Create methods for establishing, testing, and closing connections to SQL Server databases.
+### Details:
+
+
+## 4. Implement schema discovery mechanism [done]
+### Dependencies: 16.3
+### Description: Create functionality to discover and map SQL Server database schemas, tables, and columns.
+### Details:
+
+
+## 5. Implement data extraction pipeline [done]
+### Dependencies: 16.4
+### Description: Create methods for extracting data from SQL Server tables with filtering and pagination support.
+### Details:
+
+
+## 6. Implement data transformation capabilities [done]
+### Dependencies: 16.5
+### Description: Create methods for transforming extracted SQL Server data according to specified transformation rules.
+### Details:
+
+
+## 7. Implement incremental update detection [done]
+### Dependencies: 16.5
+### Description: Create functionality to detect and extract only changed data from SQL Server databases since the last extraction.
+### Details:
+
+
+## 8. Implement comprehensive error handling and logging [done]
+### Dependencies: 16.1
+### Description: Add robust error handling and detailed logging throughout the SQL Server connector implementation.
+### Details:
+
+
+## 9. Create unit and integration tests for MSSQL connector [pending]
+### Dependencies: 16.7, 16.8
+### Description: Develop comprehensive test suite for the SQL Server connector covering connection, validation, extraction, and transformation functionality.
+### Details:
+
+

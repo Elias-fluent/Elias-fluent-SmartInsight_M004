@@ -86,7 +86,7 @@
       "dependencies": [
         1
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -99,7 +99,7 @@
       "dependencies": [
         1
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": []
     },
     {
@@ -577,8 +577,107 @@
       "dependencies": [
         14
       ],
-      "status": "pending",
-      "subtasks": []
+      "status": "in-progress",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create MSSQLConnector class with base implementation",
+          "description": "Implement the basic MSSQLConnector class structure with attributes, properties, and event handlers.",
+          "details": "",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 16
+        },
+        {
+          "id": 2,
+          "title": "Implement connection string building and validation",
+          "description": "Create methods for building and validating SQL Server connection strings with secure parameter handling.",
+          "details": "",
+          "status": "done",
+          "dependencies": [
+            "16.1"
+          ],
+          "parentTaskId": 16
+        },
+        {
+          "id": 3,
+          "title": "Implement Connect, TestConnection, and Disconnect methods",
+          "description": "Create methods for establishing, testing, and closing connections to SQL Server databases.",
+          "details": "",
+          "status": "done",
+          "dependencies": [
+            "16.2"
+          ],
+          "parentTaskId": 16
+        },
+        {
+          "id": 4,
+          "title": "Implement schema discovery mechanism",
+          "description": "Create functionality to discover and map SQL Server database schemas, tables, and columns.",
+          "details": "",
+          "status": "done",
+          "dependencies": [
+            "16.3"
+          ],
+          "parentTaskId": 16
+        },
+        {
+          "id": 5,
+          "title": "Implement data extraction pipeline",
+          "description": "Create methods for extracting data from SQL Server tables with filtering and pagination support.",
+          "details": "",
+          "status": "done",
+          "dependencies": [
+            "16.4"
+          ],
+          "parentTaskId": 16
+        },
+        {
+          "id": 6,
+          "title": "Implement data transformation capabilities",
+          "description": "Create methods for transforming extracted SQL Server data according to specified transformation rules.",
+          "details": "",
+          "status": "done",
+          "dependencies": [
+            "16.5"
+          ],
+          "parentTaskId": 16
+        },
+        {
+          "id": 7,
+          "title": "Implement incremental update detection",
+          "description": "Create functionality to detect and extract only changed data from SQL Server databases since the last extraction.",
+          "details": "",
+          "status": "done",
+          "dependencies": [
+            "16.5"
+          ],
+          "parentTaskId": 16
+        },
+        {
+          "id": 8,
+          "title": "Implement comprehensive error handling and logging",
+          "description": "Add robust error handling and detailed logging throughout the SQL Server connector implementation.",
+          "details": "",
+          "status": "done",
+          "dependencies": [
+            "16.1"
+          ],
+          "parentTaskId": 16
+        },
+        {
+          "id": 9,
+          "title": "Create unit and integration tests for MSSQL connector",
+          "description": "Develop comprehensive test suite for the SQL Server connector covering connection, validation, extraction, and transformation functionality.",
+          "details": "",
+          "status": "pending",
+          "dependencies": [
+            "16.7",
+            "16.8"
+          ],
+          "parentTaskId": 16
+        }
+      ]
     },
     {
       "id": 17,
