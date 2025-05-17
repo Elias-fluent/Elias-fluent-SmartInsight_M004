@@ -24,7 +24,7 @@ import {
   TabsTrigger,
 } from '../ui/tabs';
 import { FormLabel } from '../ui/form';
-import { Shield, Lock, Clock, AlertCircle, Network } from 'lucide-react';
+import { Shield, Lock, AlertCircle, Network } from 'lucide-react';
 
 // Define security settings schema
 const securitySettingsSchema = z.object({

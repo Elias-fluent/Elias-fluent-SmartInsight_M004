@@ -1,7 +1,7 @@
 import { combineReducers } from 'redux';
 import { authReducer } from './slices/authSlice';
 import { uiReducer } from './slices/uiSlice';
-import { dataReducer } from './slices/dataSlice';
+import dataReducer from './slices/dataSlice';
 import { chatReducer } from './slices/chatSlice';
 import type { AuthState } from './slices/authSlice';
 import type { UIState } from './slices/uiSlice';
@@ -47,11 +47,15 @@ export const initialState: Partial<RootState> = {
   },
   data: {
     dataSources: [],
+    users: [],
+    tenants: [],
     datasets: [],
     queries: [],
     visualizations: [],
+    ingestionJobs: [],
     selectedDataSource: null,
     selectedDataset: null,
+    selectedIngestionJob: null,
     isLoading: false,
     error: null,
     lastUpdated: null,
