@@ -8,6 +8,7 @@ using System.Data;
 using SmartInsight.Core.Interfaces;
 using System.Linq;
 using System.Text;
+using SmartInsight.Knowledge.Connectors.Configuration;
 
 namespace SmartInsight.Knowledge.Connectors
 {
@@ -442,17 +443,228 @@ namespace SmartInsight.Knowledge.Connectors
         }
         
         /// <inheritdoc/>
-        public Task<ConnectionResult> ConnectAsync(IDictionary<string, string> connectionParams, CancellationToken cancellationToken = default)
+        public async Task<ConnectionResult> ConnectAsync(IDictionary<string, string> connectionParams, CancellationToken cancellationToken = default)
         {
-            // To be implemented in the next subtask
-            throw new NotImplementedException("Connect method not yet implemented");
+            // Ensure connection safety with a lock
+            await _connectionLock.WaitAsync(cancellationToken);
+            try
+            {
+                if (ConnectionState == SmartInsight.Core.Interfaces.ConnectionState.Connected)
+                {
+                    _logger?.LogWarning("Already connected to MySQL server");
+                    return ConnectionResult.Success(
+                        connectionId: _connectionId,
+                        serverVersion: null,
+                        connectionInfo: new Dictionary<string, object>
+                        {
+                            ["status"] = "already_connected",
+                            ["server"] = connectionParams["server"]
+                        });
+                }
+                
+                // Validate connection parameters
+                var validationResult = await ValidateConnectionAsync(connectionParams);
+                if (!validationResult.IsValid)
+                {
+                    string errorMessage = FormatValidationErrors(validationResult.Errors);
+                    _logger?.LogError("Connection validation failed: {Errors}", errorMessage);
+                    return ConnectionResult.Failure(errorMessage);
+                }
+                
+                // Update state
+                var previousState = ConnectionState;
+                ConnectionState = SmartInsight.Core.Interfaces.ConnectionState.Connecting;
+                OnStateChanged(previousState, ConnectionState);
+                
+                _logger?.LogDebug("Connecting to MySQL server {Server}...", connectionParams["server"]);
+                
+                try
+                {
+                    // Build connection string
+                    string connectionString = BuildConnectionString(connectionParams);
+                    
+                    // Create and open connection
+                    _connection = new MySqlConnection(connectionString);
+                    await _connection.OpenAsync(cancellationToken);
+                    
+                    // Get server version and details
+                    var serverInfo = new Dictionary<string, object>();
+                    
+                    using (var cmd = new MySqlCommand("SELECT VERSION()", _connection))
+                    {
+                        string serverVersion = (string)await cmd.ExecuteScalarAsync(cancellationToken);
+                        serverInfo["server_version"] = serverVersion;
+                    }
+                    
+                    // Get additional server properties
+                    using (var cmd = new MySqlCommand("SHOW VARIABLES LIKE 'version%'", _connection))
+                    {
+                        using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
+                        {
+                            while (await reader.ReadAsync(cancellationToken))
+                            {
+                                string key = reader.GetString(0);
+                                string value = reader.GetString(1);
+                                serverInfo[key] = value;
+                            }
+                        }
+                    }
+                    
+                    // Generate a unique connection ID
+                    _connectionId = Guid.NewGuid().ToString();
+                    
+                    // Update connector configuration
+                    if (_configuration == null)
+                    {
+                        _configuration = ConnectorConfigurationFactory.Create(
+                            Id, Name, Guid.Parse(_connectionId), connectionParams);
+                    }
+                    
+                    // Update state
+                    previousState = ConnectionState;
+                    ConnectionState = SmartInsight.Core.Interfaces.ConnectionState.Connected;
+                    OnStateChanged(previousState, ConnectionState);
+                    
+                    _logger?.LogInformation("Successfully connected to MySQL server {Server}", connectionParams["server"]);
+                    
+                    return ConnectionResult.Success(
+                        connectionId: _connectionId,
+                        serverVersion: serverInfo["server_version"].ToString(),
+                        connectionInfo: serverInfo);
+                }
+                catch (MySqlException ex)
+                {
+                    ConnectionState = SmartInsight.Core.Interfaces.ConnectionState.Error;
+                    OnStateChanged(SmartInsight.Core.Interfaces.ConnectionState.Connecting, ConnectionState);
+                    
+                    string errorMessage = $"Failed to connect to MySQL server: {ex.Message}";
+                    _logger?.LogError(ex, "Connection error: {Message}", errorMessage);
+                    OnErrorOccurred("Connect", errorMessage, ex);
+                    
+                    return ConnectionResult.Failure(errorMessage);
+                }
+                catch (Exception ex)
+                {
+                    ConnectionState = SmartInsight.Core.Interfaces.ConnectionState.Error;
+                    OnStateChanged(SmartInsight.Core.Interfaces.ConnectionState.Connecting, ConnectionState);
+                    
+                    string errorMessage = $"Unexpected error connecting to MySQL server: {ex.Message}";
+                    _logger?.LogError(ex, "Connection error: {Message}", errorMessage);
+                    OnErrorOccurred("Connect", errorMessage, ex);
+                    
+                    return ConnectionResult.Failure(errorMessage);
+                }
+            }
+            finally
+            {
+                _connectionLock.Release();
+            }
         }
         
         /// <inheritdoc/>
-        public Task<bool> TestConnectionAsync(IDictionary<string, string> connectionParams)
+        public async Task<bool> TestConnectionAsync(IDictionary<string, string> connectionParams)
         {
-            // To be implemented in the next subtask
-            throw new NotImplementedException("TestConnection method not yet implemented");
+            _logger?.LogDebug("Testing connection to MySQL server");
+            
+            try
+            {
+                // Validate configuration
+                var connectorConfig = ConnectorConfigurationFactory.Create(
+                    "mysql-connector", 
+                    "MySQL Test Connection", 
+                    Guid.Empty, 
+                    connectionParams);
+                
+                var validationResult = await ValidateConnectionAsync(connectionParams);
+                if (!validationResult.IsValid)
+                {
+                    var errorMessage = FormatValidationErrors(validationResult.Errors);
+                    _logger?.LogWarning("Configuration validation failed for connection test: {Errors}", 
+                        errorMessage);
+                    OnErrorOccurred("TestConnection", $"Validation failed: {errorMessage}");
+                    return false;
+                }
+                
+                // Build connection string and try to connect
+                string connectionString = BuildConnectionString(connectionParams);
+                using (var connection = new MySqlConnection(connectionString))
+                {
+                    _logger?.LogDebug("Opening test connection to MySQL server {Server}...", connectionParams["server"]);
+                    await connection.OpenAsync();
+                    
+                    // Execute a simple query to verify connection is working properly
+                    using (var cmd = new MySqlCommand("SELECT 1", connection))
+                    {
+                        await cmd.ExecuteScalarAsync();
+                    }
+                    
+                    _logger?.LogInformation("Successfully tested connection to MySQL server {Server}", 
+                        connectionParams["server"]);
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = $"Connection test failed: {ex.Message}";
+                _logger?.LogError(ex, "MySQL connection test failed: {Message}", errorMessage);
+                OnErrorOccurred("TestConnection", errorMessage, ex);
+                return false;
+            }
+        }
+        
+        /// <inheritdoc/>
+        public async Task<bool> DisconnectAsync(CancellationToken cancellationToken = default)
+        {
+            await _connectionLock.WaitAsync(cancellationToken);
+            try
+            {
+                if (ConnectionState == SmartInsight.Core.Interfaces.ConnectionState.Disconnected)
+                {
+                    _logger?.LogWarning("Already disconnected from MySQL server");
+                    return true;
+                }
+                
+                if (_connection == null)
+                {
+                    ConnectionState = SmartInsight.Core.Interfaces.ConnectionState.Disconnected;
+                    return true;
+                }
+                
+                try
+                {
+                    _logger?.LogDebug("Disconnecting from MySQL server...");
+                    
+                    // Update state
+                    var previousState = ConnectionState;
+                    ConnectionState = SmartInsight.Core.Interfaces.ConnectionState.Disconnecting;
+                    OnStateChanged(previousState, ConnectionState);
+                    
+                    // Close connection
+                    await _connection.CloseAsync();
+                    _connection.Dispose();
+                    _connection = null;
+                    
+                    // Update state
+                    previousState = ConnectionState;
+                    ConnectionState = SmartInsight.Core.Interfaces.ConnectionState.Disconnected;
+                    OnStateChanged(previousState, ConnectionState);
+                    
+                    _logger?.LogInformation("Successfully disconnected from MySQL server");
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "Error disconnecting from MySQL server: {Message}", ex.Message);
+                    OnErrorOccurred("Disconnect", $"Error disconnecting: {ex.Message}", ex);
+                    
+                    ConnectionState = SmartInsight.Core.Interfaces.ConnectionState.Error;
+                    return false;
+                }
+            }
+            finally
+            {
+                _connectionLock.Release();
+            }
         }
         
         /// <inheritdoc/>
@@ -474,13 +686,6 @@ namespace SmartInsight.Knowledge.Connectors
         {
             // To be implemented in a later subtask
             throw new NotImplementedException("TransformData method not yet implemented");
-        }
-        
-        /// <inheritdoc/>
-        public Task<bool> DisconnectAsync(CancellationToken cancellationToken = default)
-        {
-            // To be implemented in a later subtask
-            throw new NotImplementedException("Disconnect method not yet implemented");
         }
         
         /// <inheritdoc/>
