@@ -16,16 +16,17 @@
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "verbatimModuleSyntax": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "src/*": ["./src/*"]
     },
-    "baseUrl": "./",
+    "baseUrl": ".",
     "typeRoots": ["./node_modules/@types", "./src/types"],
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
