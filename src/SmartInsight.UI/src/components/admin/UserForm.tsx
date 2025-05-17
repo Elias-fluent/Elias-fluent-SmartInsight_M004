@@ -6,24 +6,30 @@ import { apiRequest } from '../../store/middleware/apiMiddlewareHelper';
 import { 
   Input,
   Button,
-  Switch,
-  Form,
-  FormDescription,
-  FormLabel,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  Checkbox
+  Checkbox,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+  Form
 } from '../ui';
-import z from 'zod';
+import { Loader2 } from 'lucide-react';
+import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { DATA_ACTIONS } from '../../store/slices/dataSlice';
 
 interface Tenant {
   id: string;
@@ -46,7 +52,7 @@ interface UserFormProps {
   onCancel: () => void;
 }
 
-// Form validation schema
+// Form validation schema with proper typing
 const userFormSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
   firstName: z.string().min(1, { message: 'First name is required' }),
@@ -58,7 +64,7 @@ const userFormSchema = z.object({
     .or(z.literal('')),
   confirmPassword: z.string().optional().or(z.literal('')),
   roles: z.array(z.string()).min(1, { message: 'At least one role is required' }),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
   tenantId: z.string().min(1, { message: 'Tenant is required' }),
 })
 .refine(data => !data.password || data.password === data.confirmPassword, {
@@ -73,14 +79,15 @@ const UserForm: React.FC<UserFormProps> = ({ user, onSubmit, onCancel }) => {
   const dispatch = useDispatch();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [availableRoles, setAvailableRoles] = useState<string[]>(['Admin', 'User', 'Analyst', 'ReadOnly']);
+  const [availableRoles, setAvailableRoles] = useState<string[]>([]);
+  const [isLoadingRoles, setIsLoadingRoles] = useState(false);
   
-  // Get tenants from Redux store (will need to be added to data slice)
+  // Get tenants from Redux store
   const tenants = useSelector((state: RootState) => state.data.tenants) || [];
 
-  // Form setup
-  const form = useForm<UserFormValues>({
-    resolver: zodResolver(userFormSchema) as any,
+  // Form setup with simplified typing
+  const form = useForm({
+    resolver: zodResolver(userFormSchema),
     defaultValues: {
       email: user?.email || '',
       firstName: user?.firstName || '',
@@ -93,29 +100,61 @@ const UserForm: React.FC<UserFormProps> = ({ user, onSubmit, onCancel }) => {
     },
   });
 
-  // Fetch roles if needed (if we want to dynamically load them from API)
+  // Fetch roles on component mount
   useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const response = await dispatch(apiRequest(
-          '/api/v1/Roles',
-          'get'
-        ));
-        if (response?.payload) {
-          setAvailableRoles(response.payload);
-        }
-      } catch (error) {
-        // Use default roles on error
-        console.error('Failed to fetch roles, using defaults', error);
-      }
-    };
-
-    // Uncomment this when the API is ready
-    // fetchRoles();
+    fetchRoles();
+    // If tenants array is empty, fetch tenants
+    if (tenants.length === 0) {
+      fetchTenants();
+    }
   }, []);
 
+  const fetchRoles = async () => {
+    setIsLoadingRoles(true);
+    try {
+      const response = await dispatch(apiRequest(
+        '/api/v1/Roles',
+        'get',
+        undefined,
+        DATA_ACTIONS.FETCH_ROLES_SUCCESS,
+        DATA_ACTIONS.FETCH_ROLES_FAILURE
+      ));
+      
+      if (response?.success && response.payload) {
+        setAvailableRoles(response.payload);
+      } else {
+        // Fallback to default roles if API fails
+        setAvailableRoles(['Administrator', 'User', 'Analyst', 'ReadOnly']);
+      }
+    } catch (error) {
+      // Use default roles on error
+      setAvailableRoles(['Administrator', 'User', 'Analyst', 'ReadOnly']);
+      console.error('Failed to fetch roles, using defaults', error);
+    } finally {
+      setIsLoadingRoles(false);
+    }
+  };
+
+  const fetchTenants = async () => {
+    try {
+      await dispatch(apiRequest(
+        '/api/v1/Tenants',
+        'get',
+        undefined,
+        DATA_ACTIONS.FETCH_TENANTS_SUCCESS,
+        DATA_ACTIONS.FETCH_TENANTS_FAILURE
+      ));
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch tenants',
+        variant: 'destructive',
+      });
+    }
+  };
+
   // Handle form submission
-  const handleFormSubmit = async (data: UserFormValues) => {
+  const handleFormSubmit = async (data: any) => {
     setIsSubmitting(true);
     
     try {
@@ -154,136 +193,176 @@ const UserForm: React.FC<UserFormProps> = ({ user, onSubmit, onCancel }) => {
         
         <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <FormLabel htmlFor="firstName">First Name</FormLabel>
-              <Input 
-                id="firstName"
-                placeholder="First name" 
-                {...form.register('firstName')} 
-              />
-              {form.formState.errors.firstName && (
-                <p className="text-sm text-red-500">{form.formState.errors.firstName.message}</p>
+            <FormField
+              control={form.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>First Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="First name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
-            
-            <div className="space-y-2">
-              <FormLabel htmlFor="lastName">Last Name</FormLabel>
-              <Input 
-                id="lastName" 
-                placeholder="Last name" 
-                {...form.register('lastName')} 
-              />
-              {form.formState.errors.lastName && (
-                <p className="text-sm text-red-500">{form.formState.errors.lastName.message}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <FormLabel htmlFor="email">Email</FormLabel>
-            <Input 
-              id="email"
-              type="email" 
-              placeholder="user@example.com" 
-              {...form.register('email')} 
             />
-            {form.formState.errors.email && (
-              <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>
-            )}
+            
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Last Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Last name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
 
-          <div className="space-y-2">
-            <FormLabel htmlFor="tenantId">Tenant</FormLabel>
-            <select
-              id="tenantId"
-              className="w-full p-2 border rounded"
-              {...form.register('tenantId')}
-            >
-              <option value="">Select tenant</option>
-              {tenants.map((tenant: Tenant) => (
-                <option key={tenant.id} value={tenant.id}>
-                  {tenant.name}
-                </option>
-              ))}
-            </select>
-            {form.formState.errors.tenantId && (
-              <p className="text-sm text-red-500">{form.formState.errors.tenantId.message}</p>
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="user@example.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-          </div>
+          />
+
+          <FormField
+            control={form.control}
+            name="tenantId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tenant</FormLabel>
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select tenant" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {tenants.map((tenant: Tenant) => (
+                      <SelectItem key={tenant.id} value={tenant.id}>
+                        {tenant.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <div className="space-y-2">
             <FormLabel>Roles</FormLabel>
-            <div className="grid grid-cols-2 gap-2">
-              {availableRoles.map((role) => (
-                <div key={role} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`role-${role}`}
-                    checked={form.watch('roles')?.includes(role)}
-                    onCheckedChange={(checked) => {
-                      const currentRoles = form.watch('roles') || [];
-                      const updatedRoles = checked
-                        ? [...currentRoles, role]
-                        : currentRoles.filter((r) => r !== role);
-                      form.setValue('roles', updatedRoles, { shouldValidate: true });
-                    }}
-                  />
-                  <FormLabel htmlFor={`role-${role}`} className="cursor-pointer font-normal">
-                    {role}
-                  </FormLabel>
+            <div className="grid grid-cols-2 gap-2 border rounded-md p-3">
+              {isLoadingRoles ? (
+                <div className="col-span-2 flex justify-center py-2">
+                  <Loader2 className="h-5 w-5 animate-spin" />
                 </div>
-              ))}
+              ) : (
+                availableRoles.map((role) => (
+                  <div key={role} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`role-${role}`}
+                      checked={form.watch('roles')?.includes(role)}
+                      onCheckedChange={(checked) => {
+                        const currentRoles = form.watch('roles') || [];
+                        const updatedRoles = checked
+                          ? [...currentRoles, role]
+                          : currentRoles.filter((r) => r !== role);
+                        form.setValue('roles', updatedRoles, { shouldValidate: true });
+                      }}
+                    />
+                    <FormLabel htmlFor={`role-${role}`} className="cursor-pointer font-normal">
+                      {role}
+                    </FormLabel>
+                  </div>
+                ))
+              )}
             </div>
             {form.formState.errors.roles && (
               <p className="text-sm text-red-500">{form.formState.errors.roles.message}</p>
             )}
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="isActive"
-              checked={form.watch('isActive')}
-              onCheckedChange={(checked) => 
-                form.setValue('isActive', checked as boolean)
-              }
+          <FormField
+            control={form.control}
+            name="isActive"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-3">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>Active</FormLabel>
+                  <FormDescription>
+                    Inactive users cannot log in to the system
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
+
+          {/* Only show password fields when creating a new user or explicitly editing */}
+          <div className={user ? 'border-t pt-4' : ''}>
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    {user ? 'New Password (leave blank to keep current)' : 'Password'}
+                  </FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="password" 
+                      placeholder={user ? "••••••••" : "Enter password"} 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <FormLabel htmlFor="isActive" className="cursor-pointer">
-              Active
-            </FormLabel>
+
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="password" 
+                      placeholder="Confirm password"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
 
-          {/* Password fields - only required for new users */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <FormLabel htmlFor="password">{user ? 'New Password (optional)' : 'Password'}</FormLabel>
-              <Input 
-                id="password"
-                type="password" 
-                placeholder={user ? "Leave blank to keep current" : "Password"} 
-                {...form.register('password')} 
-              />
-              {form.formState.errors.password && (
-                <p className="text-sm text-red-500">{form.formState.errors.password.message}</p>
-              )}
-            </div>
-            
-            <div className="space-y-2">
-              <FormLabel htmlFor="confirmPassword">Confirm Password</FormLabel>
-              <Input 
-                id="confirmPassword"
-                type="password" 
-                placeholder="Confirm password" 
-                {...form.register('confirmPassword')} 
-              />
-              {form.formState.errors.confirmPassword && (
-                <p className="text-sm text-red-500">{form.formState.errors.confirmPassword.message}</p>
-              )}
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
+          <DialogFooter className="mt-6">
+            <Button
+              type="button"
+              variant="outline"
               onClick={onCancel}
               disabled={isSubmitting}
             >
@@ -293,7 +372,10 @@ const UserForm: React.FC<UserFormProps> = ({ user, onSubmit, onCancel }) => {
               type="submit"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Saving...' : user ? 'Update User' : 'Create User'}
+              {isSubmitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {user ? 'Update' : 'Create'}
             </Button>
           </DialogFooter>
         </form>

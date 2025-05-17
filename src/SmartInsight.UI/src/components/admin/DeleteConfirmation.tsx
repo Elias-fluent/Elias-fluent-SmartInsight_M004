@@ -1,14 +1,5 @@
 import React from 'react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '../ui/alert-dialog';
+import { ConfirmationDialog } from '../ui/confirmation-dialog';
 
 interface DeleteConfirmationProps {
   title: string;
@@ -24,22 +15,15 @@ const DeleteConfirmation: React.FC<DeleteConfirmationProps> = ({
   onCancel,
 }) => {
   return (
-    <AlertDialog open={true} onOpenChange={(open) => !open && onCancel()}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {message}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={onCancel}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>
-            Delete
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmationDialog
+      open={true}
+      onOpenChange={(open) => !open && onCancel()}
+      title={title}
+      description={message}
+      confirmLabel="Delete"
+      variant="destructive"
+      onConfirm={onConfirm}
+    />
   );
 };
 

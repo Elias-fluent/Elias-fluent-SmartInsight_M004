@@ -1,70 +1,94 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button, Input, FormLabel } from '../ui';
-import {
+import { useToast } from '../ui/use-toast';
+import { 
+  Input,
+  Button,
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '../ui/dialog';
-import {
-  FormControl,
+  Checkbox,
   FormField,
   FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
   FormMessage,
-} from '../ui/form';
+  Form
+} from '../ui';
 import { Textarea } from '../ui/textarea';
-import { Checkbox } from '../ui';
-import { useToast } from '../ui/use-toast';
+import { Loader2 } from 'lucide-react';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 
 interface Tenant {
   id: string;
   name: string;
   description: string;
   isActive: boolean;
+  connectionString?: string;
+  maxUsers?: number;
+  maxConnections?: number;
 }
 
 interface TenantFormProps {
   tenant: Tenant | null;
   onSubmit: (data: any) => Promise<boolean>;
   onCancel: () => void;
+  isOpen?: boolean;
 }
 
 // Form validation schema
 const tenantFormSchema = z.object({
-  name: z.string().min(1, { message: 'Name is required' }),
+  name: z.string().min(1, { message: 'Tenant name is required' }),
   description: z.string().optional(),
   isActive: z.boolean().default(true),
+  connectionString: z.string().optional(),
+  maxUsers: z.coerce.number().int().positive().optional(),
+  maxConnections: z.coerce.number().int().positive().optional(),
 });
 
-// Define the form data type based on the schema
-type TenantFormValues = z.infer<typeof tenantFormSchema>;
-
-const TenantForm: React.FC<TenantFormProps> = ({ tenant, onSubmit, onCancel }) => {
+const TenantForm: React.FC<TenantFormProps> = ({ 
+  tenant, 
+  isOpen = true,
+  onSubmit, 
+  onCancel 
+}) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Form setup
-  const form = useForm<TenantFormValues>({
-    resolver: zodResolver(tenantFormSchema) as any,
+  // Form setup with less strict typing
+  const form = useForm({
+    resolver: zodResolver(tenantFormSchema),
     defaultValues: {
       name: tenant?.name || '',
       description: tenant?.description || '',
       isActive: tenant?.isActive !== undefined ? tenant.isActive : true,
+      connectionString: tenant?.connectionString || '',
+      maxUsers: tenant?.maxUsers,
+      maxConnections: tenant?.maxConnections,
     },
   });
 
   // Handle form submission
-  const handleFormSubmit = async (data: TenantFormValues) => {
+  const handleFormSubmit = async (data: any) => {
     setIsSubmitting(true);
     
     try {
-      const success = await onSubmit(data);
+      // If editing existing tenant, include the ID
+      const submitData = tenant ? { ...data, id: tenant.id } : data;
+      
+      const success = await onSubmit(submitData);
+      
       if (success) {
+        toast({
+          title: 'Success',
+          description: tenant ? 'Tenant updated successfully' : 'Tenant created successfully',
+        });
         form.reset();
+        onCancel();
       }
     } catch (error) {
       toast({
@@ -78,8 +102,8 @@ const TenantForm: React.FC<TenantFormProps> = ({ tenant, onSubmit, onCancel }) =
   };
 
   return (
-    <Dialog open={true} onOpenChange={(open) => !open && onCancel()}>
-      <DialogContent className="sm:max-w-[500px]">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>
             {tenant ? 'Edit Tenant' : 'Add New Tenant'}
@@ -87,45 +111,135 @@ const TenantForm: React.FC<TenantFormProps> = ({ tenant, onSubmit, onCancel }) =
         </DialogHeader>
         
         <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <FormLabel htmlFor="name">Name</FormLabel>
-              <Input 
-                id="name"
-                placeholder="Tenant name" 
-                {...form.register('name')} 
-              />
-              {form.formState.errors.name && (
-                <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter tenant name" {...field} />
+                </FormControl>
+                <FormDescription>
+                  The display name for the tenant organization
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="Enter tenant description"
+                    className="resize-none"
+                    {...field} 
+                  />
+                </FormControl>
+                <FormDescription>
+                  Brief description of the tenant organization
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="connectionString"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Connection String</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter database connection string" {...field} />
+                </FormControl>
+                <FormDescription>
+                  Database connection string for the tenant (optional)
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="maxUsers"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Max Users</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      placeholder="e.g., 50" 
+                      {...field}
+                      value={field.value || ''} 
+                      onChange={(e) => {
+                        const value = e.target.value === '' ? undefined : parseInt(e.target.value, 10);
+                        field.onChange(value);
+                      }}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Maximum number of users allowed
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
+            />
             
-            <div className="space-y-2">
-              <FormLabel htmlFor="description">Description</FormLabel>
-              <Textarea 
-                id="description"
-                placeholder="Describe the tenant's purpose or organization"
-                className="resize-none"
-                {...form.register('description')} 
-              />
-              {form.formState.errors.description && (
-                <p className="text-sm text-red-500">{form.formState.errors.description.message}</p>
+            <FormField
+              control={form.control}
+              name="maxConnections"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Max Connections</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      placeholder="e.g., 10" 
+                      {...field}
+                      value={field.value || ''} 
+                      onChange={(e) => {
+                        const value = e.target.value === '' ? undefined : parseInt(e.target.value, 10);
+                        field.onChange(value);
+                      }}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Maximum concurrent connections
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="isActive"
-                checked={form.watch('isActive')}
-                onCheckedChange={(checked) => 
-                  form.setValue('isActive', checked as boolean)
-                }
-              />
-              <FormLabel htmlFor="isActive" className="cursor-pointer">
-                Active
-              </FormLabel>
-            </div>
+            />
           </div>
+
+          <FormField
+            control={form.control}
+            name="isActive"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>Active</FormLabel>
+                  <FormDescription>
+                    Determines if the tenant is currently active in the system
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
 
           <DialogFooter>
             <Button 
@@ -140,7 +254,14 @@ const TenantForm: React.FC<TenantFormProps> = ({ tenant, onSubmit, onCancel }) =
               type="submit"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Saving...' : tenant ? 'Update Tenant' : 'Create Tenant'}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {tenant ? 'Updating...' : 'Creating...'}
+                </>
+              ) : (
+                tenant ? 'Update Tenant' : 'Create Tenant'
+              )}
             </Button>
           </DialogFooter>
         </form>

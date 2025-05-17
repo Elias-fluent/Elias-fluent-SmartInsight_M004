@@ -54,6 +54,7 @@ export {
   AlertDialogHeader,
   AlertDialogTitle,
 } from './alert-dialog';
+export { ConfirmationDialog } from './confirmation-dialog';
 export * from './textarea';
 export * from './toast';
 export * from './use-toast'; 

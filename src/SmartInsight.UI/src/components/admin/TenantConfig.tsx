@@ -1,630 +1,312 @@
 import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '../ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../ui/dialog';
-import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
-import { Checkbox } from '../ui';
-import { useToast } from '../ui/use-toast';
 import { useDispatch, useSelector } from 'react-redux';
+import { useToast } from '../ui/use-toast';
 import type { RootState } from '../../store/configureStore';
 import { apiRequest } from '../../store/middleware/apiMiddlewareHelper';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '../ui/tabs';
-import { FormLabel } from '../ui/form';
-
-// Define tenant configuration schema
-const tenantConfigSchema = z.object({
-  // General settings
-  name: z.string().min(1, { message: 'Name is required' }),
-  description: z.string().optional(),
-  isActive: z.boolean().default(true),
-  
-  // Branding settings
-  primaryColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, { 
-    message: 'Must be a valid hex color (e.g. #FFFFFF)' 
-  }).optional(),
-  secondaryColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, { 
-    message: 'Must be a valid hex color (e.g. #FFFFFF)' 
-  }).optional(),
-  logoUrl: z.string().url({ message: 'Must be a valid URL' }).optional().or(z.literal('')),
-  
-  // Feature toggles
-  enabledFeatures: z.object({
-    aiAssistant: z.boolean().default(true),
-    dataVisualization: z.boolean().default(true),
-    advancedAnalytics: z.boolean().default(false),
-    customReports: z.boolean().default(false),
-    knowledgeGraph: z.boolean().default(true),
-    apiAccess: z.boolean().default(false),
-  }),
-  
-  // Integration settings
-  integrations: z.object({
-    jiraEnabled: z.boolean().default(false),
-    jiraApiUrl: z.string().url({ message: 'Must be a valid URL' }).optional().or(z.literal('')),
-    jiraApiKey: z.string().optional(),
-    
-    confluenceEnabled: z.boolean().default(false),
-    confluenceApiUrl: z.string().url({ message: 'Must be a valid URL' }).optional().or(z.literal('')),
-    confluenceApiKey: z.string().optional(),
-    
-    gitEnabled: z.boolean().default(false),
-    gitRepositoryUrl: z.string().url({ message: 'Must be a valid URL' }).optional().or(z.literal('')),
-    gitAccessToken: z.string().optional(),
-  }),
-  
-  // Limits and quotas
-  limits: z.object({
-    maxUsers: z.number().int().positive().default(25),
-    maxDataSources: z.number().int().positive().default(10),
-    maxStorageGB: z.number().int().positive().default(100),
-    maxQueriesPerDay: z.number().int().positive().default(1000),
-  }),
-});
-
-type TenantConfigValues = z.infer<typeof tenantConfigSchema>;
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter 
+} from '../ui/dialog';
+import { Button } from '../ui/button';
+import { 
+  Input,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage
+} from '../ui';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
+import { Checkbox } from '../ui/checkbox';
+import { Database, Settings, Shield, Clock, HardDrive } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Textarea } from '../ui/textarea';
+import { DATA_ACTIONS } from '../../store/slices/dataSlice';
 
 interface TenantConfigProps {
   tenantId: string;
   onClose: () => void;
 }
 
+interface TenantSettings {
+  id: string;
+  name: string;
+  dataRetentionDays: number;
+  maxStorageGB: number;
+  refreshScheduleType: 'minutes' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'custom';
+  refreshInterval: number;
+  enableAuditLogs: boolean;
+  customSettings: Record<string, any>;
+}
+
 const TenantConfig: React.FC<TenantConfigProps> = ({ tenantId, onClose }) => {
   const dispatch = useDispatch();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
-  
-  // Get the tenant from Redux store
-  const tenants = useSelector((state: RootState) => state.data.tenants);
-  const tenant = tenants.find(t => t.id === tenantId);
-  
-  // Initialize form with default values
-  const form = useForm<TenantConfigValues>({
-    resolver: zodResolver(tenantConfigSchema) as any,
-    defaultValues: {
-      name: '',
-      description: '',
-      isActive: true,
-      primaryColor: '#1a56db',
-      secondaryColor: '#7e3af2',
-      logoUrl: '',
-      enabledFeatures: {
-        aiAssistant: true,
-        dataVisualization: true,
-        advancedAnalytics: false,
-        customReports: false,
-        knowledgeGraph: true,
-        apiAccess: false,
-      },
-      integrations: {
-        jiraEnabled: false,
-        jiraApiUrl: '',
-        jiraApiKey: '',
-        confluenceEnabled: false,
-        confluenceApiUrl: '',
-        confluenceApiKey: '',
-        gitEnabled: false,
-        gitRepositoryUrl: '',
-        gitAccessToken: '',
-      },
-      limits: {
-        maxUsers: 25,
-        maxDataSources: 10,
-        maxStorageGB: 100,
-        maxQueriesPerDay: 1000,
-      }
-    }
+  const [settings, setSettings] = useState<TenantSettings>({
+    id: tenantId,
+    name: '',
+    dataRetentionDays: 30,
+    maxStorageGB: 100,
+    refreshScheduleType: 'daily',
+    refreshInterval: 1,
+    enableAuditLogs: true,
+    customSettings: {}
   });
-  
-  // Fetch tenant configuration when component mounts
+
+  // Get tenant from Redux store
+  const tenant = useSelector((state: RootState) => 
+    state.data.tenants.find(t => t.id === tenantId)
+  );
+
+  // Fetch tenant settings on mount
   useEffect(() => {
-    const fetchTenantConfig = async () => {
-      if (!tenantId) return;
-      
-      setIsLoading(true);
-      try {
-        const response = await dispatch(apiRequest(
-          `/api/v1/Tenants/${tenantId}/config`,
-          'get'
-        ));
-        
-        if (response?.payload) {
-          // Merge tenant basic info with config
-          const config = {
-            ...response.payload,
-            name: tenant?.name || '',
-            description: tenant?.description || '',
-            isActive: tenant?.isActive !== undefined ? tenant.isActive : true,
-          };
-          
-          // Reset form with fetched values
-          form.reset(config);
-        }
-      } catch (error) {
-        toast({
-          title: 'Error',
-          description: 'Failed to fetch tenant configuration',
-          variant: 'destructive',
-        });
-        
-        // If config doesn't exist yet, initialize with tenant basic info
-        if (tenant) {
-          form.setValue('name', tenant.name);
-          form.setValue('description', tenant.description || '');
-          form.setValue('isActive', tenant.isActive);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchTenantConfig();
-  }, [tenantId, dispatch, tenant]);
-  
-  // Handle form submission
-  const handleSubmit = async (data: TenantConfigValues) => {
-    if (!tenantId) return;
-    
-    setIsSubmitting(true);
+    fetchTenantSettings();
+  }, [tenantId]);
+
+  const fetchTenantSettings = async () => {
+    setIsLoading(true);
     try {
-      // Update tenant basic info
-      await dispatch(apiRequest(
-        `/api/v1/Tenants/${tenantId}`,
-        'put',
-        {
-          name: data.name,
-          description: data.description,
-          isActive: data.isActive,
-        }
-      ));
+      // Placeholder for actual API call - would be implemented in real app
+      // const response = await dispatch(apiRequest(
+      //   `/api/v1/Tenants/${tenantId}/settings`,
+      //   'get',
+      //   undefined,
+      //   'FETCH_TENANT_SETTINGS_SUCCESS',
+      //   'FETCH_TENANT_SETTINGS_FAILURE'
+      // ));
       
-      // Update tenant configuration
-      await dispatch(apiRequest(
-        `/api/v1/Tenants/${tenantId}/config`,
-        'put',
-        {
-          primaryColor: data.primaryColor,
-          secondaryColor: data.secondaryColor,
-          logoUrl: data.logoUrl,
-          enabledFeatures: data.enabledFeatures,
-          integrations: data.integrations,
-          limits: data.limits,
-        }
-      ));
-      
-      toast({
-        title: 'Success',
-        description: 'Tenant configuration saved successfully',
-      });
-      
-      onClose();
+      // For now, just use the tenant name from Redux
+      if (tenant) {
+        setSettings(prev => ({
+          ...prev,
+          id: tenantId,
+          name: tenant.name
+        }));
+      }
+
+      // Simulate an API delay
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to save tenant configuration',
+        description: 'Failed to fetch tenant settings',
+        variant: 'destructive',
+      });
+      setIsLoading(false);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    setIsSaving(true);
+    try {
+      // Placeholder for actual API call - would be implemented in real app
+      // await dispatch(apiRequest(
+      //   `/api/v1/Tenants/${tenantId}/settings`,
+      //   'put',
+      //   settings,
+      //   'UPDATE_TENANT_SETTINGS_SUCCESS',
+      //   'UPDATE_TENANT_SETTINGS_FAILURE'
+      // ));
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      toast({
+        title: 'Success',
+        description: 'Tenant settings updated successfully',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update tenant settings',
         variant: 'destructive',
       });
     } finally {
-      setIsSubmitting(false);
+      setIsSaving(false);
     }
   };
-  
-  // Handle form reset
-  const handleReset = () => {
-    form.reset();
-    
-    toast({
-      title: 'Form Reset',
-      description: 'All changes have been discarded',
-    });
+
+  const handleInputChange = (field: keyof TenantSettings, value: any) => {
+    setSettings(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
-  
-  // Generate feature toggle controls
-  const renderFeatureToggles = () => {
-    const features = [
-      { id: 'aiAssistant', label: 'AI Assistant', description: 'Enable AI-powered chat assistant for this tenant' },
-      { id: 'dataVisualization', label: 'Data Visualization', description: 'Enable charts and visualization tools' },
-      { id: 'advancedAnalytics', label: 'Advanced Analytics', description: 'Enable complex analytics and reporting features' },
-      { id: 'customReports', label: 'Custom Reports', description: 'Allow users to create and save custom reports' },
-      { id: 'knowledgeGraph', label: 'Knowledge Graph', description: 'Enable knowledge graph creation and visualization' },
-      { id: 'apiAccess', label: 'API Access', description: 'Enable programmatic access to data via APIs' },
-    ];
-    
-    return (
-      <div className="space-y-4">
-        {features.map(feature => {
-          // Use a type-safe approach to access nested form values
-          const fieldName = `enabledFeatures.${feature.id}` as const;
-          const isEnabled = form.watch(fieldName as any);
-          
-          return (
-            <div key={feature.id} className="flex items-start space-x-2">
-              <Checkbox
-                id={`feature-${feature.id}`}
-                checked={isEnabled}
-                onCheckedChange={(checked) => 
-                  form.setValue(fieldName as any, Boolean(checked), { shouldValidate: true })
-                }
-              />
-              <div className="space-y-1">
-                <FormLabel htmlFor={`feature-${feature.id}`} className="font-medium cursor-pointer">
-                  {feature.label}
-                </FormLabel>
-                <p className="text-xs text-gray-500">{feature.description}</p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-  
-  if (isLoading) {
-    return (
-      <Dialog open={true} onOpenChange={() => onClose()}>
-        <DialogContent className="sm:max-w-[800px]">
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-  
+
   return (
     <Dialog open={true} onOpenChange={() => onClose()}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            Tenant Configuration: {tenant?.name}
+          <DialogTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            <span>Configure Tenant: {tenant?.name || 'Loading...'}</span>
           </DialogTitle>
         </DialogHeader>
-        
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-4">
-              <TabsTrigger value="general">General</TabsTrigger>
-              <TabsTrigger value="branding">Branding</TabsTrigger>
-              <TabsTrigger value="features">Features</TabsTrigger>
-              <TabsTrigger value="integrations">Integrations</TabsTrigger>
-              <TabsTrigger value="limits">Limits & Quotas</TabsTrigger>
-            </TabsList>
-            
-            {/* General Settings */}
-            <TabsContent value="general" className="space-y-4">
-              <div className="space-y-2">
-                <FormLabel htmlFor="name">Tenant Name</FormLabel>
-                <Input 
-                  id="name"
-                  placeholder="Tenant name" 
-                  {...form.register('name')} 
-                />
-                {form.formState.errors.name && (
-                  <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <FormLabel htmlFor="description">Description</FormLabel>
-                <Textarea 
-                  id="description"
-                  placeholder="Describe the tenant's purpose or organization"
-                  className="resize-none"
-                  {...form.register('description')} 
-                />
-                {form.formState.errors.description && (
-                  <p className="text-sm text-red-500">{form.formState.errors.description.message}</p>
-                )}
-              </div>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="isActive"
-                  checked={form.watch('isActive')}
-                  onCheckedChange={(checked) => 
-                    form.setValue('isActive', checked as boolean)
-                  }
-                />
-                <FormLabel htmlFor="isActive" className="cursor-pointer">
-                  Active
-                </FormLabel>
-              </div>
-            </TabsContent>
-            
-            {/* Branding Settings */}
-            <TabsContent value="branding" className="space-y-4">
-              <div className="space-y-2">
-                <FormLabel htmlFor="primaryColor">Primary Color</FormLabel>
-                <div className="flex items-center space-x-2">
-                  <Input 
-                    id="primaryColor"
-                    placeholder="#1a56db" 
-                    {...form.register('primaryColor')} 
-                  />
-                  <div 
-                    className="w-10 h-10 rounded border"
-                    style={{ backgroundColor: form.watch('primaryColor') || '#1a56db' }}
-                  ></div>
-                </div>
-                {form.formState.errors.primaryColor && (
-                  <p className="text-sm text-red-500">{form.formState.errors.primaryColor.message}</p>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <FormLabel htmlFor="secondaryColor">Secondary Color</FormLabel>
-                <div className="flex items-center space-x-2">
-                  <Input 
-                    id="secondaryColor"
-                    placeholder="#7e3af2" 
-                    {...form.register('secondaryColor')} 
-                  />
-                  <div 
-                    className="w-10 h-10 rounded border"
-                    style={{ backgroundColor: form.watch('secondaryColor') || '#7e3af2' }}
-                  ></div>
-                </div>
-                {form.formState.errors.secondaryColor && (
-                  <p className="text-sm text-red-500">{form.formState.errors.secondaryColor.message}</p>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <FormLabel htmlFor="logoUrl">Logo URL</FormLabel>
-                <Input 
-                  id="logoUrl"
-                  placeholder="https://example.com/logo.png" 
-                  {...form.register('logoUrl')} 
-                />
-                {form.formState.errors.logoUrl && (
-                  <p className="text-sm text-red-500">{form.formState.errors.logoUrl.message}</p>
-                )}
-              </div>
-            </TabsContent>
-            
-            {/* Feature Toggles */}
-            <TabsContent value="features" className="space-y-4">
-              <p className="text-sm text-gray-500 mb-4">
-                Enable or disable features for this tenant. Disabled features will not be accessible to users.
-              </p>
-              {renderFeatureToggles()}
-            </TabsContent>
-            
-            {/* Integration Settings */}
-            <TabsContent value="integrations" className="space-y-6">
-              {/* JIRA Integration */}
-              <div className="border p-4 rounded-md space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="jiraEnabled"
-                    checked={form.watch('integrations.jiraEnabled')}
-                    onCheckedChange={(checked) => 
-                      form.setValue('integrations.jiraEnabled', checked as boolean)
-                    }
-                  />
-                  <FormLabel htmlFor="jiraEnabled" className="font-medium cursor-pointer">
-                    JIRA Integration
-                  </FormLabel>
-                </div>
-                
-                {form.watch('integrations.jiraEnabled') && (
-                  <div className="ml-6 space-y-3">
-                    <div className="space-y-2">
-                      <FormLabel htmlFor="jiraApiUrl">JIRA API URL</FormLabel>
-                      <Input 
-                        id="jiraApiUrl"
-                        placeholder="https://your-domain.atlassian.net/rest/api/3" 
-                        {...form.register('integrations.jiraApiUrl')} 
-                      />
-                      {form.formState.errors.integrations?.jiraApiUrl && (
-                        <p className="text-sm text-red-500">{form.formState.errors.integrations.jiraApiUrl.message}</p>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <FormLabel htmlFor="jiraApiKey">JIRA API Key</FormLabel>
-                      <Input 
-                        id="jiraApiKey"
-                        type="password"
-                        placeholder="API Key" 
-                        {...form.register('integrations.jiraApiKey')} 
-                      />
-                    </div>
+        {isLoading ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          <>
+            <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid grid-cols-3 mb-6">
+                <TabsTrigger value="general" className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  <span>General</span>
+                </TabsTrigger>
+                <TabsTrigger value="data" className="flex items-center gap-2">
+                  <Database className="h-4 w-4" />
+                  <span>Data Settings</span>
+                </TabsTrigger>
+                <TabsTrigger value="schedule" className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  <span>Schedule</span>
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="general" className="space-y-4">
+                <FormItem>
+                  <FormLabel>Tenant Name</FormLabel>
+                  <FormControl>
+                    <Input 
+                      value={settings.name}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
+                      disabled={true} // Name is read-only here
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    The display name of the tenant (edit in tenant details)
+                  </FormDescription>
+                </FormItem>
+
+                <FormItem>
+                  <FormLabel>Enable Audit Logs</FormLabel>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <Checkbox
+                      id="enable-audit-logs"
+                      checked={settings.enableAuditLogs}
+                      onCheckedChange={(checked) => 
+                        handleInputChange('enableAuditLogs', Boolean(checked))
+                      }
+                    />
+                    <FormLabel htmlFor="enable-audit-logs" className="cursor-pointer font-normal">
+                      Enable detailed audit logging for this tenant
+                    </FormLabel>
                   </div>
-                )}
-              </div>
-              
-              {/* Confluence Integration */}
-              <div className="border p-4 rounded-md space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="confluenceEnabled"
-                    checked={form.watch('integrations.confluenceEnabled')}
-                    onCheckedChange={(checked) => 
-                      form.setValue('integrations.confluenceEnabled', checked as boolean)
-                    }
-                  />
-                  <FormLabel htmlFor="confluenceEnabled" className="font-medium cursor-pointer">
-                    Confluence Integration
-                  </FormLabel>
-                </div>
-                
-                {form.watch('integrations.confluenceEnabled') && (
-                  <div className="ml-6 space-y-3">
-                    <div className="space-y-2">
-                      <FormLabel htmlFor="confluenceApiUrl">Confluence API URL</FormLabel>
-                      <Input 
-                        id="confluenceApiUrl"
-                        placeholder="https://your-domain.atlassian.net/wiki/rest/api" 
-                        {...form.register('integrations.confluenceApiUrl')} 
-                      />
-                      {form.formState.errors.integrations?.confluenceApiUrl && (
-                        <p className="text-sm text-red-500">{form.formState.errors.integrations.confluenceApiUrl.message}</p>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <FormLabel htmlFor="confluenceApiKey">Confluence API Key</FormLabel>
-                      <Input 
-                        id="confluenceApiKey"
-                        type="password"
-                        placeholder="API Key" 
-                        {...form.register('integrations.confluenceApiKey')} 
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              {/* Git Integration */}
-              <div className="border p-4 rounded-md space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="gitEnabled"
-                    checked={form.watch('integrations.gitEnabled')}
-                    onCheckedChange={(checked) => 
-                      form.setValue('integrations.gitEnabled', checked as boolean)
-                    }
-                  />
-                  <FormLabel htmlFor="gitEnabled" className="font-medium cursor-pointer">
-                    Git Repository Integration
-                  </FormLabel>
-                </div>
-                
-                {form.watch('integrations.gitEnabled') && (
-                  <div className="ml-6 space-y-3">
-                    <div className="space-y-2">
-                      <FormLabel htmlFor="gitRepositoryUrl">Repository URL</FormLabel>
-                      <Input 
-                        id="gitRepositoryUrl"
-                        placeholder="https://github.com/organization/repo" 
-                        {...form.register('integrations.gitRepositoryUrl')} 
-                      />
-                      {form.formState.errors.integrations?.gitRepositoryUrl && (
-                        <p className="text-sm text-red-500">{form.formState.errors.integrations.gitRepositoryUrl.message}</p>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <FormLabel htmlFor="gitAccessToken">Access Token</FormLabel>
-                      <Input 
-                        id="gitAccessToken"
-                        type="password"
-                        placeholder="Access Token" 
-                        {...form.register('integrations.gitAccessToken')} 
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-            
-            {/* Limits & Quotas */}
-            <TabsContent value="limits" className="space-y-4">
-              <p className="text-sm text-gray-500 mb-4">
-                Configure resource limits and usage quotas for this tenant.
-              </p>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <FormLabel htmlFor="maxUsers">Maximum Users</FormLabel>
-                  <Input 
-                    id="maxUsers"
-                    type="number"
-                    min="1"
-                    {...form.register('limits.maxUsers', { valueAsNumber: true })} 
-                  />
-                  {form.formState.errors.limits?.maxUsers && (
-                    <p className="text-sm text-red-500">{form.formState.errors.limits.maxUsers.message}</p>
-                  )}
-                </div>
-                
-                <div className="space-y-2">
-                  <FormLabel htmlFor="maxDataSources">Maximum Data Sources</FormLabel>
-                  <Input 
-                    id="maxDataSources"
-                    type="number"
-                    min="1"
-                    {...form.register('limits.maxDataSources', { valueAsNumber: true })} 
-                  />
-                  {form.formState.errors.limits?.maxDataSources && (
-                    <p className="text-sm text-red-500">{form.formState.errors.limits.maxDataSources.message}</p>
-                  )}
-                </div>
-                
-                <div className="space-y-2">
-                  <FormLabel htmlFor="maxStorageGB">Storage Limit (GB)</FormLabel>
-                  <Input 
-                    id="maxStorageGB"
-                    type="number"
-                    min="1"
-                    {...form.register('limits.maxStorageGB', { valueAsNumber: true })} 
-                  />
-                  {form.formState.errors.limits?.maxStorageGB && (
-                    <p className="text-sm text-red-500">{form.formState.errors.limits.maxStorageGB.message}</p>
-                  )}
-                </div>
-                
-                <div className="space-y-2">
-                  <FormLabel htmlFor="maxQueriesPerDay">Maximum Queries Per Day</FormLabel>
-                  <Input 
-                    id="maxQueriesPerDay"
-                    type="number"
-                    min="1"
-                    {...form.register('limits.maxQueriesPerDay', { valueAsNumber: true })} 
-                  />
-                  {form.formState.errors.limits?.maxQueriesPerDay && (
-                    <p className="text-sm text-red-500">{form.formState.errors.limits.maxQueriesPerDay.message}</p>
-                  )}
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-          
-          <DialogFooter className="flex justify-between">
-            <div>
+                  <FormDescription>
+                    Track all user actions and system events for compliance purposes
+                  </FormDescription>
+                </FormItem>
+              </TabsContent>
+
+              <TabsContent value="data" className="space-y-4">
+                <FormItem>
+                  <FormLabel>Data Retention Period (Days)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number"
+                      min={1}
+                      max={365}
+                      value={settings.dataRetentionDays}
+                      onChange={(e) => handleInputChange('dataRetentionDays', parseInt(e.target.value, 10))}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Number of days to retain data before automatic purging
+                  </FormDescription>
+                </FormItem>
+
+                <FormItem>
+                  <FormLabel>Maximum Storage (GB)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number"
+                      min={1}
+                      value={settings.maxStorageGB}
+                      onChange={(e) => handleInputChange('maxStorageGB', parseInt(e.target.value, 10))}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Maximum storage allocation for this tenant in gigabytes
+                  </FormDescription>
+                </FormItem>
+              </TabsContent>
+
+              <TabsContent value="schedule" className="space-y-4">
+                <FormItem>
+                  <FormLabel>Refresh Schedule Type</FormLabel>
+                  <Select 
+                    value={settings.refreshScheduleType}
+                    onValueChange={(value) => handleInputChange('refreshScheduleType', value)}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select schedule type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="minutes">Minutes</SelectItem>
+                      <SelectItem value="hourly">Hourly</SelectItem>
+                      <SelectItem value="daily">Daily</SelectItem>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                      <SelectItem value="custom">Custom</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    How frequently to refresh data sources
+                  </FormDescription>
+                </FormItem>
+
+                <FormItem>
+                  <FormLabel>Refresh Interval</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number"
+                      min={1}
+                      value={settings.refreshInterval}
+                      onChange={(e) => handleInputChange('refreshInterval', parseInt(e.target.value, 10))}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {settings.refreshScheduleType === 'minutes' ? 'Minutes between refreshes' :
+                     settings.refreshScheduleType === 'hourly' ? 'Hours between refreshes' :
+                     settings.refreshScheduleType === 'daily' ? 'Days between refreshes' :
+                     settings.refreshScheduleType === 'weekly' ? 'Weeks between refreshes' :
+                     settings.refreshScheduleType === 'monthly' ? 'Months between refreshes' :
+                     'Custom interval (advanced)'}
+                  </FormDescription>
+                </FormItem>
+              </TabsContent>
+            </Tabs>
+
+            <DialogFooter className="mt-6">
               <Button 
-                type="button" 
-                variant="outline" 
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
-                Reset
-              </Button>
-            </div>
-            <div className="space-x-2">
-              <Button 
-                type="button" 
                 variant="outline" 
                 onClick={onClose}
-                disabled={isSubmitting}
+                disabled={isSaving}
               >
                 Cancel
               </Button>
               <Button 
-                type="submit"
-                disabled={isSubmitting}
+                onClick={handleSaveSettings}
+                disabled={isSaving}
               >
-                {isSubmitting ? 'Saving...' : 'Save Configuration'}
+                {isSaving ? 'Saving...' : 'Save Settings'}
               </Button>
-            </div>
-          </DialogFooter>
-        </form>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

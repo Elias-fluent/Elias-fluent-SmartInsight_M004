@@ -29,13 +29,14 @@ import {
   SelectTrigger,
   SelectValue
 } from '../ui/select';
-import { Checkbox } from '../ui';
+import { Checkbox } from '../ui/checkbox';
 import { FormLabel } from '../ui/form';
 import { Shield, Users, User, UserCheck, RefreshCw } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store/configureStore';
 import { apiRequest } from '../../store/middleware/apiMiddlewareHelper';
 import { Badge } from '../ui/badge';
+import { DATA_ACTIONS } from '../../store/slices/dataSlice';
 
 interface RoleAssignmentProps {
   onClose: () => void;
@@ -65,7 +66,7 @@ const RoleAssignment: React.FC<RoleAssignmentProps> = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState('byUser');
   const [selectedTenantId, setSelectedTenantId] = useState<string>('');
   const [selectedUserId, setSelectedUserId] = useState<string>('');
-  const [availableRoles, setAvailableRoles] = useState<string[]>(['Admin', 'User', 'Analyst', 'ReadOnly']);
+  const [availableRoles, setAvailableRoles] = useState<string[]>(['Administrator', 'User', 'Analyst', 'Viewer']);
   const [userRoles, setUserRoles] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -78,44 +79,19 @@ const RoleAssignment: React.FC<RoleAssignmentProps> = ({ onClose }) => {
     ? users.filter((user: UserWithRoles) => user.tenantId === selectedTenantId)
     : users;
 
-  // Load available roles
+  // Load users if not already loaded
   useEffect(() => {
-    // Remove the fetchUserRoles call
-    
-    // Update the RoleAssignment with proper string type values
-    setAvailableRoles([
-      'Administrator',
-      'User',
-      'Analyst',
-      'Viewer'
-    ]);
-  }, [selectedUserId, selectedTenantId]);
+    if (users.length === 0) {
+      fetchUsers();
+    }
+  }, []);
 
-  // Load users
+  // Load tenants if not already loaded
   useEffect(() => {
-    const fetchUsers = async () => {
-      setIsLoading(true);
-      try {
-        await dispatch(apiRequest(
-          '/api/v1/Users',
-          'get',
-          undefined,
-          'FETCH_USERS_SUCCESS',
-          'FETCH_USERS_FAILURE'
-        ));
-      } catch (error) {
-        toast({
-          title: 'Error',
-          description: 'Failed to fetch users',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUsers();
-  }, [dispatch, toast]);
+    if (tenants.length === 0) {
+      fetchTenants();
+    }
+  }, []);
 
   // Handle user selection
   const handleUserChange = (userId: string) => {
@@ -126,6 +102,49 @@ const RoleAssignment: React.FC<RoleAssignmentProps> = ({ onClose }) => {
     } else {
       setUserRoles([]);
     }
+  };
+
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    try {
+      await dispatch(apiRequest(
+        '/api/v1/Users',
+        'get',
+        undefined,
+        DATA_ACTIONS.FETCH_USERS_SUCCESS,
+        DATA_ACTIONS.FETCH_USERS_FAILURE
+      ));
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch users',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchTenants = async () => {
+    try {
+      await dispatch(apiRequest(
+        '/api/v1/Tenants',
+        'get',
+        undefined,
+        DATA_ACTIONS.FETCH_TENANTS_SUCCESS,
+        DATA_ACTIONS.FETCH_TENANTS_FAILURE
+      ));
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch tenants',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleRefresh = () => {
+    fetchUsers();
   };
 
   // Handle role toggle
@@ -152,9 +171,11 @@ const RoleAssignment: React.FC<RoleAssignmentProps> = ({ onClose }) => {
     try {
       // Update user roles
       await dispatch(apiRequest(
-        `/api/v1/Users/${selectedUserId}`,
+        `/api/v1/Users/${selectedUserId}/roles`,
         'put',
-        { roles: userRoles }
+        { roles: userRoles },
+        DATA_ACTIONS.UPDATE_USER_ROLES_SUCCESS,
+        DATA_ACTIONS.UPDATE_USER_ROLES_FAILURE
       ));
       
       toast({
@@ -163,13 +184,7 @@ const RoleAssignment: React.FC<RoleAssignmentProps> = ({ onClose }) => {
       });
       
       // Refresh users to reflect changes
-      await dispatch(apiRequest(
-        '/api/v1/Users',
-        'get',
-        undefined,
-        'FETCH_USERS_SUCCESS',
-        'FETCH_USERS_FAILURE'
-      ));
+      fetchUsers();
     } catch (error) {
       toast({
         title: 'Error',
@@ -180,45 +195,6 @@ const RoleAssignment: React.FC<RoleAssignmentProps> = ({ onClose }) => {
       setIsSaving(false);
     }
   };
-
-  // Refresh users
-  const handleRefresh = async () => {
-    setIsLoading(true);
-    try {
-      await dispatch(apiRequest(
-        '/api/v1/Users',
-        'get',
-        undefined,
-        'FETCH_USERS_SUCCESS',
-        'FETCH_USERS_FAILURE'
-      ));
-      
-      toast({
-        title: 'Success',
-        description: 'User data refreshed',
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to refresh users',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (isLoading && users.length === 0) {
-    return (
-      <Dialog open={true} onOpenChange={() => onClose()}>
-        <DialogContent className="sm:max-w-[800px]">
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
 
   return (
     <Dialog open={true} onOpenChange={() => onClose()}>
@@ -242,8 +218,7 @@ const RoleAssignment: React.FC<RoleAssignmentProps> = ({ onClose }) => {
             </TabsTrigger>
           </TabsList>
 
-          {/* Assign Roles by User Tab */}
-          <TabsContent value="byUser" className="space-y-4">
+          <TabsContent value="byUser">
             <div className="flex justify-between">
               <div className="space-y-2 flex-1 max-w-sm">
                 <FormLabel htmlFor="user-select">Select User</FormLabel>
@@ -270,14 +245,14 @@ const RoleAssignment: React.FC<RoleAssignmentProps> = ({ onClose }) => {
                 disabled={isLoading}
                 className="h-9 self-end"
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
+                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
             </div>
 
             {selectedUserId && (
               <>
-                <div className="border p-4 rounded-md space-y-3">
+                <div className="border p-4 rounded-md space-y-3 mt-4">
                   <h3 className="font-medium flex items-center gap-2">
                     <UserCheck className="h-4 w-4" />
                     <span>Assign Roles</span>
@@ -305,7 +280,7 @@ const RoleAssignment: React.FC<RoleAssignmentProps> = ({ onClose }) => {
                   )}
                 </div>
 
-                <div className="flex justify-end">
+                <div className="flex justify-end mt-4">
                   <Button 
                     onClick={handleSaveRoles}
                     disabled={isSaving || userRoles.length === 0}
@@ -317,10 +292,9 @@ const RoleAssignment: React.FC<RoleAssignmentProps> = ({ onClose }) => {
             )}
           </TabsContent>
 
-          {/* View by Tenant Tab */}
-          <TabsContent value="byTenant" className="space-y-4">
-            <div className="flex justify-between">
-              <div className="space-y-2 flex-1 max-w-sm">
+          <TabsContent value="byTenant">
+            <div className="space-y-4">
+              <div className="space-y-2 max-w-sm">
                 <FormLabel htmlFor="tenant-select">Select Tenant</FormLabel>
                 <Select 
                   value={selectedTenantId} 
@@ -330,7 +304,6 @@ const RoleAssignment: React.FC<RoleAssignmentProps> = ({ onClose }) => {
                     <SelectValue placeholder="Select a tenant" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Tenants</SelectItem>
                     {tenants.map((tenant: Tenant) => (
                       <SelectItem key={tenant.id} value={tenant.id}>
                         {tenant.name}
@@ -339,77 +312,55 @@ const RoleAssignment: React.FC<RoleAssignmentProps> = ({ onClose }) => {
                   </SelectContent>
                 </Select>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleRefresh}
-                disabled={isLoading}
-                className="h-9 self-end"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
-              </Button>
-            </div>
 
-            <div className="border rounded-md">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Tenant</TableHead>
-                    <TableHead>Roles</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredUsers.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
-                        No users found
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredUsers.map((user: UserWithRoles) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-medium">{`${user.firstName} ${user.lastName}`}</TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>{user.tenantName || 'Unknown'}</TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {user.roles && user.roles.length > 0 ? (
-                              user.roles.map((role) => (
-                                <Badge key={role} variant="outline">{role}</Badge>
-                              ))
-                            ) : (
-                              <span className="text-muted-foreground text-sm">No roles</span>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {user.isActive 
-                            ? <Badge variant="success">Active</Badge>
-                            : <Badge variant="secondary">Inactive</Badge>
-                          }
-                        </TableCell>
+              {selectedTenantId && (
+                <div className="border rounded-md overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>User</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Roles</TableHead>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredUsers.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
+                            No users found for this tenant
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredUsers.map((user: UserWithRoles) => (
+                          <TableRow key={user.id}>
+                            <TableCell className="font-medium">{`${user.firstName} ${user.lastName}`}</TableCell>
+                            <TableCell>{user.email}</TableCell>
+                            <TableCell>
+                              <Badge variant={user.isActive ? 'success' : 'secondary'}>
+                                {user.isActive ? 'Active' : 'Inactive'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-wrap gap-1">
+                                {user.roles && user.roles.map((role, index) => (
+                                  <Badge key={index} variant="outline">{role}</Badge>
+                                ))}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>
 
-        <DialogFooter>
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={onClose}
-            disabled={isSaving}
-          >
-            Close
-          </Button>
+        <DialogFooter className="mt-6">
+          <Button onClick={onClose}>Close</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
