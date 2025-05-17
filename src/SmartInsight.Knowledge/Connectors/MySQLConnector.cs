@@ -267,6 +267,137 @@ namespace SmartInsight.Knowledge.Connectors
             return string.Join(", ", errors.Select(e => $"{e.FieldName}: {e.ErrorMessage}"));
         }
         
+        /// <summary>
+        /// Builds a MySQL connection string from the provided parameters
+        /// </summary>
+        /// <param name="connectionParams">Connection parameters</param>
+        /// <returns>MySQL connection string</returns>
+        private string BuildConnectionString(IDictionary<string, string> connectionParams)
+        {
+            var builder = new MySqlConnectionStringBuilder();
+            
+            // Server name/address (required)
+            if (connectionParams.TryGetValue("server", out var server))
+            {
+                builder.Server = server;
+            }
+            
+            // Port (default 3306)
+            if (connectionParams.TryGetValue("port", out var portStr) && 
+                int.TryParse(portStr, out var port))
+            {
+                builder.Port = (uint)port;
+            }
+            
+            // Database (required)
+            if (connectionParams.TryGetValue("database", out var database))
+            {
+                builder.Database = database;
+            }
+            
+            // Username (required)
+            if (connectionParams.TryGetValue("username", out var username))
+            {
+                builder.UserID = username;
+            }
+            
+            // Password (required)
+            if (connectionParams.TryGetValue("password", out var password))
+            {
+                builder.Password = password;
+            }
+            
+            // SSL Mode
+            if (connectionParams.TryGetValue("sslMode", out var sslMode))
+            {
+                switch (sslMode.ToLowerInvariant())
+                {
+                    case "none":
+                        builder.SslMode = MySqlSslMode.None;
+                        break;
+                    case "preferred":
+                        builder.SslMode = MySqlSslMode.Preferred;
+                        break;
+                    case "required":
+                        builder.SslMode = MySqlSslMode.Required;
+                        break;
+                    case "verifyca":
+                        builder.SslMode = MySqlSslMode.VerifyCA;
+                        break;
+                    case "verifyfull":
+                        builder.SslMode = MySqlSslMode.VerifyFull;
+                        break;
+                    default:
+                        builder.SslMode = MySqlSslMode.Preferred; // Default
+                        break;
+                }
+            }
+            
+            // Connection timeout (default 30s)
+            if (connectionParams.TryGetValue("connectionTimeout", out var connectionTimeoutStr) && 
+                int.TryParse(connectionTimeoutStr, out var connectionTimeout))
+            {
+                builder.ConnectionTimeout = (uint)connectionTimeout;
+            }
+            
+            // Command timeout (default 30s)
+            if (connectionParams.TryGetValue("commandTimeout", out var commandTimeoutStr) && 
+                int.TryParse(commandTimeoutStr, out var commandTimeout))
+            {
+                builder.DefaultCommandTimeout = (uint)commandTimeout;
+            }
+            
+            // Additional MySQL specific properties
+            if (connectionParams.TryGetValue("allowUserVariables", out var allowUserVariablesStr) &&
+                bool.TryParse(allowUserVariablesStr, out var allowUserVariables))
+            {
+                builder.AllowUserVariables = allowUserVariables;
+            }
+            
+            if (connectionParams.TryGetValue("useCompression", out var useCompressionStr) &&
+                bool.TryParse(useCompressionStr, out var useCompression))
+            {
+                builder.UseCompression = useCompression;
+            }
+            
+            if (connectionParams.TryGetValue("connectionLifetime", out var connectionLifetimeStr) &&
+                int.TryParse(connectionLifetimeStr, out var connectionLifetime))
+            {
+                builder.ConnectionLifeTime = (uint)connectionLifetime;
+            }
+            
+            if (connectionParams.TryGetValue("keepAlive", out var keepAliveStr) &&
+                int.TryParse(keepAliveStr, out var keepAlive))
+            {
+                builder.Keepalive = (uint)keepAlive;
+            }
+            
+            if (connectionParams.TryGetValue("maxPoolSize", out var maxPoolSizeStr) &&
+                int.TryParse(maxPoolSizeStr, out var maxPoolSize))
+            {
+                builder.MaximumPoolSize = (uint)maxPoolSize;
+            }
+            
+            if (connectionParams.TryGetValue("minPoolSize", out var minPoolSizeStr) &&
+                int.TryParse(minPoolSizeStr, out var minPoolSize))
+            {
+                builder.MinimumPoolSize = (uint)minPoolSize;
+            }
+            
+            if (connectionParams.TryGetValue("pooling", out var poolingStr) &&
+                bool.TryParse(poolingStr, out var pooling))
+            {
+                builder.Pooling = pooling;
+            }
+            
+            if (connectionParams.TryGetValue("characterSet", out var characterSet))
+            {
+                builder.CharacterSet = characterSet;
+            }
+            
+            return builder.ConnectionString;
+        }
+        
         private void OnStateChanged(SmartInsight.Core.Interfaces.ConnectionState oldState, SmartInsight.Core.Interfaces.ConnectionState newState)
         {
             StateChanged?.Invoke(this, new ConnectorStateChangedEventArgs(Id, oldState, newState));
