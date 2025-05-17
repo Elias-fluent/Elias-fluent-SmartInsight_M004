@@ -7,4 +7,5 @@ export { default as DataSourceForm } from './DataSourceForm';
 export { default as DataSourceList } from './DataSourceList';
 export { default as ScheduleConfiguration } from './ScheduleConfiguration';
 export { default as ConnectionStringBuilder } from './ConnectionStringBuilder';
-export { default as TenantConfig } from './TenantConfig'; 
+export { default as TenantConfig } from './TenantConfig';
+export { default as TenantSecuritySettings } from './TenantSecuritySettings'; 
