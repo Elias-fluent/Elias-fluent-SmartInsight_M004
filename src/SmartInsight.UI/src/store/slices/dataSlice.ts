@@ -1,24 +1,63 @@
+import { createSlice } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
+
 // Define the data state type
 export interface DataState {
   dataSources: DataSource[];
+  users: User[];
+  tenants: Tenant[];
   datasets: Dataset[];
   queries: Query[];
   visualizations: Visualization[];
-  selectedDataSource: string | null;
-  selectedDataset: string | null;
+  ingestionJobs: IngestionJob[];
+  selectedDataSource: DataSource | null;
+  selectedDataset: any | null;
+  selectedIngestionJob: IngestionJob | null;
   isLoading: boolean;
   error: string | null;
-  lastUpdated: number | null;
+  lastUpdated: string | null;
 }
 
 // Define data source type
 export interface DataSource {
   id: string;
   name: string;
-  type: 'postgresql' | 'mysql' | 'mssql' | 'file' | 'api' | 'other';
+  sourceType: string;
+  connectionString: string;
+  username?: string;
+  password?: string;
+  apiKey?: string;
+  description?: string;
+  refreshScheduleType: 'minutes' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'custom';
+  refreshInterval: number;
+  refreshCronExpression?: string;
+  status?: string;
+  lastRefreshed?: string;
+}
+
+// Define user type
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  roles: string[];
+  isActive: boolean;
+  tenantId: string;
+  tenantName?: string;
+  lastLogin?: string;
+}
+
+// Define tenant type
+export interface Tenant {
+  id: string;
+  name: string;
   description: string;
-  connectionStatus: 'connected' | 'disconnected' | 'error';
-  lastSync: number | null;
+  createdAt: string;
+  updatedAt: string;
+  isActive: boolean;
+  dataSourceCount?: number;
+  userCount?: number;
 }
 
 // Define dataset type
@@ -73,6 +112,30 @@ export interface Visualization {
   updatedAt: number;
 }
 
+// Define ingestion job type
+export interface IngestionJob {
+  id: string;
+  dataSourceId: string;
+  dataSourceName?: string;
+  startTime: string;
+  endTime?: string;
+  status: 'queued' | 'running' | 'completed' | 'failed' | 'cancelled' | 'paused';
+  progress: number;
+  recordsProcessed: number;
+  totalRecords?: number;
+  errorMessage?: string;
+  logEntries?: IngestionLogEntry[];
+}
+
+// Define ingestion log entry type
+export interface IngestionLogEntry {
+  id: string;
+  timestamp: string;
+  level: 'info' | 'warning' | 'error';
+  message: string;
+  details?: string;
+}
+
 // Define action types
 export const DATA_ACTIONS = {
   FETCH_DATA_SOURCES_REQUEST: 'data/fetchDataSourcesRequest',
@@ -103,6 +166,24 @@ export const DATA_ACTIONS = {
   SAVE_VISUALIZATION: 'data/saveVisualization',
   DELETE_VISUALIZATION: 'data/deleteVisualization',
   
+  FETCH_INGESTION_JOBS_REQUEST: 'data/fetchIngestionJobsRequest',
+  FETCH_INGESTION_JOBS_SUCCESS: 'data/fetchIngestionJobsSuccess',
+  FETCH_INGESTION_JOBS_FAILURE: 'data/fetchIngestionJobsFailure',
+  
+  FETCH_INGESTION_JOB_DETAILS_REQUEST: 'data/fetchIngestionJobDetailsRequest',
+  FETCH_INGESTION_JOB_DETAILS_SUCCESS: 'data/fetchIngestionJobDetailsSuccess',
+  FETCH_INGESTION_JOB_DETAILS_FAILURE: 'data/fetchIngestionJobDetailsFailure',
+  
+  SET_SELECTED_INGESTION_JOB: 'data/setSelectedIngestionJob',
+  
+  START_INGESTION_JOB_REQUEST: 'data/startIngestionJobRequest',
+  START_INGESTION_JOB_SUCCESS: 'data/startIngestionJobSuccess',
+  START_INGESTION_JOB_FAILURE: 'data/startIngestionJobFailure',
+  
+  CANCEL_INGESTION_JOB_REQUEST: 'data/cancelIngestionJobRequest',
+  CANCEL_INGESTION_JOB_SUCCESS: 'data/cancelIngestionJobSuccess',
+  CANCEL_INGESTION_JOB_FAILURE: 'data/cancelIngestionJobFailure',
+  
   CLEAR_ERROR: 'data/clearError',
 } as const;
 
@@ -111,12 +192,12 @@ export type DataAction =
   | { type: typeof DATA_ACTIONS.FETCH_DATA_SOURCES_REQUEST }
   | { type: typeof DATA_ACTIONS.FETCH_DATA_SOURCES_SUCCESS; payload: DataSource[] }
   | { type: typeof DATA_ACTIONS.FETCH_DATA_SOURCES_FAILURE; payload: string }
-  | { type: typeof DATA_ACTIONS.SET_SELECTED_DATA_SOURCE; payload: string | null }
+  | { type: typeof DATA_ACTIONS.SET_SELECTED_DATA_SOURCE; payload: DataSource | null }
   
   | { type: typeof DATA_ACTIONS.FETCH_DATASETS_REQUEST }
   | { type: typeof DATA_ACTIONS.FETCH_DATASETS_SUCCESS; payload: Dataset[] }
   | { type: typeof DATA_ACTIONS.FETCH_DATASETS_FAILURE; payload: string }
-  | { type: typeof DATA_ACTIONS.SET_SELECTED_DATASET; payload: string | null }
+  | { type: typeof DATA_ACTIONS.SET_SELECTED_DATASET; payload: any | null }
   
   | { type: typeof DATA_ACTIONS.FETCH_QUERIES_REQUEST }
   | { type: typeof DATA_ACTIONS.FETCH_QUERIES_SUCCESS; payload: Query[] }
@@ -136,300 +217,182 @@ export type DataAction =
   | { type: typeof DATA_ACTIONS.SAVE_VISUALIZATION; payload: Visualization }
   | { type: typeof DATA_ACTIONS.DELETE_VISUALIZATION; payload: string }
   
+  | { type: typeof DATA_ACTIONS.FETCH_INGESTION_JOBS_REQUEST }
+  | { type: typeof DATA_ACTIONS.FETCH_INGESTION_JOBS_SUCCESS; payload: IngestionJob[] }
+  | { type: typeof DATA_ACTIONS.FETCH_INGESTION_JOBS_FAILURE; payload: string }
+  
+  | { type: typeof DATA_ACTIONS.FETCH_INGESTION_JOB_DETAILS_REQUEST }
+  | { type: typeof DATA_ACTIONS.FETCH_INGESTION_JOB_DETAILS_SUCCESS; payload: IngestionJob }
+  | { type: typeof DATA_ACTIONS.FETCH_INGESTION_JOB_DETAILS_FAILURE; payload: string }
+  
+  | { type: typeof DATA_ACTIONS.SET_SELECTED_INGESTION_JOB; payload: IngestionJob | null }
+  
+  | { type: typeof DATA_ACTIONS.START_INGESTION_JOB_REQUEST; payload: string }
+  | { type: typeof DATA_ACTIONS.START_INGESTION_JOB_SUCCESS; payload: IngestionJob }
+  | { type: typeof DATA_ACTIONS.START_INGESTION_JOB_FAILURE; payload: string }
+  
+  | { type: typeof DATA_ACTIONS.CANCEL_INGESTION_JOB_REQUEST; payload: string }
+  | { type: typeof DATA_ACTIONS.CANCEL_INGESTION_JOB_SUCCESS; payload: string }
+  | { type: typeof DATA_ACTIONS.CANCEL_INGESTION_JOB_FAILURE; payload: string }
+  
   | { type: typeof DATA_ACTIONS.CLEAR_ERROR };
 
 // Initial state
 const initialState: DataState = {
   dataSources: [],
+  users: [],
+  tenants: [],
   datasets: [],
   queries: [],
   visualizations: [],
+  ingestionJobs: [],
   selectedDataSource: null,
   selectedDataset: null,
+  selectedIngestionJob: null,
   isLoading: false,
   error: null,
   lastUpdated: null,
 };
 
-// Create the reducer
-export function dataReducer(state: DataState = initialState, action: DataAction): DataState {
-  switch (action.type) {
-    // Data Sources
-    case DATA_ACTIONS.FETCH_DATA_SOURCES_REQUEST:
-      return {
-        ...state,
-        isLoading: true,
-        error: null,
-      };
-    case DATA_ACTIONS.FETCH_DATA_SOURCES_SUCCESS:
-      return {
-        ...state,
-        dataSources: action.payload,
-        isLoading: false,
-        error: null,
-        lastUpdated: Date.now(),
-      };
-    case DATA_ACTIONS.FETCH_DATA_SOURCES_FAILURE:
-      return {
-        ...state,
-        isLoading: false,
-        error: action.payload,
-      };
-    case DATA_ACTIONS.SET_SELECTED_DATA_SOURCE:
-      return {
-        ...state,
-        selectedDataSource: action.payload,
-        // Clear selected dataset if changing data source
-        selectedDataset: null,
-      };
+const dataSlice = createSlice({
+  name: 'data',
+  initialState,
+  reducers: {
+    // Data sources
+    fetchDataSourcesStart(state) {
+      state.isLoading = true;
+      state.error = null;
+    },
+    fetchDataSourcesSuccess(state, action: PayloadAction<DataSource[]>) {
+      state.dataSources = action.payload;
+      state.isLoading = false;
+      state.lastUpdated = new Date().toISOString();
+    },
+    fetchDataSourcesFailure(state, action: PayloadAction<string>) {
+      state.isLoading = false;
+      state.error = action.payload;
+    },
+    setSelectedDataSource(state, action: PayloadAction<DataSource | null>) {
+      state.selectedDataSource = action.payload;
+    },
+    
+    // Users
+    fetchUsersStart(state) {
+      state.isLoading = true;
+      state.error = null;
+    },
+    fetchUsersSuccess(state, action: PayloadAction<User[]>) {
+      state.users = action.payload;
+      state.isLoading = false;
+      state.lastUpdated = new Date().toISOString();
+    },
+    fetchUsersFailure(state, action: PayloadAction<string>) {
+      state.isLoading = false;
+      state.error = action.payload;
+    },
+    
+    // Tenants
+    fetchTenantsStart(state) {
+      state.isLoading = true;
+      state.error = null;
+    },
+    fetchTenantsSuccess(state, action: PayloadAction<Tenant[]>) {
+      state.tenants = action.payload;
+      state.isLoading = false;
+      state.lastUpdated = new Date().toISOString();
+    },
+    fetchTenantsFailure(state, action: PayloadAction<string>) {
+      state.isLoading = false;
+      state.error = action.payload;
+    },
+    
+    // Generic dataset operations
+    fetchDatasetsStart(state) {
+      state.isLoading = true;
+      state.error = null;
+    },
+    fetchDatasetsSuccess(state, action: PayloadAction<any[]>) {
+      state.datasets = action.payload;
+      state.isLoading = false;
+      state.lastUpdated = new Date().toISOString();
+    },
+    fetchDatasetsFailure(state, action: PayloadAction<string>) {
+      state.isLoading = false;
+      state.error = action.payload;
+    },
+    setSelectedDataset(state, action: PayloadAction<any | null>) {
+      state.selectedDataset = action.payload;
+    },
+    
+    // Ingestion jobs
+    fetchIngestionJobsStart(state) {
+      state.isLoading = true;
+      state.error = null;
+    },
+    fetchIngestionJobsSuccess(state, action: PayloadAction<IngestionJob[]>) {
+      state.ingestionJobs = action.payload;
+      state.isLoading = false;
+      state.lastUpdated = new Date().toISOString();
+    },
+    fetchIngestionJobsFailure(state, action: PayloadAction<string>) {
+      state.isLoading = false;
+      state.error = action.payload;
+    },
+    fetchIngestionJobDetailsStart(state) {
+      state.isLoading = true;
+      state.error = null;
+    },
+    fetchIngestionJobDetailsSuccess(state, action: PayloadAction<IngestionJob>) {
+      state.selectedIngestionJob = action.payload;
+      // Also update the job in the jobs array
+      const index = state.ingestionJobs.findIndex(job => job.id === action.payload.id);
+      if (index !== -1) {
+        state.ingestionJobs[index] = action.payload;
+      }
+      state.isLoading = false;
+    },
+    fetchIngestionJobDetailsFailure(state, action: PayloadAction<string>) {
+      state.isLoading = false;
+      state.error = action.payload;
+    },
+    setSelectedIngestionJob(state, action: PayloadAction<IngestionJob | null>) {
+      state.selectedIngestionJob = action.payload;
+    },
+    startIngestionJobStart(state) {
+      state.isLoading = true;
+      state.error = null;
+    },
+    startIngestionJobSuccess(state, action: PayloadAction<IngestionJob>) {
+      // Add the new job to the jobs array
+      state.ingestionJobs.push(action.payload);
+      state.isLoading = false;
+    },
+    startIngestionJobFailure(state, action: PayloadAction<string>) {
+      state.isLoading = false;
+      state.error = action.payload;
+    },
+    cancelIngestionJobStart(state) {
+      state.isLoading = true;
+      state.error = null;
+    },
+    cancelIngestionJobSuccess(state, action: PayloadAction<string>) {
+      // Update the job status in the jobs array
+      const index = state.ingestionJobs.findIndex(job => job.id === action.payload);
+      if (index !== -1) {
+        state.ingestionJobs[index].status = 'cancelled';
+      }
+      // If the selected job is the one being cancelled, update it too
+      if (state.selectedIngestionJob && state.selectedIngestionJob.id === action.payload) {
+        state.selectedIngestionJob.status = 'cancelled';
+      }
+      state.isLoading = false;
+    },
+    cancelIngestionJobFailure(state, action: PayloadAction<string>) {
+      state.isLoading = false;
+      state.error = action.payload;
+    }
+  },
+});
 
-    // Datasets
-    case DATA_ACTIONS.FETCH_DATASETS_REQUEST:
-      return {
-        ...state,
-        isLoading: true,
-        error: null,
-      };
-    case DATA_ACTIONS.FETCH_DATASETS_SUCCESS:
-      return {
-        ...state,
-        datasets: action.payload,
-        isLoading: false,
-        error: null,
-        lastUpdated: Date.now(),
-      };
-    case DATA_ACTIONS.FETCH_DATASETS_FAILURE:
-      return {
-        ...state,
-        isLoading: false,
-        error: action.payload,
-      };
-    case DATA_ACTIONS.SET_SELECTED_DATASET:
-      return {
-        ...state,
-        selectedDataset: action.payload,
-      };
-
-    // Queries
-    case DATA_ACTIONS.FETCH_QUERIES_REQUEST:
-      return {
-        ...state,
-        isLoading: true,
-        error: null,
-      };
-    case DATA_ACTIONS.FETCH_QUERIES_SUCCESS:
-      return {
-        ...state,
-        queries: action.payload,
-        isLoading: false,
-        error: null,
-        lastUpdated: Date.now(),
-      };
-    case DATA_ACTIONS.FETCH_QUERIES_FAILURE:
-      return {
-        ...state,
-        isLoading: false,
-        error: action.payload,
-      };
-    case DATA_ACTIONS.EXECUTE_QUERY_REQUEST:
-      return {
-        ...state,
-        isLoading: true,
-        error: null,
-      };
-    case DATA_ACTIONS.EXECUTE_QUERY_SUCCESS:
-      return {
-        ...state,
-        queries: state.queries.map(query =>
-          query.id === action.payload.queryId
-            ? {
-                ...query,
-                results: action.payload.results,
-                lastExecuted: Date.now(),
-              }
-            : query
-        ),
-        isLoading: false,
-        error: null,
-      };
-    case DATA_ACTIONS.EXECUTE_QUERY_FAILURE:
-      return {
-        ...state,
-        isLoading: false,
-        error: action.payload.error,
-      };
-    case DATA_ACTIONS.SAVE_QUERY:
-      const existingQueryIndex = state.queries.findIndex(
-        (query) => query.id === action.payload.id
-      );
-      return {
-        ...state,
-        queries:
-          existingQueryIndex >= 0
-            ? [
-                ...state.queries.slice(0, existingQueryIndex),
-                action.payload,
-                ...state.queries.slice(existingQueryIndex + 1),
-              ]
-            : [...state.queries, action.payload],
-        lastUpdated: Date.now(),
-      };
-    case DATA_ACTIONS.DELETE_QUERY:
-      return {
-        ...state,
-        queries: state.queries.filter((query) => query.id !== action.payload),
-        lastUpdated: Date.now(),
-      };
-
-    // Visualizations
-    case DATA_ACTIONS.FETCH_VISUALIZATIONS_REQUEST:
-      return {
-        ...state,
-        isLoading: true,
-        error: null,
-      };
-    case DATA_ACTIONS.FETCH_VISUALIZATIONS_SUCCESS:
-      return {
-        ...state,
-        visualizations: action.payload,
-        isLoading: false,
-        error: null,
-        lastUpdated: Date.now(),
-      };
-    case DATA_ACTIONS.FETCH_VISUALIZATIONS_FAILURE:
-      return {
-        ...state,
-        isLoading: false,
-        error: action.payload,
-      };
-    case DATA_ACTIONS.SAVE_VISUALIZATION:
-      const existingVizIndex = state.visualizations.findIndex(
-        (viz) => viz.id === action.payload.id
-      );
-      return {
-        ...state,
-        visualizations:
-          existingVizIndex >= 0
-            ? [
-                ...state.visualizations.slice(0, existingVizIndex),
-                action.payload,
-                ...state.visualizations.slice(existingVizIndex + 1),
-              ]
-            : [...state.visualizations, action.payload],
-        lastUpdated: Date.now(),
-      };
-    case DATA_ACTIONS.DELETE_VISUALIZATION:
-      return {
-        ...state,
-        visualizations: state.visualizations.filter(
-          (viz) => viz.id !== action.payload
-        ),
-        lastUpdated: Date.now(),
-      };
-
-    // Other
-    case DATA_ACTIONS.CLEAR_ERROR:
-      return {
-        ...state,
-        error: null,
-      };
-    default:
-      return state;
-  }
-}
-
-// Action creators
-export const dataActions = {
-  // Data Sources
-  fetchDataSourcesRequest: (): DataAction => ({
-    type: DATA_ACTIONS.FETCH_DATA_SOURCES_REQUEST,
-  }),
-  fetchDataSourcesSuccess: (dataSources: DataSource[]): DataAction => ({
-    type: DATA_ACTIONS.FETCH_DATA_SOURCES_SUCCESS,
-    payload: dataSources,
-  }),
-  fetchDataSourcesFailure: (error: string): DataAction => ({
-    type: DATA_ACTIONS.FETCH_DATA_SOURCES_FAILURE,
-    payload: error,
-  }),
-  setSelectedDataSource: (dataSourceId: string | null): DataAction => ({
-    type: DATA_ACTIONS.SET_SELECTED_DATA_SOURCE,
-    payload: dataSourceId,
-  }),
-
-  // Datasets
-  fetchDatasetsRequest: (): DataAction => ({
-    type: DATA_ACTIONS.FETCH_DATASETS_REQUEST,
-  }),
-  fetchDatasetsSuccess: (datasets: Dataset[]): DataAction => ({
-    type: DATA_ACTIONS.FETCH_DATASETS_SUCCESS,
-    payload: datasets,
-  }),
-  fetchDatasetsFailure: (error: string): DataAction => ({
-    type: DATA_ACTIONS.FETCH_DATASETS_FAILURE,
-    payload: error,
-  }),
-  setSelectedDataset: (datasetId: string | null): DataAction => ({
-    type: DATA_ACTIONS.SET_SELECTED_DATASET,
-    payload: datasetId,
-  }),
-
-  // Queries
-  fetchQueriesRequest: (): DataAction => ({
-    type: DATA_ACTIONS.FETCH_QUERIES_REQUEST,
-  }),
-  fetchQueriesSuccess: (queries: Query[]): DataAction => ({
-    type: DATA_ACTIONS.FETCH_QUERIES_SUCCESS,
-    payload: queries,
-  }),
-  fetchQueriesFailure: (error: string): DataAction => ({
-    type: DATA_ACTIONS.FETCH_QUERIES_FAILURE,
-    payload: error,
-  }),
-  executeQueryRequest: (queryId: string): DataAction => ({
-    type: DATA_ACTIONS.EXECUTE_QUERY_REQUEST,
-    payload: queryId,
-  }),
-  executeQuerySuccess: (queryId: string, results: any[]): DataAction => ({
-    type: DATA_ACTIONS.EXECUTE_QUERY_SUCCESS,
-    payload: { queryId, results },
-  }),
-  executeQueryFailure: (queryId: string, error: string): DataAction => ({
-    type: DATA_ACTIONS.EXECUTE_QUERY_FAILURE,
-    payload: { queryId, error },
-  }),
-  saveQuery: (query: Query): DataAction => ({
-    type: DATA_ACTIONS.SAVE_QUERY,
-    payload: query,
-  }),
-  deleteQuery: (queryId: string): DataAction => ({
-    type: DATA_ACTIONS.DELETE_QUERY,
-    payload: queryId,
-  }),
-
-  // Visualizations
-  fetchVisualizationsRequest: (): DataAction => ({
-    type: DATA_ACTIONS.FETCH_VISUALIZATIONS_REQUEST,
-  }),
-  fetchVisualizationsSuccess: (visualizations: Visualization[]): DataAction => ({
-    type: DATA_ACTIONS.FETCH_VISUALIZATIONS_SUCCESS,
-    payload: visualizations,
-  }),
-  fetchVisualizationsFailure: (error: string): DataAction => ({
-    type: DATA_ACTIONS.FETCH_VISUALIZATIONS_FAILURE,
-    payload: error,
-  }),
-  saveVisualization: (visualization: Visualization): DataAction => ({
-    type: DATA_ACTIONS.SAVE_VISUALIZATION,
-    payload: visualization,
-  }),
-  deleteVisualization: (visualizationId: string): DataAction => ({
-    type: DATA_ACTIONS.DELETE_VISUALIZATION,
-    payload: visualizationId,
-  }),
-
-  // Other
-  clearError: (): DataAction => ({
-    type: DATA_ACTIONS.CLEAR_ERROR,
-  }),
-}; 
+export const dataActions = dataSlice.actions;
+export default dataSlice.reducer; 

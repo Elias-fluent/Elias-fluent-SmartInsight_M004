@@ -80,24 +80,16 @@ const RoleAssignment: React.FC<RoleAssignmentProps> = ({ onClose }) => {
 
   // Load available roles
   useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const response = await dispatch(apiRequest(
-          '/api/v1/Roles',
-          'get'
-        ));
-        if (response?.payload) {
-          setAvailableRoles(response.payload);
-        }
-      } catch (error) {
-        // Use default roles on error
-        console.error('Failed to fetch roles, using defaults', error);
-      }
-    };
-
-    // Uncomment when API is ready
-    // fetchRoles();
-  }, [dispatch]);
+    // Remove the fetchUserRoles call
+    
+    // Update the RoleAssignment with proper string type values
+    setAvailableRoles([
+      'Administrator',
+      'User',
+      'Analyst',
+      'Viewer'
+    ]);
+  }, [selectedUserId, selectedTenantId]);
 
   // Load users
   useEffect(() => {
