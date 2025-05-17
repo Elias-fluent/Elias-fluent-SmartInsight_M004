@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { KeyboardEvent } from 'react';
 import { Send } from 'lucide-react';
-import { useChat } from '../../store/StoreContext';
-import { chatActions } from '../../store/slices/chatSlice';
-import { v4 as uuid } from 'uuid';
+import { useChat } from '../../hooks/useChat';
+import { CHAT_ACTIONS } from '../../store/slices/chatSlice';
+import type { Message } from '../../store/slices/chatSlice';
 
 interface MessageInputProps {
   className?: string;
@@ -17,7 +17,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   onSend
 }) => {
   const [message, setMessage] = useState('');
-  const { dispatch, chat } = useChat();
+  const { dispatch, chat, createConversation, sendMessage } = useChat();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   // Auto-adjust textarea height
@@ -36,14 +36,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
     
     // If no active conversation, create one
     if (!conversationId) {
-      const newConversationId = uuid();
-      dispatch(chatActions.createConversation({
-        id: newConversationId,
-        title: 'New Conversation',
-        messages: [],
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      }));
+      const newConversationId = createConversation('New Conversation');
       
       // Send the message in the new conversation
       sendMessageToConversation(newConversationId);
@@ -54,18 +47,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
   };
   
   const sendMessageToConversation = (conversationId: string) => {
-    const messageId = uuid();
-    
-    // Create the message object
-    const messageObj = {
-      id: messageId,
-      role: 'user' as const,
-      content: message,
-      timestamp: Date.now()
-    };
-    
-    // Dispatch the action to send the message
-    dispatch(chatActions.sendMessageRequest(conversationId, messageObj));
+    // Send the message
+    sendMessage(conversationId, message, 'user');
     
     // Call the onSend handler if provided
     if (onSend) {

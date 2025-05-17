@@ -1,14 +1,15 @@
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import authService from '../services/authService';
+import type { RootState } from '../store/configureStore';
 import { authActions } from '../store/slices/authSlice';
-import { useStore } from '../store/StoreContext';
+import authService from '../services/authService';
 
 /**
  * Custom hook that provides authentication-related functionality
  */
 export const useAuth = () => {
-  const { state, dispatch } = useStore();
-  const auth = state.auth;
+  const auth = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   
   /**
@@ -39,16 +40,21 @@ export const useAuth = () => {
   /**
    * Check if the current user has a specific role
    */
-  const hasRole = (role: string) => {
-    return auth.user?.roles?.includes(role) || false;
+  const hasRole = (role: string | string[]) => {
+    if (!auth.user || !auth.user.roles) return false;
+    
+    if (Array.isArray(role)) {
+      return role.some(r => auth.user?.roles.includes(r));
+    }
+    
+    return auth.user.roles.includes(role);
   };
   
   /**
    * Check if the current user has any of the given roles
    */
   const hasAnyRole = (roles: string[]) => {
-    if (!auth.user?.roles) return false;
-    return roles.some(role => auth.user!.roles.includes(role));
+    return roles.some(role => hasRole(role));
   };
   
   /**
@@ -63,12 +69,13 @@ export const useAuth = () => {
     isAuthenticated: auth.isAuthenticated,
     loading: auth.loading,
     error: auth.error,
+    token: auth.token,
     tenantId: auth.tenantId,
-    login,
-    logout,
     hasRole,
     hasAnyRole,
-    setTenant
+    setTenant,
+    login,
+    logout
   };
 };
 

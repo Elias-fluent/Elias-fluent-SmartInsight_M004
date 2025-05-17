@@ -5,6 +5,7 @@
   // Create a mock user with admin role
   const mockUser = {
     id: '12345',
+    username: 'admin@smartinsight.local',
     email: 'admin@smartinsight.local',
     firstName: 'Admin',
     lastName: 'User',
@@ -15,7 +16,7 @@
   // Create a mock JWT token (not real)
   const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NSIsImVtYWlsIjoiYWRtaW5Ac21hcnRpbnNpZ2h0LmxvY2FsIiwicm9sZSI6WyJBZG1pbiIsIlVzZXIiXSwidGVuYW50SWQiOiI2Nzg5MCIsImV4cCI6MTcwOTQ3MzE0MCwiaWF0IjoxNzA5MzkzMTQwfQ.mock_signature';
 
-  // Create and save auth state
+  // Create and save auth state for Redux store
   const authState = {
     isAuthenticated: true,
     user: mockUser,
@@ -29,7 +30,7 @@
   localStorage.setItem('smartinsight_auth', JSON.stringify(authState));
   localStorage.setItem('smartinsight_token', mockToken);
   
-  // Set UI state with default values
+  // Set UI state with default values for Redux store
   const uiState = {
     isLoading: false,
     notifications: [],
@@ -42,6 +43,22 @@
     textSize: 'normal'
   };
   localStorage.setItem('smartinsight_ui', JSON.stringify(uiState));
+
+  // Manually dispatch Redux actions to update state
+  if (window.store && typeof window.store.dispatch === 'function') {
+    window.store.dispatch({ 
+      type: 'auth/loginSuccess', 
+      payload: { user: mockUser, token: mockToken } 
+    });
+    
+    window.store.dispatch({
+      type: 'auth/setTenant',
+      payload: mockUser.tenantId
+    });
+  } else {
+    console.warn('Redux store not found on window object. State saved to localStorage only.');
+    console.warn('You will need to refresh the page for changes to take effect.');
+  }
 
   console.log('Authentication bypassed! Refresh the page to access protected routes.');
   console.log('You may need to manually navigate to the route you want to test.');

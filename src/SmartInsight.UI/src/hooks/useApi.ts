@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useStore } from '../store/StoreContext';
+import { useDispatch } from 'react-redux';
 import { ApiService } from '../services/apiService';
 
 /**
@@ -20,7 +20,7 @@ import { ApiService } from '../services/apiService';
  * };
  */
 export function useApi() {
-  const { dispatch } = useStore();
+  const dispatch = useDispatch();
   
   // Memoize the API service to avoid unnecessary recreations
   const api = useMemo(() => new ApiService(dispatch), [dispatch]);

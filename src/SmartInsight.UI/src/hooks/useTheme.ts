@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useUI } from '../store/StoreContext';
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '../store/configureStore';
 import { uiActions } from '../store/slices/uiSlice';
 
 type Theme = 'light' | 'dark' | 'system';
@@ -24,7 +25,8 @@ type TextSize = 'normal' | 'large' | 'x-large';
  * @property {function} setTextSize - Function to set text size
  */
 export function useTheme() {
-  const { ui, dispatch } = useUI();
+  const ui = useSelector((state: RootState) => state.ui);
+  const dispatch = useDispatch();
   const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>(
     window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   );

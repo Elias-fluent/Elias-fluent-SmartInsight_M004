@@ -7,7 +7,7 @@ import { authReducer } from './slices/authSlice';
 import type { AuthState, AuthAction } from './slices/authSlice';
 import { uiReducer } from './slices/uiSlice';
 import type { UIState, UIAction } from './slices/uiSlice';
-import { dataReducer } from './slices/dataSlice';
+import dataReducer from './slices/dataSlice';
 import type { DataState, DataAction } from './slices/dataSlice';
 import { chatReducer } from './slices/chatSlice';
 import type { ChatState, ChatAction } from './slices/chatSlice';

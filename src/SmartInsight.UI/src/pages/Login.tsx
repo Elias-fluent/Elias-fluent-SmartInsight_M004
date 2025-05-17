@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useStore } from '../store/StoreContext';
+import { useDispatch } from 'react-redux';
 import authService from '../services/authService';
 import { authActions } from '../store/slices/authSlice';
 
@@ -13,7 +13,7 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   
-  const { dispatch } = useStore();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   

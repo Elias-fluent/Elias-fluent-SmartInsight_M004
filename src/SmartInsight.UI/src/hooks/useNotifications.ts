@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
-import { useUI } from '../store/StoreContext';
+import { useSelector, useDispatch } from 'react-redux';
 import { uiActions } from '../store/slices/uiSlice';
 import type { Notification } from '../store/slices/uiSlice';
+import type { RootState } from '../store/configureStore';
 
 /**
  * Hook for managing notifications
@@ -14,7 +15,8 @@ import type { Notification } from '../store/slices/uiSlice';
  * @property {Notification[]} notifications - List of all current notifications
  */
 export function useNotifications() {
-  const { ui, dispatch } = useUI();
+  const ui = useSelector((state: RootState) => state.ui);
+  const dispatch = useDispatch();
   
   // Show a notification
   const showNotification = useCallback(

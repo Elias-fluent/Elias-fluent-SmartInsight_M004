@@ -1,4 +1,4 @@
-import { combineReducers } from 'redux';
+import { combineReducers } from '@reduxjs/toolkit';
 import { authReducer } from './slices/authSlice';
 import { uiReducer } from './slices/uiSlice';
 import dataReducer from './slices/dataSlice';
@@ -25,7 +25,7 @@ export const rootReducer = combineReducers({
 });
 
 // Initial state
-export const initialState: Partial<RootState> = {
+export const initialState: RootState = {
   auth: {
     isAuthenticated: false,
     user: null,
@@ -68,12 +68,5 @@ export const initialState: Partial<RootState> = {
   },
 };
 
-// Export store type
-export type AppDispatch = typeof store.dispatch;
-
-// Create the store with middleware
-const store = {
-  dispatch: (() => {}) as any,
-};
-
-export default store; 
+// Export only types for redux store created in main.tsx
+export type AppDispatch = any; 

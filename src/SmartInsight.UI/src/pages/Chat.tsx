@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useChat } from '../store/StoreContext';
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '../store/configureStore';
 import { chatActions } from '../store/slices/chatSlice';
 import ChatContainer from '../components/ui/ChatContainer';
 import MessageList from '../components/ui/MessageList';
@@ -8,7 +9,8 @@ import TypingIndicator from '../components/ui/TypingIndicator';
 import { v4 as uuid } from 'uuid';
 
 const Chat: React.FC = () => {
-  const { chat, dispatch } = useChat();
+  const chat = useSelector((state: RootState) => state.chat);
+  const dispatch = useDispatch();
   const [isTyping, setIsTyping] = useState(false);
   
   // Simulate assistant typing when new user message is sent

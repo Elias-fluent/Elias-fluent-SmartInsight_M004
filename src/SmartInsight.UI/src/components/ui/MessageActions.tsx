@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import { MoreHorizontal, Copy, Download, Trash } from 'lucide-react';
 import type { Message } from '../../store/slices/chatSlice';
-import { useChat } from '../../store/StoreContext';
-import { chatActions } from '../../store/slices/chatSlice';
+import { useChat } from '../../hooks/useChat';
+import { CHAT_ACTIONS } from '../../store/slices/chatSlice';
 import { useFocusVisible } from '../../hooks/useFocusVisible';
 import { useAnnounce } from '../../hooks/useAnnounce';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
@@ -122,7 +122,10 @@ const MessageActions: React.FC<MessageActionsProps> = ({ message, conversationId
     e.stopPropagation();
     
     if (window.confirm('Are you sure you want to delete this message?')) {
-      dispatch(chatActions.deleteMessage(conversationId, message.id));
+      dispatch({
+        type: CHAT_ACTIONS.DELETE_MESSAGE,
+        payload: { conversationId, messageId: message.id }
+      });
       announce('Message deleted');
     }
     

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useChat } from '../../store/StoreContext';
+import { useChat } from '../../hooks/useChat';
 import type { Message } from '../../store/slices/chatSlice';
 import MessageItem from './MessageItem';
 

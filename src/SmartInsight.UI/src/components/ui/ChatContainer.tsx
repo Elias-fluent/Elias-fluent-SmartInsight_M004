@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { useChat } from '../../store/StoreContext';
+import { useChat } from '../../hooks/useChat';
 import { Card } from './card';
 
 interface ChatContainerProps {

@@ -1,5 +1,4 @@
 import { run as runAxe } from 'axe-core';
-import { expect } from 'vitest';
 import type { ReactElement } from 'react';
 import { render } from '@testing-library/react';
 

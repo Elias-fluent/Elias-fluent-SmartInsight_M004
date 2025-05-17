@@ -184,6 +184,52 @@ export const DATA_ACTIONS = {
   CANCEL_INGESTION_JOB_SUCCESS: 'data/cancelIngestionJobSuccess',
   CANCEL_INGESTION_JOB_FAILURE: 'data/cancelIngestionJobFailure',
   
+  // User management actions
+  FETCH_USERS_REQUEST: 'data/fetchUsersRequest',
+  FETCH_USERS_SUCCESS: 'data/fetchUsersSuccess',
+  FETCH_USERS_FAILURE: 'data/fetchUsersFailure',
+  
+  CREATE_USER_REQUEST: 'data/createUserRequest',
+  CREATE_USER_SUCCESS: 'data/createUserSuccess',
+  CREATE_USER_FAILURE: 'data/createUserFailure',
+  
+  UPDATE_USER_REQUEST: 'data/updateUserRequest',
+  UPDATE_USER_SUCCESS: 'data/updateUserSuccess',
+  UPDATE_USER_FAILURE: 'data/updateUserFailure',
+  
+  DELETE_USER_REQUEST: 'data/deleteUserRequest',
+  DELETE_USER_SUCCESS: 'data/deleteUserSuccess',
+  DELETE_USER_FAILURE: 'data/deleteUserFailure',
+  
+  UPDATE_USER_STATUS_REQUEST: 'data/updateUserStatusRequest',
+  UPDATE_USER_STATUS_SUCCESS: 'data/updateUserStatusSuccess',
+  UPDATE_USER_STATUS_FAILURE: 'data/updateUserStatusFailure',
+  
+  UPDATE_USER_ROLES_REQUEST: 'data/updateUserRolesRequest',
+  UPDATE_USER_ROLES_SUCCESS: 'data/updateUserRolesSuccess',
+  UPDATE_USER_ROLES_FAILURE: 'data/updateUserRolesFailure',
+  
+  // Tenant management actions
+  FETCH_TENANTS_REQUEST: 'data/fetchTenantsRequest',
+  FETCH_TENANTS_SUCCESS: 'data/fetchTenantsSuccess',
+  FETCH_TENANTS_FAILURE: 'data/fetchTenantsFailure',
+  
+  CREATE_TENANT_REQUEST: 'data/createTenantRequest',
+  CREATE_TENANT_SUCCESS: 'data/createTenantSuccess',
+  CREATE_TENANT_FAILURE: 'data/createTenantFailure',
+  
+  UPDATE_TENANT_REQUEST: 'data/updateTenantRequest',
+  UPDATE_TENANT_SUCCESS: 'data/updateTenantSuccess',
+  UPDATE_TENANT_FAILURE: 'data/updateTenantFailure',
+  
+  DELETE_TENANT_REQUEST: 'data/deleteTenantRequest',
+  DELETE_TENANT_SUCCESS: 'data/deleteTenantSuccess',
+  DELETE_TENANT_FAILURE: 'data/deleteTenantFailure',
+  
+  FETCH_ROLES_REQUEST: 'data/fetchRolesRequest',
+  FETCH_ROLES_SUCCESS: 'data/fetchRolesSuccess',
+  FETCH_ROLES_FAILURE: 'data/fetchRolesFailure',
+  
   CLEAR_ERROR: 'data/clearError',
 } as const;
 
@@ -234,6 +280,50 @@ export type DataAction =
   | { type: typeof DATA_ACTIONS.CANCEL_INGESTION_JOB_REQUEST; payload: string }
   | { type: typeof DATA_ACTIONS.CANCEL_INGESTION_JOB_SUCCESS; payload: string }
   | { type: typeof DATA_ACTIONS.CANCEL_INGESTION_JOB_FAILURE; payload: string }
+  
+  | { type: typeof DATA_ACTIONS.FETCH_USERS_REQUEST }
+  | { type: typeof DATA_ACTIONS.FETCH_USERS_SUCCESS; payload: User[] }
+  | { type: typeof DATA_ACTIONS.FETCH_USERS_FAILURE; payload: string }
+  
+  | { type: typeof DATA_ACTIONS.CREATE_USER_REQUEST; payload: User }
+  | { type: typeof DATA_ACTIONS.CREATE_USER_SUCCESS; payload: User }
+  | { type: typeof DATA_ACTIONS.CREATE_USER_FAILURE; payload: string }
+  
+  | { type: typeof DATA_ACTIONS.UPDATE_USER_REQUEST; payload: User }
+  | { type: typeof DATA_ACTIONS.UPDATE_USER_SUCCESS; payload: User }
+  | { type: typeof DATA_ACTIONS.UPDATE_USER_FAILURE; payload: string }
+  
+  | { type: typeof DATA_ACTIONS.DELETE_USER_REQUEST; payload: string }
+  | { type: typeof DATA_ACTIONS.DELETE_USER_SUCCESS; payload: string }
+  | { type: typeof DATA_ACTIONS.DELETE_USER_FAILURE; payload: string }
+  
+  | { type: typeof DATA_ACTIONS.UPDATE_USER_STATUS_REQUEST; payload: User }
+  | { type: typeof DATA_ACTIONS.UPDATE_USER_STATUS_SUCCESS; payload: User }
+  | { type: typeof DATA_ACTIONS.UPDATE_USER_STATUS_FAILURE; payload: string }
+  
+  | { type: typeof DATA_ACTIONS.UPDATE_USER_ROLES_REQUEST; payload: User }
+  | { type: typeof DATA_ACTIONS.UPDATE_USER_ROLES_SUCCESS; payload: User }
+  | { type: typeof DATA_ACTIONS.UPDATE_USER_ROLES_FAILURE; payload: string }
+  
+  | { type: typeof DATA_ACTIONS.FETCH_TENANTS_REQUEST }
+  | { type: typeof DATA_ACTIONS.FETCH_TENANTS_SUCCESS; payload: Tenant[] }
+  | { type: typeof DATA_ACTIONS.FETCH_TENANTS_FAILURE; payload: string }
+  
+  | { type: typeof DATA_ACTIONS.CREATE_TENANT_REQUEST; payload: Tenant }
+  | { type: typeof DATA_ACTIONS.CREATE_TENANT_SUCCESS; payload: Tenant }
+  | { type: typeof DATA_ACTIONS.CREATE_TENANT_FAILURE; payload: string }
+  
+  | { type: typeof DATA_ACTIONS.UPDATE_TENANT_REQUEST; payload: Tenant }
+  | { type: typeof DATA_ACTIONS.UPDATE_TENANT_SUCCESS; payload: Tenant }
+  | { type: typeof DATA_ACTIONS.UPDATE_TENANT_FAILURE; payload: string }
+  
+  | { type: typeof DATA_ACTIONS.DELETE_TENANT_REQUEST; payload: string }
+  | { type: typeof DATA_ACTIONS.DELETE_TENANT_SUCCESS; payload: string }
+  | { type: typeof DATA_ACTIONS.DELETE_TENANT_FAILURE; payload: string }
+  
+  | { type: typeof DATA_ACTIONS.FETCH_ROLES_REQUEST }
+  | { type: typeof DATA_ACTIONS.FETCH_ROLES_SUCCESS; payload: string[] }
+  | { type: typeof DATA_ACTIONS.FETCH_ROLES_FAILURE; payload: string }
   
   | { type: typeof DATA_ACTIONS.CLEAR_ERROR };
 

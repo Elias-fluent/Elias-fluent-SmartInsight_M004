@@ -1,17 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import DataSourceList from '../components/admin/DataSourceList';
+import UserList from '../components/admin/UserList';
+import TenantList from '../components/admin/TenantList';
 import { useAuth } from '../hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 
 const Admin: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('data-sources');
-  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('users');
+  const { user, hasRole, isAuthenticated } = useAuth();
 
-  // Check if user has admin role
-  const isAdmin = user?.roles?.includes('Admin');
+  // For debugging purposes
+  useEffect(() => {
+    console.log('Auth state:', { user, isAuthenticated, roles: user?.roles });
+  }, [user, isAuthenticated]);
+
+  // Use just 'Admin' role to match MockAuth.js
+  const isAdmin = hasRole('Admin');
+
+  if (!isAuthenticated) {
+    return (
+      <div className="container mx-auto py-8">
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Not Authenticated</AlertTitle>
+          <AlertDescription>
+            You need to log in to access the Admin panel.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   if (!isAdmin) {
     return (
@@ -20,7 +41,7 @@ const Admin: React.FC = () => {
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Unauthorized</AlertTitle>
           <AlertDescription>
-            You don't have permission to access the Admin panel.
+            You don't have permission to access the Admin panel. Your roles: {user?.roles?.join(', ')}
           </AlertDescription>
         </Alert>
       </div>
@@ -37,7 +58,7 @@ const Admin: React.FC = () => {
       </div>
 
       <Tabs
-        defaultValue="data-sources"
+        defaultValue="users"
         value={activeTab}
         onValueChange={setActiveTab}
         className="space-y-4"
@@ -45,7 +66,7 @@ const Admin: React.FC = () => {
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="data-sources">Data Sources</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
-          <TabsTrigger value="ingestion">Ingestion Jobs</TabsTrigger>
+          <TabsTrigger value="tenants">Tenants</TabsTrigger>
           <TabsTrigger value="system">System Settings</TabsTrigger>
         </TabsList>
 
@@ -72,21 +93,21 @@ const Admin: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p>User management will be implemented in a future update.</p>
+              <UserList />
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="ingestion" className="space-y-4">
+        <TabsContent value="tenants" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Ingestion Jobs</CardTitle>
+              <CardTitle>Tenant Management</CardTitle>
               <CardDescription>
-                Monitor and manage data ingestion tasks.
+                Manage organization tenants and their settings.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p>Ingestion job monitoring will be implemented in a future update.</p>
+              <TenantList />
             </CardContent>
           </Card>
         </TabsContent>

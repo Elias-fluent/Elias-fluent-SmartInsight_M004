@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { useUI } from '../../store/StoreContext';
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '../../store/configureStore';
 import { uiActions } from '../../store/slices/uiSlice';
 import AccessibilitySettings from './AccessibilitySettings';
 import { useAnnounce } from '../../hooks/useAnnounce';
@@ -161,7 +162,8 @@ export function AccessibilityModal({ isOpen, onClose }: AccessibilityModalProps)
  * Button to open the accessibility settings modal
  */
 export function AccessibilityButton() {
-  const { ui, dispatch } = useUI();
+  const ui = useSelector((state: RootState) => state.ui);
+  const dispatch = useDispatch();
   
   const openModal = () => {
     dispatch(uiActions.setModal('accessibility'));

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useStore } from '../../store/StoreContext';
+import { useDispatch } from 'react-redux';
 import { authActions } from '../../store/slices/authSlice';
 import authService from '../../services/authService';
 
@@ -19,7 +19,7 @@ const TenantSelector: React.FC<TenantSelectorProps> = ({ className = '' }) => {
   );
   const [isLoading, setIsLoading] = useState(false);
   
-  const { dispatch } = useStore();
+  const dispatch = useDispatch();
   
   // Fetch tenants on component mount
   useEffect(() => {

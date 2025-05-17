@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import type { KeyboardEvent } from 'react';
 import type { Message } from '../../store/slices/chatSlice';
-import { useChat } from '../../store/StoreContext';
+import { useChat } from '../../hooks/useChat';
 import { Check, CopyIcon, AlertCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';

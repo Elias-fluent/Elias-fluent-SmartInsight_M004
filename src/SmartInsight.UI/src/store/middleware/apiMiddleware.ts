@@ -1,9 +1,7 @@
 import axios, { isAxiosError } from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import type { Middleware } from './storageMiddleware';
 import { authActions } from '../slices/authSlice';
 import { uiActions } from '../slices/uiSlice';
-import type { AppAction } from '../StoreContext';
 
 // Define API action types
 export const API_REQUEST = 'api/request';
@@ -40,7 +38,7 @@ export interface ApiFailureAction {
   };
 }
 
-// Export API actions as a union type that can be imported by StoreContext.tsx
+// Export API actions union type
 export type ApiAction = ApiRequestAction | ApiSuccessAction | ApiFailureAction;
 
 // Define API action creators
@@ -130,12 +128,11 @@ const createApiClient = (): AxiosInstance => {
 };
 
 // Create the API middleware
-export const apiMiddleware: Middleware = (api) => {
+export const apiMiddleware = (store: any) => {
   const axiosInstance = createApiClient();
   
-  return (next) => async (action: AppAction) => {
+  return (next: any) => async (action: any) => {
     // Pass all non-api actions to the next middleware
-    // Use 'in' operator to safely check if action has a type property
     if (!action || typeof action !== 'object' || !('type' in action) || action.type !== API_REQUEST) {
       return next(action);
     }
@@ -149,7 +146,7 @@ export const apiMiddleware: Middleware = (api) => {
     
     // Show loading indicator if a label is provided
     if (label) {
-      api.dispatch(uiActions.setLoading(true));
+      store.dispatch(uiActions.setLoading(true));
     }
     
     try {
@@ -163,15 +160,15 @@ export const apiMiddleware: Middleware = (api) => {
       
       // Dispatch success action
       const successAction = apiSuccess(response, apiAction.payload);
-      api.dispatch(successAction as unknown as AppAction);
+      store.dispatch(successAction);
       
       // Handle onSuccess action if provided
       if (onSuccess) {
-        api.dispatch({
+        store.dispatch({
           type: onSuccess,
           payload: response.data,
           meta: { originalRequest: apiAction.payload },
-        } as AppAction);
+        });
       }
       
       // Hydrate token if it's a login response
@@ -183,21 +180,21 @@ export const apiMiddleware: Middleware = (api) => {
     } catch (error) {
       // Dispatch failure action
       const failureAction = apiFailure(error, apiAction.payload);
-      api.dispatch(failureAction as unknown as AppAction);
+      store.dispatch(failureAction);
       
       // Handle onFailure action if provided
       if (onFailure) {
-        api.dispatch({
+        store.dispatch({
           type: onFailure,
           payload: error,
           meta: { originalRequest: apiAction.payload },
-        } as AppAction);
+        });
       }
       
       // Handle 401 errors (unauthorized)
       if (isAxiosError(error) && error.response?.status === 401) {
-        api.dispatch(authActions.logout());
-        api.dispatch(uiActions.addNotification({
+        store.dispatch(authActions.logout());
+        store.dispatch(uiActions.addNotification({
           message: 'Your session has expired. Please log in again.',
           type: 'warning',
         }));
@@ -207,7 +204,7 @@ export const apiMiddleware: Middleware = (api) => {
           ? error.response.data.message
           : 'An unexpected error occurred. Please try again.';
           
-        api.dispatch(uiActions.addNotification({
+        store.dispatch(uiActions.addNotification({
           message: errorMessage,
           type: 'error',
         }));
@@ -217,7 +214,7 @@ export const apiMiddleware: Middleware = (api) => {
     } finally {
       // Hide loading indicator if a label is provided
       if (label) {
-        api.dispatch(uiActions.setLoading(false));
+        store.dispatch(uiActions.setLoading(false));
       }
     }
   };
@@ -245,7 +242,4 @@ export const apiRequestHelper = (
       },
     },
   },
-});
-
-// Export the helper
-export { apiRequest as default } from './apiMiddlewareHelper'; 
+}); 

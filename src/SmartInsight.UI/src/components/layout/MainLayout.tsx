@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useStore } from '../../store/StoreContext';
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '../../store/configureStore';
 import authService from '../../services/authService';
 import TenantSelector from '../ui/TenantSelector';
 import AccessibilityButton from '../ui/AccessibilityModal';
@@ -12,12 +13,13 @@ interface MainLayoutProps {
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
-  const { state, dispatch } = useStore();
+  const auth = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Get authentication state from our custom store
-  const { isAuthenticated, user } = state.auth;
+  // Get authentication state from Redux store
+  const { isAuthenticated, user } = auth;
   
   // Setup auth interceptors
   useEffect(() => {
@@ -132,7 +134,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   <span>Analytics</span>
                 </Link>
               </li>
-              {user?.roles.includes('Admin') && (
+              {user?.roles?.includes('Admin') && (
                 <li>
                   <Link
                     to="/admin"

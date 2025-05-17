@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { useChat } from '../store/StoreContext';
+import { useSelector, useDispatch } from 'react-redux';
 import { CHAT_ACTIONS } from '../store/slices/chatSlice';
 import ConversationList from '../components/ui/ConversationList';
 import ConversationDetail from '../components/ui/ConversationDetail';
 import type { Conversation } from '../store/slices/chatSlice';
 import { useNavigate } from 'react-router-dom';
 import { PlusCircle } from 'lucide-react';
+import type { RootState } from '../store/configureStore';
 
 const History: React.FC = () => {
-  const { chat, dispatch } = useChat();
+  const chat = useSelector((state: RootState) => state.chat);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
