@@ -9,7 +9,7 @@ import {
   TableRow 
 } from '../ui/table';
 import { useToast } from '../ui/use-toast';
-import { Plus, Edit, Trash2, RefreshCw, Database, Calendar, Settings } from 'lucide-react';
+import { Plus, Edit, Trash2, RefreshCw, Database, Calendar, Settings, Shield } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store/configureStore';
 import { apiRequest } from '../../store/middleware/apiMiddlewareHelper';
@@ -17,6 +17,7 @@ import { Badge } from '../ui/badge';
 import TenantForm from './TenantForm';
 import DeleteConfirmation from './DeleteConfirmation';
 import TenantConfig from './TenantConfig';
+import TenantSecuritySettings from './TenantSecuritySettings';
 
 interface Tenant {
   id: string;
@@ -39,6 +40,8 @@ const TenantList: React.FC = () => {
   const [tenantToDelete, setTenantToDelete] = useState<Tenant | null>(null);
   const [showConfig, setShowConfig] = useState(false);
   const [configuringTenantId, setConfiguringTenantId] = useState('');
+  const [showSecuritySettings, setShowSecuritySettings] = useState(false);
+  const [securitySettingsTenantId, setSecuritySettingsTenantId] = useState('');
 
   // Get tenants from Redux store (will need to be added to data slice)
   const tenants = useSelector((state: RootState) => state.data.tenants) || [];
@@ -173,6 +176,11 @@ const TenantList: React.FC = () => {
     setShowConfig(true);
   };
 
+  const handleSecuritySettings = (tenant: Tenant) => {
+    setSecuritySettingsTenantId(tenant.id);
+    setShowSecuritySettings(true);
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -261,6 +269,15 @@ const TenantList: React.FC = () => {
                       <Button 
                         variant="ghost" 
                         size="icon" 
+                        onClick={() => handleSecuritySettings(tenant)}
+                        title="Security settings"
+                      >
+                        <Shield className="h-4 w-4" />
+                        <span className="sr-only">Security</span>
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
                         onClick={() => handleConfigure(tenant)}
                         title="Configure tenant"
                       >
@@ -323,6 +340,19 @@ const TenantList: React.FC = () => {
           onClose={() => {
             setShowConfig(false);
             setConfiguringTenantId('');
+            // Refresh tenant list to show any changes
+            fetchTenants();
+          }}
+        />
+      )}
+
+      {/* Tenant Security Settings Dialog */}
+      {showSecuritySettings && (
+        <TenantSecuritySettings
+          tenantId={securitySettingsTenantId}
+          onClose={() => {
+            setShowSecuritySettings(false);
+            setSecuritySettingsTenantId('');
             // Refresh tenant list to show any changes
             fetchTenants();
           }}
