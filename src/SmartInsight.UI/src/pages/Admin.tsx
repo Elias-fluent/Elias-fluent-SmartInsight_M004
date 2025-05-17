@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import DataSourceList from '../components/admin/DataSourceList';
 import UserList from '../components/admin/UserList';
 import TenantList from '../components/admin/TenantList';
+import IngestionMonitoringDashboard from '../components/admin/IngestionMonitoringDashboard';
 import { useAuth } from '../hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
@@ -63,8 +64,9 @@ const Admin: React.FC = () => {
         onValueChange={setActiveTab}
         className="space-y-4"
       >
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="data-sources">Data Sources</TabsTrigger>
+          <TabsTrigger value="ingestion">Ingestion Monitoring</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="tenants">Tenants</TabsTrigger>
           <TabsTrigger value="system">System Settings</TabsTrigger>
@@ -80,6 +82,20 @@ const Admin: React.FC = () => {
             </CardHeader>
             <CardContent>
               <DataSourceList />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="ingestion" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Ingestion Monitoring Dashboard</CardTitle>
+              <CardDescription>
+                Monitor and manage data ingestion processes across all sources.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <IngestionMonitoringDashboard />
             </CardContent>
           </Card>
         </TabsContent>

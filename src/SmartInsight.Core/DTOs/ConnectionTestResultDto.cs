@@ -4,32 +4,32 @@ using System.Collections.Generic;
 namespace SmartInsight.Core.DTOs
 {
     /// <summary>
-    /// DTO for connection test results
+    /// Data transfer object for connection test results
     /// </summary>
     public class ConnectionTestResultDto
     {
         /// <summary>
-        /// Whether the connection test was successful
+        /// Gets or sets whether the connection was successful
         /// </summary>
         public bool Success { get; set; }
         
         /// <summary>
-        /// Error message if the test failed
+        /// Gets or sets the error message (null if successful)
         /// </summary>
         public string? ErrorMessage { get; set; }
         
         /// <summary>
-        /// Details about the connection
+        /// Gets or sets detailed connection information
         /// </summary>
         public IDictionary<string, string>? ConnectionDetails { get; set; }
         
         /// <summary>
-        /// Time it took to test the connection in milliseconds
+        /// Gets or sets the response time in milliseconds
         /// </summary>
         public long ResponseTimeMs { get; set; }
         
         /// <summary>
-        /// Timestamp of the test
+        /// Gets or sets the timestamp of the test
         /// </summary>
         public DateTimeOffset TestTimestamp { get; set; } = DateTimeOffset.UtcNow;
     }

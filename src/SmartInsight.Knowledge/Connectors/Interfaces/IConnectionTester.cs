@@ -1,5 +1,6 @@
 using SmartInsight.Core.DTOs;
 using SmartInsight.Core.Enums;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 namespace SmartInsight.Knowledge.Connectors.Interfaces
 {
     /// <summary>
-    /// Service for testing connections to data sources
+    /// Interface for testing connections to data sources
     /// </summary>
     public interface IConnectionTester
     {
